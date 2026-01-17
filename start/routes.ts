@@ -22,6 +22,8 @@ const TutorialsController = () => import('#controllers/tutorials_controller')
 const BadgesController = () => import('#controllers/badges_controller')
 const ReportsController = () => import('#controllers/reports_controller')
 const NotificationsController = () => import('#controllers/notifications_controller')
+const StatisticsController = () => import('#controllers/statistics_controller')
+const SubscriptionsController = () => import('#controllers/subscriptions_controller')
 
 // Public landing page
 router.on('/').renderInertia('home')
@@ -100,4 +102,19 @@ router.group(() => {
   router.post('/notifications/unsubscribe', [NotificationsController, 'unsubscribe']).as('notifications.unsubscribe')
   router.post('/notifications/settings', [NotificationsController, 'updateSettings']).as('notifications.settings')
   router.post('/notifications/test', [NotificationsController, 'test']).as('notifications.test')
+
+  // Statistics
+  router.get('/statistics', [StatisticsController, 'index']).as('statistics.index')
+  router.get('/statistics/evolution', [StatisticsController, 'evolution']).as('statistics.evolution')
+  router.get('/statistics/summary', [StatisticsController, 'summary']).as('statistics.summary')
+
+  // Subscriptions
+  router.get('/subscription', [SubscriptionsController, 'index']).as('subscription.index')
+  router.post('/subscription/checkout', [SubscriptionsController, 'createCheckout']).as('subscription.checkout')
+  router.get('/subscription/success', [SubscriptionsController, 'success']).as('subscription.success')
+  router.post('/subscription/cancel', [SubscriptionsController, 'cancel']).as('subscription.cancel')
+  router.get('/subscription/public-key', [SubscriptionsController, 'publicKey']).as('subscription.publicKey')
 }).middleware(middleware.auth())
+
+// Stripe webhook (no auth, uses signature verification)
+router.post('/webhooks/stripe', [SubscriptionsController, 'webhook']).as('webhooks.stripe')

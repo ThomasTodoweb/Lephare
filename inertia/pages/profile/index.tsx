@@ -1,4 +1,4 @@
-import { Head, useForm } from '@inertiajs/react'
+import { Head, Link, useForm } from '@inertiajs/react'
 import { useState } from 'react'
 import { Button } from '~/components/ui/Button'
 import { Card } from '~/components/ui/Card'
@@ -19,9 +19,18 @@ interface Props {
     username: string
     connectedAt: string
   } | null
+  subscription: {
+    planType: string
+    status: string
+    trialDaysRemaining: number | null
+  } | null
+  streak: {
+    currentStreak: number
+    longestStreak: number
+  }
 }
 
-export default function Profile({ user, restaurant, instagram }: Props) {
+export default function Profile({ user, restaurant, instagram, subscription, streak }: Props) {
   const disconnectForm = useForm({})
   const reconnectForm = useForm({})
   const logoutForm = useForm({})
@@ -78,6 +87,45 @@ export default function Profile({ user, restaurant, instagram }: Props) {
 
         {/* Content */}
         <div className="px-6 pb-32 space-y-6">
+          {/* Quick Actions */}
+          <div className="grid grid-cols-2 gap-3">
+            <Link href="/statistics">
+              <Card className="text-center hover:bg-neutral-50 transition-colors">
+                <span className="text-2xl block mb-1">📊</span>
+                <p className="font-bold text-neutral-900">Mes Stats</p>
+                <p className="text-xs text-neutral-500">Voir ma progression</p>
+              </Card>
+            </Link>
+            <Link href="/subscription">
+              <Card className="text-center hover:bg-neutral-50 transition-colors">
+                <span className="text-2xl block mb-1">💳</span>
+                <p className="font-bold text-neutral-900">Abonnement</p>
+                <p className="text-xs text-neutral-500">
+                  {subscription?.status === 'trialing'
+                    ? `Essai (${subscription.trialDaysRemaining}j)`
+                    : subscription?.status === 'active'
+                    ? 'Actif'
+                    : 'Gérer'}
+                </p>
+              </Card>
+            </Link>
+          </div>
+
+          {/* Streak Info */}
+          {streak && streak.currentStreak > 0 && (
+            <Card className="bg-primary/5 border-primary">
+              <div className="flex items-center gap-3">
+                <span className="text-3xl">🔥</span>
+                <div>
+                  <p className="font-bold text-primary">{streak.currentStreak} jours de suite !</p>
+                  <p className="text-sm text-neutral-600">
+                    Record : {streak.longestStreak} jours
+                  </p>
+                </div>
+              </div>
+            </Card>
+          )}
+
           {/* Account info */}
           <Card>
             <h2 className="font-bold text-lg text-neutral-900 mb-4">Compte</h2>

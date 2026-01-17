@@ -1,7 +1,12 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import LaterService from '#services/later_service'
+import GamificationService from '#services/gamification_service'
+import StripeService from '#services/stripe_service'
 
 export default class ProfileController {
+  private gamificationService = new GamificationService()
+  private stripeService = new StripeService()
+
   /**
    * Show user profile page
    */
@@ -12,6 +17,12 @@ export default class ProfileController {
 
     const restaurant = user.restaurant
     const instagramConnection = user.instagramConnection
+
+    // Get streak info
+    const streakInfo = await this.gamificationService.getStreakInfo(user.id)
+
+    // Get subscription info
+    const subscription = await this.stripeService.getSubscription(user.id)
 
     return inertia.render('profile/index', {
       user: {
@@ -29,6 +40,17 @@ export default class ProfileController {
         ? {
             username: instagramConnection.instagramUsername,
             connectedAt: instagramConnection.connectedAt?.toISO(),
+          }
+        : null,
+      streak: {
+        currentStreak: streakInfo.currentStreak,
+        longestStreak: streakInfo.longestStreak,
+      },
+      subscription: subscription
+        ? {
+            planType: subscription.planType,
+            status: subscription.status,
+            trialDaysRemaining: subscription.isTrialing() ? subscription.trialDaysRemaining() : null,
           }
         : null,
     })
