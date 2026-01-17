@@ -13,6 +13,8 @@ import { middleware } from './kernel.js'
 const AuthController = () => import('#controllers/auth_controller')
 const RestaurantsController = () => import('#controllers/restaurants_controller')
 const DashboardController = () => import('#controllers/dashboard_controller')
+const OnboardingController = () => import('#controllers/onboarding_controller')
+const ProfileController = () => import('#controllers/profile_controller')
 
 // Public landing page
 router.on('/').renderInertia('home')
@@ -36,11 +38,18 @@ router.group(() => {
   // Restaurant setup
   router.get('/restaurant/type', [RestaurantsController, 'showTypeChoice']).as('restaurant.type')
   router.post('/restaurant/type', [RestaurantsController, 'storeType'])
-}).middleware(middleware.auth())
 
-// Placeholder route for Epic 3 (protected)
-router
-  .on('/onboarding/strategy')
-  .renderInertia('home')
-  .as('onboarding.strategy')
-  .middleware(middleware.auth())
+  // Onboarding flow
+  router.get('/onboarding/strategy', [OnboardingController, 'showStrategy']).as('onboarding.strategy')
+  router.post('/onboarding/strategy', [OnboardingController, 'storeStrategy'])
+  router.get('/onboarding/rhythm', [OnboardingController, 'showRhythm']).as('onboarding.rhythm')
+  router.post('/onboarding/rhythm', [OnboardingController, 'storeRhythm'])
+  router.get('/onboarding/instagram', [OnboardingController, 'showInstagram']).as('onboarding.instagram')
+  router.post('/onboarding/instagram/skip', [OnboardingController, 'skipInstagram']).as('onboarding.instagram.skip')
+  router.post('/onboarding/complete', [OnboardingController, 'complete']).as('onboarding.complete')
+
+  // Profile
+  router.get('/profile', [ProfileController, 'index']).as('profile')
+  router.post('/profile/instagram/disconnect', [ProfileController, 'disconnectInstagram']).as('profile.instagram.disconnect')
+  router.get('/profile/instagram/reconnect', [ProfileController, 'reconnectInstagram']).as('profile.instagram.reconnect')
+}).middleware(middleware.auth())

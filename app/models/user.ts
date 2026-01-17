@@ -5,6 +5,7 @@ import { BaseModel, column, hasOne } from '@adonisjs/lucid/orm'
 import type { HasOne } from '@adonisjs/lucid/types/relations'
 import { withAuthFinder } from '@adonisjs/auth/mixins/lucid'
 import Restaurant from './restaurant.js'
+import InstagramConnection from './instagram_connection.js'
 
 const AuthFinder = withAuthFinder(() => hash.use('scrypt'), {
   uids: ['email'],
@@ -37,4 +38,7 @@ export default class User extends compose(BaseModel, AuthFinder) {
 
   @hasOne(() => Restaurant)
   declare restaurant: HasOne<typeof Restaurant>
+
+  @hasOne(() => InstagramConnection)
+  declare instagramConnection: HasOne<typeof InstagramConnection>
 }
