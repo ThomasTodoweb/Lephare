@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+/* LE PHARE - Direction Artistique */
+/* Design System Variables & Couleurs */
+
+@theme {
+  /* Couleurs Principales DA */
+  --color-primary: #dd2c0c;
+  --color-primary-dark: #b82409;
+  --color-background: #feefe1;
+  --color-neutral: #f5f5f5;
+  --color-white: #ffffff;
+  --color-text: #21201c;
+
+  /* Font Families DA */
+  --font-sans: 'Montserrat', 'Poppins', sans-serif;
+  --font-title: 'Montserrat', sans-serif;
+  --font-body: 'Poppins', 'Montserrat', sans-serif;
+}
+
+/* CSS Variables for additional theming support */
+:root {
+  --color-primary: #dd2c0c;
+  --color-primary-dark: #b82409;
+  --color-background: #feefe1;
+  --color-neutral: #f5f5f5;
+  --color-white: #ffffff;
+  --color-text: #21201c;
+}
+
+html,
+body {
+  height: 100%;
+  width: 100%;
+}
+
+/* Safe area support for iPhone notch */
+.safe-area-inset-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
