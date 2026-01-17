@@ -1,11 +1,14 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import app from '@adonisjs/core/services/app'
 import { cuid } from '@adonisjs/core/helpers'
+import { DateTime } from 'luxon'
 import Mission from '#models/mission'
 import Publication from '#models/publication'
 import MissionService from '#services/mission_service'
 import AIService from '#services/ai_service'
 import LaterService from '#services/later_service'
+
+const MAX_CAPTION_LENGTH = 2200 // Instagram's limit
 
 export default class PublicationsController {
   /**
@@ -55,7 +58,7 @@ export default class PublicationsController {
     }
 
     const photo = request.file('photo', {
-      size: '10mb',
+      size: '5mb',
       extnames: ['jpg', 'jpeg', 'png', 'webp'],
     })
 
@@ -156,7 +159,7 @@ export default class PublicationsController {
       return response.redirect().toRoute('missions.today')
     }
 
-    const caption = request.input('caption', '')
+    const caption = request.input('caption', '').substring(0, MAX_CAPTION_LENGTH)
     publication.caption = caption
     await publication.save()
 
@@ -198,7 +201,7 @@ export default class PublicationsController {
     if (result.success) {
       publication.status = 'published'
       publication.laterMediaId = result.mediaId || null
-      publication.publishedAt = publication.updatedAt
+      publication.publishedAt = DateTime.now()
       await publication.save()
 
       // Complete the mission

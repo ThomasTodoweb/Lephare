@@ -44,11 +44,11 @@ export default class Mission extends BaseModel {
   declare missionTemplate: BelongsTo<typeof MissionTemplate>
 
   /**
-   * Check if the mission is for today
+   * Check if the mission is for today (using UTC for consistency)
    */
   isToday(): boolean {
-    const today = DateTime.now().startOf('day')
-    return this.assignedAt.startOf('day').equals(today)
+    const today = DateTime.utc().startOf('day')
+    return this.assignedAt.toUTC().startOf('day').equals(today)
   }
 
   /**

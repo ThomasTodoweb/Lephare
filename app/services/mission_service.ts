@@ -6,9 +6,10 @@ import User from '#models/user'
 export default class MissionService {
   /**
    * Get or create today's mission for a user
+   * Uses UTC for consistent date handling across timezones
    */
   async getTodayMission(userId: number): Promise<Mission | null> {
-    const today = DateTime.now().startOf('day')
+    const today = DateTime.utc().startOf('day')
     const tomorrow = today.plus({ days: 1 })
 
     // Check if user already has a mission for today
@@ -23,8 +24,18 @@ export default class MissionService {
       return mission
     }
 
-    // No mission for today, prescribe one
-    return this.prescribeDailyMission(userId)
+    // No mission for today, prescribe one (with race condition protection via try/catch)
+    try {
+      return await this.prescribeDailyMission(userId)
+    } catch (error) {
+      // If duplicate mission created due to race condition, fetch existing one
+      return Mission.query()
+        .where('user_id', userId)
+        .where('assigned_at', '>=', today.toSQL())
+        .where('assigned_at', '<', tomorrow.toSQL())
+        .preload('missionTemplate')
+        .first()
+    }
   }
 
   /**
@@ -77,12 +88,12 @@ export default class MissionService {
       return null
     }
 
-    // Create the mission
+    // Create the mission (use UTC for consistent date handling)
     const mission = await Mission.create({
       userId,
       missionTemplateId: template.id,
       status: 'pending',
-      assignedAt: DateTime.now(),
+      assignedAt: DateTime.utc(),
       usedPass: false,
       usedReload: false,
     })
@@ -93,11 +104,12 @@ export default class MissionService {
 
   /**
    * Check if user should have a mission today based on their rhythm preference
+   * Uses UTC for consistency
    */
   private shouldHaveMissionToday(rhythm: string | null): boolean {
     if (!rhythm) return true
 
-    const dayOfWeek = DateTime.now().weekday // 1 = Monday, 7 = Sunday
+    const dayOfWeek = DateTime.utc().weekday // 1 = Monday, 7 = Sunday
 
     switch (rhythm) {
       case 'daily':

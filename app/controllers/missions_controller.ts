@@ -1,4 +1,5 @@
 import type { HttpContext } from '@adonisjs/core/http'
+import Mission from '#models/mission'
 import MissionService from '#services/mission_service'
 
 export default class MissionsController {
@@ -32,10 +33,21 @@ export default class MissionsController {
   /**
    * Accept mission and start the flow
    */
-  async accept({ response, params }: HttpContext) {
-    const missionId = params.id
+  async accept({ response, auth, params, session }: HttpContext) {
+    const user = auth.user!
+    const missionId = Number(params.id)
 
-    // Just redirect to photo capture page
+    // Verify user owns this mission before redirecting
+    const mission = await Mission.query()
+      .where('id', missionId)
+      .where('user_id', user.id)
+      .first()
+
+    if (!mission) {
+      session.flash('error', 'Mission introuvable')
+      return response.redirect().toRoute('missions.today')
+    }
+
     return response.redirect().toRoute('missions.photo', { id: missionId })
   }
 
