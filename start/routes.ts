@@ -15,6 +15,7 @@ const RestaurantsController = () => import('#controllers/restaurants_controller'
 const DashboardController = () => import('#controllers/dashboard_controller')
 const OnboardingController = () => import('#controllers/onboarding_controller')
 const ProfileController = () => import('#controllers/profile_controller')
+const LaterAuthController = () => import('#controllers/later_auth_controller')
 
 // Public landing page
 router.on('/').renderInertia('home')
@@ -51,5 +52,8 @@ router.group(() => {
   // Profile
   router.get('/profile', [ProfileController, 'index']).as('profile')
   router.post('/profile/instagram/disconnect', [ProfileController, 'disconnectInstagram']).as('profile.instagram.disconnect')
-  router.get('/profile/instagram/reconnect', [ProfileController, 'reconnectInstagram']).as('profile.instagram.reconnect')
+
+  // Later OAuth (Instagram connection)
+  router.get('/auth/later/redirect', [LaterAuthController, 'redirect']).as('later.redirect')
+  router.get('/auth/later/callback', [LaterAuthController, 'callback']).as('later.callback')
 }).middleware(middleware.auth())

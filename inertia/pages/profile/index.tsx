@@ -1,6 +1,7 @@
-import { Head, useForm, router } from '@inertiajs/react'
+import { Head, useForm } from '@inertiajs/react'
 import { Button } from '~/components/ui/Button'
 import { Card } from '~/components/ui/Card'
+import { RHYTHM_LABELS, TYPE_LABELS } from '~/lib/constants'
 
 interface Props {
   user: {
@@ -16,22 +17,6 @@ interface Props {
     username: string
     connectedAt: string
   } | null
-}
-
-const RHYTHM_LABELS: Record<string, string> = {
-  once_week: '1x par semaine',
-  three_week: '3x par semaine',
-  five_week: '5x par semaine',
-  daily: 'Tous les jours',
-}
-
-const TYPE_LABELS: Record<string, string> = {
-  brasserie: 'Brasserie',
-  gastronomique: 'Gastronomique',
-  fast_food: 'Fast-food',
-  pizzeria: 'Pizzeria',
-  cafe_bar: 'Café / Bar',
-  autre: 'Autre',
 }
 
 export default function Profile({ user, restaurant, instagram }: Props) {

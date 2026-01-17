@@ -1,7 +1,6 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column, belongsTo, beforeSave, beforeFind, beforeFetch } from '@adonisjs/lucid/orm'
+import { BaseModel, column, belongsTo, beforeSave } from '@adonisjs/lucid/orm'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
-import type { ModelQueryBuilderContract } from '@adonisjs/lucid/types/model'
 import encryption from '@adonisjs/core/services/encryption'
 import User from './user.js'
 
@@ -44,16 +43,6 @@ export default class InstagramConnection extends BaseModel {
     if (connection.$dirty.laterRefreshToken && connection.laterRefreshToken) {
       connection.laterRefreshToken = encryption.encrypt(connection.laterRefreshToken)
     }
-  }
-
-  @beforeFind()
-  static preloadForFind(query: ModelQueryBuilderContract<typeof InstagramConnection>) {
-    query.preload('user')
-  }
-
-  @beforeFetch()
-  static preloadForFetch(query: ModelQueryBuilderContract<typeof InstagramConnection>) {
-    query.preload('user')
   }
 
   /**

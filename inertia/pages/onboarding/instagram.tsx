@@ -1,4 +1,4 @@
-import { Head, useForm, router } from '@inertiajs/react'
+import { Head, useForm } from '@inertiajs/react'
 import { Button } from '~/components/ui/Button'
 import { Card } from '~/components/ui/Card'
 
@@ -10,11 +10,11 @@ interface Props {
 export default function Instagram({ isConnected, instagramUsername }: Props) {
   const skipForm = useForm({})
   const completeForm = useForm({})
+  const connectForm = useForm({})
 
   const handleConnectInstagram = () => {
-    // TODO: Redirect to Later OAuth when implemented
-    // For now, show a placeholder
-    alert('La connexion Instagram via Later sera disponible prochainement !')
+    // Redirect to Later OAuth flow
+    window.location.href = '/auth/later/redirect'
   }
 
   const handleSkip = () => {
