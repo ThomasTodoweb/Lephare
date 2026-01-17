@@ -1,4 +1,17 @@
-import vine from '@vinejs/vine'
+import vine, { SimpleMessagesProvider } from '@vinejs/vine'
+
+/**
+ * French validation messages for restaurant
+ */
+const messages = new SimpleMessagesProvider({
+  'required': 'Ce champ est requis',
+  'string': 'Ce champ doit être une chaîne de caractères',
+  'minLength': 'Ce champ doit contenir au moins {{ min }} caractères',
+  'maxLength': 'Ce champ ne peut pas dépasser {{ max }} caractères',
+  'enum': 'Veuillez sélectionner un type de restaurant',
+  'name.required': 'Le nom du restaurant est requis',
+  'type.required': 'Veuillez sélectionner un type de restaurant',
+})
 
 export const restaurantTypeValidator = vine.compile(
   vine.object({
@@ -6,3 +19,4 @@ export const restaurantTypeValidator = vine.compile(
     type: vine.enum(['brasserie', 'gastronomique', 'fast_food', 'pizzeria', 'cafe_bar', 'autre']),
   })
 )
+restaurantTypeValidator.messagesProvider = messages

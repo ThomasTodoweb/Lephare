@@ -11,6 +11,15 @@ export type RestaurantType =
   | 'cafe_bar'
   | 'autre'
 
+export const RESTAURANT_TYPES: Array<{ value: RestaurantType; label: string; icon: string }> = [
+  { value: 'brasserie', label: 'Brasserie', icon: '🍽️' },
+  { value: 'gastronomique', label: 'Gastronomique', icon: '⭐' },
+  { value: 'fast_food', label: 'Fast-food', icon: '🍔' },
+  { value: 'pizzeria', label: 'Pizzeria', icon: '🍕' },
+  { value: 'cafe_bar', label: 'Café / Bar', icon: '☕' },
+  { value: 'autre', label: 'Autre', icon: '🍴' },
+]
+
 export default class Restaurant extends BaseModel {
   @column({ isPrimary: true })
   declare id: number
