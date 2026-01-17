@@ -1,7 +1,9 @@
 import { Head, useForm } from '@inertiajs/react'
+import { useState } from 'react'
 import { Button } from '~/components/ui/Button'
 import { Card } from '~/components/ui/Card'
 import { RHYTHM_LABELS, TYPE_LABELS } from '~/lib/constants'
+import { usePushNotifications } from '~/hooks/use_push_notifications'
 
 interface Props {
   user: {
@@ -23,6 +25,16 @@ export default function Profile({ user, restaurant, instagram }: Props) {
   const disconnectForm = useForm({})
   const reconnectForm = useForm({})
   const logoutForm = useForm({})
+  const [selectedTime, setSelectedTime] = useState('10:00')
+  const {
+    isSupported,
+    isSubscribed,
+    isLoading: notifLoading,
+    error: notifError,
+    subscribe,
+    unsubscribe,
+    updateReminderTime,
+  } = usePushNotifications()
 
   const handleDisconnectInstagram = () => {
     if (confirm('Voulez-vous vraiment déconnecter votre compte Instagram ?')) {
@@ -31,11 +43,26 @@ export default function Profile({ user, restaurant, instagram }: Props) {
   }
 
   const handleReconnectInstagram = () => {
-    reconnectForm.get('/profile/instagram/reconnect')
+    reconnectForm.get('/auth/later/redirect')
   }
 
   const handleLogout = () => {
     logoutForm.post('/logout')
+  }
+
+  const handleNotificationToggle = async () => {
+    if (isSubscribed) {
+      await unsubscribe()
+    } else {
+      await subscribe(selectedTime)
+    }
+  }
+
+  const handleTimeChange = async (newTime: string) => {
+    setSelectedTime(newTime)
+    if (isSubscribed) {
+      await updateReminderTime(newTime)
+    }
   }
 
   return (
@@ -145,6 +172,62 @@ export default function Profile({ user, restaurant, instagram }: Props) {
               </div>
             )}
           </Card>
+
+          {/* Notifications */}
+          {isSupported && (
+            <Card>
+              <h2 className="font-bold text-lg text-neutral-900 mb-4">Notifications</h2>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">Rappels quotidiens</p>
+                    <p className="text-sm text-neutral-500">
+                      {isSubscribed ? 'Activés' : 'Désactivés'}
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleNotificationToggle}
+                    disabled={notifLoading}
+                    className={`relative w-12 h-6 rounded-full transition-colors ${
+                      isSubscribed ? 'bg-primary' : 'bg-neutral-300'
+                    }`}
+                  >
+                    <span
+                      className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${
+                        isSubscribed ? 'translate-x-6' : ''
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                {isSubscribed && (
+                  <div>
+                    <label className="block text-sm text-neutral-600 mb-2">
+                      Heure de rappel
+                    </label>
+                    <select
+                      value={selectedTime}
+                      onChange={(e) => handleTimeChange(e.target.value)}
+                      className="w-full p-2 border border-neutral-200 rounded-lg"
+                    >
+                      <option value="08:00">08:00</option>
+                      <option value="09:00">09:00</option>
+                      <option value="10:00">10:00</option>
+                      <option value="11:00">11:00</option>
+                      <option value="12:00">12:00</option>
+                      <option value="14:00">14:00</option>
+                      <option value="16:00">16:00</option>
+                      <option value="18:00">18:00</option>
+                    </select>
+                  </div>
+                )}
+
+                {notifError && (
+                  <p className="text-sm text-red-500">{notifError}</p>
+                )}
+              </div>
+            </Card>
+          )}
 
           {/* Logout */}
           <Button

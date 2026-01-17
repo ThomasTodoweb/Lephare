@@ -19,6 +19,9 @@ const LaterAuthController = () => import('#controllers/later_auth_controller')
 const MissionsController = () => import('#controllers/missions_controller')
 const PublicationsController = () => import('#controllers/publications_controller')
 const TutorialsController = () => import('#controllers/tutorials_controller')
+const BadgesController = () => import('#controllers/badges_controller')
+const ReportsController = () => import('#controllers/reports_controller')
+const NotificationsController = () => import('#controllers/notifications_controller')
 
 // Public landing page
 router.on('/').renderInertia('home')
@@ -82,4 +85,19 @@ router.group(() => {
   router.post('/tutorials/:id/complete', [TutorialsController, 'complete']).as('tutorials.complete')
   router.post('/tutorials/:id/feedback', [TutorialsController, 'feedback']).as('tutorials.feedback')
   router.get('/tutorials/:id/bravo', [TutorialsController, 'bravo']).as('tutorials.bravo')
+
+  // Badges
+  router.get('/badges', [BadgesController, 'index']).as('badges.index')
+
+  // Weekly Reports
+  router.get('/reports', [ReportsController, 'index']).as('reports.index')
+  router.get('/reports/:id', [ReportsController, 'show']).as('reports.show')
+  router.post('/reports/generate', [ReportsController, 'generate']).as('reports.generate')
+
+  // Notifications API
+  router.get('/notifications/public-key', [NotificationsController, 'publicKey']).as('notifications.publicKey')
+  router.post('/notifications/subscribe', [NotificationsController, 'subscribe']).as('notifications.subscribe')
+  router.post('/notifications/unsubscribe', [NotificationsController, 'unsubscribe']).as('notifications.unsubscribe')
+  router.post('/notifications/settings', [NotificationsController, 'updateSettings']).as('notifications.settings')
+  router.post('/notifications/test', [NotificationsController, 'test']).as('notifications.test')
 }).middleware(middleware.auth())

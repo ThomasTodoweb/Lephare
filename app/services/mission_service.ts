@@ -2,6 +2,7 @@ import { DateTime } from 'luxon'
 import Mission from '#models/mission'
 import MissionTemplate from '#models/mission_template'
 import User from '#models/user'
+import GamificationService from '#services/gamification_service'
 
 export default class MissionService {
   /**
@@ -217,8 +218,13 @@ export default class MissionService {
     }
 
     mission.status = 'completed'
-    mission.completedAt = DateTime.now()
+    mission.completedAt = DateTime.utc()
     await mission.save()
+
+    // Update user's streak and check badges
+    const gamificationService = new GamificationService()
+    await gamificationService.updateStreak(userId)
+    await gamificationService.checkBadgeUnlocks(userId)
 
     return { success: true }
   }
@@ -263,8 +269,14 @@ export default class MissionService {
       mission.missionTemplate.tutorialId === tutorialId
     ) {
       mission.status = 'completed'
-      mission.completedAt = DateTime.now()
+      mission.completedAt = DateTime.utc()
       await mission.save()
+
+      // Update user's streak and check badges
+      const gamificationService = new GamificationService()
+      await gamificationService.updateStreak(userId)
+      await gamificationService.checkBadgeUnlocks(userId)
+
       return { success: true, missionId: mission.id }
     }
 

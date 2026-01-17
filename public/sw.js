@@ -68,3 +68,49 @@ self.addEventListener('fetch', (event) => {
     fetch(request).catch(() => caches.match(request))
   )
 })
+
+// Push notification event
+self.addEventListener('push', (event) => {
+  if (!event.data) return
+
+  const data = event.data.json()
+  const options = {
+    body: data.body,
+    icon: data.icon || '/icons/icon-192x192.png',
+    badge: '/icons/icon-192x192.png',
+    tag: data.tag || 'lephare-notification',
+    data: {
+      url: data.url || '/dashboard',
+    },
+    vibrate: [100, 50, 100],
+    actions: [
+      { action: 'open', title: 'Voir' },
+      { action: 'close', title: 'Fermer' },
+    ],
+  }
+
+  event.waitUntil(self.registration.showNotification(data.title, options))
+})
+
+// Notification click event
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close()
+
+  if (event.action === 'close') return
+
+  const url = event.notification.data?.url || '/dashboard'
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      // Focus existing window if open
+      for (const client of clientList) {
+        if (client.url.includes(self.location.origin) && 'focus' in client) {
+          client.navigate(url)
+          return client.focus()
+        }
+      }
+      // Open new window
+      return clients.openWindow(url)
+    })
+  )
+})
