@@ -2,6 +2,7 @@ import { DateTime } from 'luxon'
 import { BaseModel, column, hasMany } from '@adonisjs/lucid/orm'
 import type { HasMany } from '@adonisjs/lucid/types/relations'
 import Restaurant from './restaurant.js'
+import MissionTemplate from './mission_template.js'
 
 export default class Strategy extends BaseModel {
   @column({ isPrimary: true })
@@ -30,6 +31,9 @@ export default class Strategy extends BaseModel {
 
   @hasMany(() => Restaurant)
   declare restaurants: HasMany<typeof Restaurant>
+
+  @hasMany(() => MissionTemplate)
+  declare missionTemplates: HasMany<typeof MissionTemplate>
 }
 
 export const STRATEGIES = [

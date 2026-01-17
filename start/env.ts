@@ -45,4 +45,11 @@ export default await Env.create(new URL('../', import.meta.url), {
   LATER_CLIENT_SECRET: Env.schema.string.optional(),
   LATER_REDIRECT_URI: Env.schema.string.optional(),
   LATER_API_URL: Env.schema.string.optional(),
+
+  /*
+  |----------------------------------------------------------
+  | Variables for OpenAI API (AI-generated descriptions)
+  |----------------------------------------------------------
+  */
+  OPENAI_API_KEY: Env.schema.string.optional(),
 })

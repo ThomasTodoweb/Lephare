@@ -16,6 +16,8 @@ const DashboardController = () => import('#controllers/dashboard_controller')
 const OnboardingController = () => import('#controllers/onboarding_controller')
 const ProfileController = () => import('#controllers/profile_controller')
 const LaterAuthController = () => import('#controllers/later_auth_controller')
+const MissionsController = () => import('#controllers/missions_controller')
+const PublicationsController = () => import('#controllers/publications_controller')
 
 // Public landing page
 router.on('/').renderInertia('home')
@@ -56,4 +58,19 @@ router.group(() => {
   // Later OAuth (Instagram connection)
   router.get('/auth/later/redirect', [LaterAuthController, 'redirect']).as('later.redirect')
   router.get('/auth/later/callback', [LaterAuthController, 'callback']).as('later.callback')
+
+  // Missions
+  router.get('/missions', [MissionsController, 'today']).as('missions.today')
+  router.post('/missions/:id/accept', [MissionsController, 'accept']).as('missions.accept')
+  router.post('/missions/:id/skip', [MissionsController, 'skip']).as('missions.skip')
+  router.post('/missions/:id/reload', [MissionsController, 'reload']).as('missions.reload')
+  router.get('/missions/history', [MissionsController, 'history']).as('missions.history')
+
+  // Publication flow
+  router.get('/missions/:id/photo', [PublicationsController, 'photo']).as('missions.photo')
+  router.post('/missions/:id/photo', [PublicationsController, 'uploadPhoto']).as('missions.photo.upload')
+  router.get('/publications/:id/description', [PublicationsController, 'description']).as('publications.description')
+  router.post('/publications/:id/caption', [PublicationsController, 'updateCaption']).as('publications.caption')
+  router.post('/publications/:id/publish', [PublicationsController, 'publish']).as('publications.publish')
+  router.get('/publications/:id/bravo', [PublicationsController, 'bravo']).as('publications.bravo')
 }).middleware(middleware.auth())
