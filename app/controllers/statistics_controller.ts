@@ -26,8 +26,24 @@ export default class StatisticsController {
    */
   async evolution({ request, response, auth }: HttpContext) {
     const user = auth.user!
-    const metricType = request.input('metric', 'missions_completed') as MetricType
+    const metricTypeInput = request.input('metric', 'missions_completed')
     const days = Number(request.input('days', 30))
+
+    // Validate metricType against allowed values
+    const validMetricTypes: MetricType[] = [
+      'posts_count',
+      'stories_count',
+      'reels_count',
+      'tutorials_viewed',
+      'missions_completed',
+      'streak_max',
+    ]
+
+    if (!validMetricTypes.includes(metricTypeInput)) {
+      return response.status(400).json({ error: 'Invalid metric type' })
+    }
+
+    const metricType = metricTypeInput as MetricType
 
     if (Number.isNaN(days) || days < 7 || days > 365) {
       return response.status(400).json({ error: 'Invalid days parameter' })

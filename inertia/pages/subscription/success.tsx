@@ -2,11 +2,7 @@ import { Head, Link } from '@inertiajs/react'
 import { AppLayout } from '~/components/layout'
 import { Button, Card } from '~/components/ui'
 
-interface Props {
-  sessionId: string | null
-}
-
-export default function SubscriptionSuccess({ sessionId }: Props) {
+export default function SubscriptionSuccess() {
   return (
     <AppLayout currentPage="profile">
       <Head title="Abonnement activé - Le Phare" />

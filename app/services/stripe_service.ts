@@ -136,19 +136,24 @@ export default class StripeService {
   async cancelSubscription(userId: number): Promise<boolean> {
     const subscription = await Subscription.query().where('user_id', userId).first()
 
-    if (!subscription || !subscription.stripeSubscriptionId) {
+    if (!subscription) {
       return false
     }
 
-    // Placeholder: In production, use Stripe SDK
-    // const stripe = require('stripe')(this.secretKey)
-    // await stripe.subscriptions.cancel(subscription.stripeSubscriptionId)
+    // If there's a Stripe subscription, cancel it via API
+    if (subscription.stripeSubscriptionId) {
+      // Placeholder: In production, use Stripe SDK
+      // const stripe = require('stripe')(this.secretKey)
+      // await stripe.subscriptions.cancel(subscription.stripeSubscriptionId)
+      console.log('StripeService: Would cancel Stripe subscription for user', userId)
+    }
 
+    // Always allow canceling (including trials without Stripe subscription)
     subscription.status = 'canceled'
     subscription.canceledAt = DateTime.utc()
     await subscription.save()
 
-    console.log('StripeService: Would cancel subscription for user', userId)
+    console.log('StripeService: Subscription canceled for user', userId)
     return true
   }
 

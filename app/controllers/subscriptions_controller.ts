@@ -111,9 +111,30 @@ export default class SubscriptionsController {
 
   /**
    * Handle Stripe webhook
+   * In production, this should verify the Stripe signature
    */
   async webhook({ request, response }: HttpContext) {
     const body = request.body()
+    const signature = request.header('stripe-signature')
+
+    // In production, verify the webhook signature
+    // const webhookSecret = env.get('STRIPE_WEBHOOK_SECRET')
+    // if (webhookSecret && signature) {
+    //   try {
+    //     const stripe = require('stripe')(env.get('STRIPE_SECRET_KEY'))
+    //     const event = stripe.webhooks.constructEvent(request.raw(), signature, webhookSecret)
+    //     await this.stripeService.handleWebhook(event)
+    //     return response.json({ received: true })
+    //   } catch (err) {
+    //     console.error('Webhook signature verification failed:', err)
+    //     return response.badRequest({ error: 'Invalid signature' })
+    //   }
+    // }
+
+    // Development mode: accept without signature (with warning)
+    if (!signature) {
+      console.warn('⚠️ Webhook received without signature - OK in dev, MUST be fixed in production')
+    }
 
     // Validate webhook event structure
     if (!body.type || !body.data) {

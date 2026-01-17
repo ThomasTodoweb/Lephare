@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { AppLayout } from '~/components/layout'
 import { Card } from '~/components/ui'
 
@@ -29,6 +29,11 @@ interface Comparison {
   changePercent: number
 }
 
+interface EvolutionPoint {
+  date: string
+  value: number
+}
+
 interface Props {
   keyMetrics: KeyMetric[]
   summary: Summary
@@ -37,6 +42,27 @@ interface Props {
 
 export default function StatisticsIndex({ keyMetrics, summary, comparison }: Props) {
   const [selectedPeriod, setSelectedPeriod] = useState<'7' | '30' | '90'>('30')
+  const [evolution, setEvolution] = useState<EvolutionPoint[]>([])
+  const [isLoadingEvolution, setIsLoadingEvolution] = useState(false)
+
+  useEffect(() => {
+    const fetchEvolution = async () => {
+      setIsLoadingEvolution(true)
+      try {
+        const response = await fetch(`/statistics/evolution?days=${selectedPeriod}&metric=missions_completed`)
+        if (response.ok) {
+          const data = await response.json()
+          setEvolution(data.evolution || [])
+        }
+      } catch (error) {
+        console.error('Failed to fetch evolution:', error)
+      } finally {
+        setIsLoadingEvolution(false)
+      }
+    }
+
+    fetchEvolution()
+  }, [selectedPeriod])
 
   return (
     <AppLayout currentPage="profile">
@@ -156,15 +182,41 @@ export default function StatisticsIndex({ keyMetrics, summary, comparison }: Pro
             ))}
           </div>
 
-          {/* Placeholder for chart */}
+          {/* Evolution data display */}
           <div className="bg-neutral-50 rounded-xl p-6 text-center">
-            <span className="text-4xl mb-2 block">📈</span>
-            <p className="text-neutral-600 text-sm">
-              Graphique d'évolution sur {selectedPeriod} jours
-            </p>
-            <p className="text-xs text-neutral-400 mt-2">
-              Continuez vos missions pour voir votre progression !
-            </p>
+            {isLoadingEvolution ? (
+              <p className="text-neutral-500">Chargement...</p>
+            ) : evolution.length > 0 ? (
+              <div>
+                <div className="flex justify-between items-end h-24 gap-1 mb-2">
+                  {evolution.slice(-14).map((point, index) => {
+                    const maxValue = Math.max(...evolution.map(p => p.value), 1)
+                    const height = (point.value / maxValue) * 100
+                    return (
+                      <div
+                        key={index}
+                        className="flex-1 bg-primary rounded-t"
+                        style={{ height: `${Math.max(height, 5)}%` }}
+                        title={`${point.date}: ${point.value}`}
+                      />
+                    )
+                  })}
+                </div>
+                <p className="text-neutral-600 text-sm">
+                  {evolution.length} points sur {selectedPeriod} jours
+                </p>
+              </div>
+            ) : (
+              <>
+                <span className="text-4xl mb-2 block">📈</span>
+                <p className="text-neutral-600 text-sm">
+                  Aucune donnée sur {selectedPeriod} jours
+                </p>
+                <p className="text-xs text-neutral-400 mt-2">
+                  Continuez vos missions pour voir votre progression !
+                </p>
+              </>
+            )}
           </div>
         </Card>
 

@@ -3,7 +3,6 @@ import Statistic, { MetricType } from '#models/statistic'
 import Mission from '#models/mission'
 import TutorialCompletion from '#models/tutorial_completion'
 import Streak from '#models/streak'
-import User from '#models/user'
 
 interface KeyMetric {
   type: MetricType
@@ -87,21 +86,13 @@ export default class StatisticsService {
   }
 
   /**
-   * Get 3 key metrics for the user based on their strategy
+   * Get 3 key metrics for the user
    */
   async getKeyMetrics(userId: number): Promise<KeyMetric[]> {
-    const user = await User.query()
-      .where('id', userId)
-      .preload('restaurant')
-      .first()
-
-    const strategyId = user?.restaurant?.strategyId
-
     // Calculate current totals
     const metrics = await this.calculateAllMetrics(userId)
 
-    // Select 3 key metrics based on strategy
-    // Default metrics if no specific strategy
+    // Return default key metrics
     const keyMetrics: KeyMetric[] = [
       {
         type: 'missions_completed',
@@ -123,12 +114,6 @@ export default class StatisticsService {
       },
     ]
 
-    // Customize based on strategy (can be expanded later)
-    if (strategyId) {
-      // For now, use default metrics
-      // Future: customize based on strategy type
-    }
-
     return keyMetrics
   }
 
@@ -149,7 +134,7 @@ export default class StatisticsService {
       .orderBy('recorded_at', 'asc')
 
     return stats.map((stat) => ({
-      date: stat.recordedAt.toISODate()!,
+      date: stat.recordedAt.toISODate() ?? stat.recordedAt.toISO()?.split('T')[0] ?? '',
       value: stat.value,
     }))
   }
