@@ -41,6 +41,7 @@ export default class MissionsController {
     const mission = await Mission.query()
       .where('id', missionId)
       .where('user_id', user.id)
+      .preload('missionTemplate')
       .first()
 
     if (!mission) {
@@ -48,6 +49,12 @@ export default class MissionsController {
       return response.redirect().toRoute('missions.today')
     }
 
+    // For tuto missions, redirect to the tutorial
+    if (mission.missionTemplate.type === 'tuto' && mission.missionTemplate.tutorialId) {
+      return response.redirect().toRoute('tutorials.show', { id: mission.missionTemplate.tutorialId })
+    }
+
+    // For publication missions, redirect to photo capture
     return response.redirect().toRoute('missions.photo', { id: missionId })
   }
 

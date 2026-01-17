@@ -4,6 +4,7 @@ import type { BelongsTo, HasMany } from '@adonisjs/lucid/types/relations'
 import Strategy from './strategy.js'
 import Mission from './mission.js'
 import ContentIdea from './content_idea.js'
+import Tutorial from './tutorial.js'
 
 export type MissionType = 'post' | 'story' | 'reel' | 'tuto'
 
@@ -29,6 +30,9 @@ export default class MissionTemplate extends BaseModel {
   @column()
   declare isActive: boolean
 
+  @column()
+  declare tutorialId: number | null
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 
@@ -43,4 +47,7 @@ export default class MissionTemplate extends BaseModel {
 
   @hasMany(() => ContentIdea)
   declare contentIdeas: HasMany<typeof ContentIdea>
+
+  @belongsTo(() => Tutorial)
+  declare tutorial: BelongsTo<typeof Tutorial>
 }

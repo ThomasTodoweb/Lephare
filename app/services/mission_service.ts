@@ -233,4 +233,41 @@ export default class MissionService {
       .orderBy('assigned_at', 'desc')
       .limit(limit)
   }
+
+  /**
+   * Complete a tuto mission when a tutorial is completed
+   * Called from TutorialsController when a tutorial is marked as complete
+   */
+  async completeTutoMission(userId: number, tutorialId: number): Promise<{ success: boolean; missionId?: number }> {
+    const today = DateTime.utc().startOf('day')
+    const tomorrow = today.plus({ days: 1 })
+
+    // Find today's pending mission that is a tuto mission linked to this tutorial
+    const mission = await Mission.query()
+      .where('user_id', userId)
+      .where('status', 'pending')
+      .where('assigned_at', '>=', today.toSQL())
+      .where('assigned_at', '<', tomorrow.toSQL())
+      .preload('missionTemplate')
+      .first()
+
+    if (!mission) {
+      return { success: false }
+    }
+
+    // Check if this mission is a tuto mission linked to this tutorial
+    // Ensure tutorialId is not null/undefined before comparing
+    if (
+      mission.missionTemplate.type === 'tuto' &&
+      mission.missionTemplate.tutorialId !== null &&
+      mission.missionTemplate.tutorialId === tutorialId
+    ) {
+      mission.status = 'completed'
+      mission.completedAt = DateTime.now()
+      await mission.save()
+      return { success: true, missionId: mission.id }
+    }
+
+    return { success: false }
+  }
 }

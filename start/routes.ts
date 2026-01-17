@@ -18,6 +18,7 @@ const ProfileController = () => import('#controllers/profile_controller')
 const LaterAuthController = () => import('#controllers/later_auth_controller')
 const MissionsController = () => import('#controllers/missions_controller')
 const PublicationsController = () => import('#controllers/publications_controller')
+const TutorialsController = () => import('#controllers/tutorials_controller')
 
 // Public landing page
 router.on('/').renderInertia('home')
@@ -73,4 +74,12 @@ router.group(() => {
   router.post('/publications/:id/caption', [PublicationsController, 'updateCaption']).as('publications.caption')
   router.post('/publications/:id/publish', [PublicationsController, 'publish']).as('publications.publish')
   router.get('/publications/:id/bravo', [PublicationsController, 'bravo']).as('publications.bravo')
+
+  // Tutorials
+  router.get('/tutorials', [TutorialsController, 'index']).as('tutorials.index')
+  router.get('/tutorials/search', [TutorialsController, 'search']).as('tutorials.search')
+  router.get('/tutorials/:id', [TutorialsController, 'show']).as('tutorials.show')
+  router.post('/tutorials/:id/complete', [TutorialsController, 'complete']).as('tutorials.complete')
+  router.post('/tutorials/:id/feedback', [TutorialsController, 'feedback']).as('tutorials.feedback')
+  router.get('/tutorials/:id/bravo', [TutorialsController, 'bravo']).as('tutorials.bravo')
 }).middleware(middleware.auth())
