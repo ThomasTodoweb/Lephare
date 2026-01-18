@@ -52,4 +52,24 @@ export default await Env.create(new URL('../', import.meta.url), {
   |----------------------------------------------------------
   */
   OPENAI_API_KEY: Env.schema.string.optional(),
+
+  /*
+  |----------------------------------------------------------
+  | Variables for Stripe Payments
+  |----------------------------------------------------------
+  */
+  STRIPE_PUBLISHABLE_KEY: Env.schema.string.optional(),
+  STRIPE_SECRET_KEY: Env.schema.string.optional(),
+  STRIPE_WEBHOOK_SECRET: Env.schema.string.optional(),
+  STRIPE_PRICE_MONTHLY: Env.schema.string.optional(),
+  STRIPE_PRICE_YEARLY: Env.schema.string.optional(),
+
+  /*
+  |----------------------------------------------------------
+  | Variables for Web Push Notifications (VAPID)
+  |----------------------------------------------------------
+  */
+  VAPID_PUBLIC_KEY: Env.schema.string.optional(),
+  VAPID_PRIVATE_KEY: Env.schema.string.optional(),
+  VAPID_SUBJECT: Env.schema.string.optional(),
 })

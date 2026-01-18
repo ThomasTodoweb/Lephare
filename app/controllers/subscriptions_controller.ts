@@ -1,5 +1,6 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import StripeService from '#services/stripe_service'
+import logger from '@adonisjs/core/services/logger'
 
 export default class SubscriptionsController {
   private stripeService = new StripeService()
@@ -110,54 +111,59 @@ export default class SubscriptionsController {
   }
 
   /**
-   * Handle Stripe webhook
-   *
-   * FIXME: CRITICAL BEFORE PRODUCTION
-   * Enable signature verification below by:
-   * 1. Installing stripe: npm install stripe
-   * 2. Adding STRIPE_WEBHOOK_SECRET to .env
-   * 3. Uncommenting the verification block
-   * Without this, webhooks can be forged by attackers!
+   * Create billing portal session for self-service management
+   */
+  async billingPortal({ request, response, auth }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const baseUrl = request.header('origin') || 'http://localhost:3333'
+    const returnUrl = `${baseUrl}/subscription`
+
+    const portalUrl = await this.stripeService.createBillingPortalSession(user.id, returnUrl)
+
+    if (!portalUrl) {
+      return response.badRequest({ error: 'Unable to create billing portal session' })
+    }
+
+    return response.json({ url: portalUrl })
+  }
+
+  /**
+   * Handle Stripe webhook with signature verification
    */
   async webhook({ request, response }: HttpContext) {
-    const body = request.body()
     const signature = request.header('stripe-signature')
+    const webhookSecret = this.stripeService.getWebhookSecret()
 
-    // FIXME: Uncomment in production to verify webhook signature
-    // const webhookSecret = env.get('STRIPE_WEBHOOK_SECRET')
-    // if (webhookSecret && signature) {
-    //   try {
-    //     const stripe = require('stripe')(env.get('STRIPE_SECRET_KEY'))
-    //     const event = stripe.webhooks.constructEvent(request.raw(), signature, webhookSecret)
-    //     await this.stripeService.handleWebhook(event)
-    //     return response.json({ received: true })
-    //   } catch (err) {
-    //     console.error('Webhook signature verification failed:', err)
-    //     return response.badRequest({ error: 'Invalid signature' })
-    //   }
-    // }
+    // Verify we have the webhook secret configured
+    if (!webhookSecret) {
+      logger.error('STRIPE_WEBHOOK_SECRET not configured')
+      return response.internalServerError({ error: 'Webhook not configured' })
+    }
 
-    // Development mode: accept without signature (with warning)
+    // Verify signature is present
     if (!signature) {
-      console.warn('⚠️ Webhook received without signature - OK in dev, MUST be fixed in production')
-    }
-
-    // Validate webhook event structure
-    if (!body.type || !body.data) {
-      return response.badRequest({ error: 'Invalid webhook payload' })
-    }
-
-    const event = {
-      type: body.type as string,
-      data: body.data as { object: Record<string, unknown> },
+      logger.warn('Webhook received without signature')
+      return response.badRequest({ error: 'Missing stripe-signature header' })
     }
 
     try {
+      // Get raw body for signature verification
+      const rawBody = request.raw()
+      if (!rawBody) {
+        logger.error('Could not get raw request body')
+        return response.badRequest({ error: 'Invalid request body' })
+      }
+
+      // Verify and construct the event
+      const event = this.stripeService.constructWebhookEvent(rawBody, signature)
+
+      // Process the webhook
       await this.stripeService.handleWebhook(event)
+
       return response.json({ received: true })
     } catch (error) {
-      console.error('Webhook error:', error)
-      return response.badRequest({ error: 'Webhook processing failed' })
+      logger.error({ error }, 'Webhook signature verification failed')
+      return response.badRequest({ error: 'Invalid signature' })
     }
   }
 

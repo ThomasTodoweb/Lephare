@@ -1,8 +1,11 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import User from '#models/user'
 import { registerValidator, loginValidator } from '#validators/auth'
+import StripeService from '#services/stripe_service'
 
 export default class AuthController {
+  private stripeService = new StripeService()
+
   async showRegister({ inertia }: HttpContext) {
     return inertia.render('auth/register')
   }
@@ -15,6 +18,9 @@ export default class AuthController {
       password: data.password,
       role: 'user',
     })
+
+    // Create 7-day free trial subscription
+    await this.stripeService.createTrialSubscription(user.id, 7)
 
     await auth.use('web').login(user)
 

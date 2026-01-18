@@ -30,6 +30,7 @@ const AdminTemplatesController = () => import('#controllers/admin/templates_cont
 const AdminTutorialsController = () => import('#controllers/admin/tutorials_controller')
 const AdminAlertsController = () => import('#controllers/admin/alerts_controller')
 const AdminReportsController = () => import('#controllers/admin/reports_controller')
+const AdminSubscriptionsController = () => import('#controllers/admin/subscriptions_controller')
 
 // Public landing page
 router.on('/').renderInertia('home')
@@ -120,6 +121,7 @@ router.group(() => {
   router.post('/subscription/checkout', [SubscriptionsController, 'createCheckout']).as('subscription.checkout')
   router.get('/subscription/success', [SubscriptionsController, 'success']).as('subscription.success')
   router.post('/subscription/cancel', [SubscriptionsController, 'cancel']).as('subscription.cancel')
+  router.post('/subscription/billing-portal', [SubscriptionsController, 'billingPortal']).as('subscription.billingPortal')
   router.get('/subscription/public-key', [SubscriptionsController, 'publicKey']).as('subscription.publicKey')
 }).middleware(middleware.auth())
 
@@ -178,4 +180,13 @@ router.group(() => {
   // Admin Reports (FR49)
   router.get('/reports', [AdminReportsController, 'index']).as('admin.reports.index')
   router.get('/reports/export', [AdminReportsController, 'export']).as('admin.reports.export')
+
+  // Admin Subscriptions Management
+  router.get('/subscriptions', [AdminSubscriptionsController, 'index']).as('admin.subscriptions.index')
+  router.get('/subscriptions/:id', [AdminSubscriptionsController, 'show']).as('admin.subscriptions.show')
+  router.post('/subscriptions/:id/extend-trial', [AdminSubscriptionsController, 'extendTrial']).as('admin.subscriptions.extendTrial')
+  router.post('/subscriptions/:id/grant-premium', [AdminSubscriptionsController, 'grantPremium']).as('admin.subscriptions.grantPremium')
+  router.post('/subscriptions/:id/revoke', [AdminSubscriptionsController, 'revoke']).as('admin.subscriptions.revoke')
+  router.post('/subscriptions/:id/reactivate', [AdminSubscriptionsController, 'reactivate']).as('admin.subscriptions.reactivate')
+  router.get('/api/subscriptions/stats', [AdminSubscriptionsController, 'stats']).as('admin.api.subscriptions.stats')
 }).prefix('/admin').middleware([middleware.auth(), middleware.admin()])

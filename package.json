@@ -75,7 +75,8 @@
     "pg": "^8.17.1",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
-    "reflect-metadata": "^0.2.2"
+    "reflect-metadata": "^0.2.2",
+    "stripe": "^20.2.0"
   },
   "hotHook": {
     "boundaries": [
