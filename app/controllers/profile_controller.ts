@@ -11,7 +11,7 @@ export default class ProfileController {
    * Show user profile page
    */
   async index({ inertia, auth }: HttpContext) {
-    const user = auth.user!
+    const user = auth.getUserOrFail()
     await user.load('restaurant')
     await user.load('instagramConnection')
 
@@ -60,7 +60,7 @@ export default class ProfileController {
    * Disconnect Instagram account
    */
   async disconnectInstagram({ response, auth, session }: HttpContext) {
-    const user = auth.user!
+    const user = auth.getUserOrFail()
     const laterService = new LaterService()
 
     await laterService.deleteConnection(user.id)
@@ -74,7 +74,7 @@ export default class ProfileController {
    * Initiate Instagram reconnection (redirect to OAuth)
    */
   async reconnectInstagram({ response, auth, session }: HttpContext) {
-    const user = auth.user!
+    const user = auth.getUserOrFail()
     const laterService = new LaterService()
 
     if (!laterService.isConfigured()) {

@@ -20,7 +20,7 @@ export default class NotificationsController {
    * Subscribe to push notifications
    */
   async subscribe({ request, response, auth }: HttpContext) {
-    const user = auth.user!
+    const user = auth.getUserOrFail()
     const { subscription, reminderTime } = request.only(['subscription', 'reminderTime'])
 
     if (!subscription || !subscription.endpoint || !subscription.keys) {
@@ -67,7 +67,7 @@ export default class NotificationsController {
    * Update reminder time
    */
   async updateSettings({ request, response, auth }: HttpContext) {
-    const user = auth.user!
+    const user = auth.getUserOrFail()
     const { reminderTime } = request.only(['reminderTime'])
 
     // Validate time format HH:MM
@@ -85,7 +85,7 @@ export default class NotificationsController {
    * Test push notification (for debugging)
    */
   async test({ response, auth }: HttpContext) {
-    const user = auth.user!
+    const user = auth.getUserOrFail()
     const pushService = new PushService()
 
     if (!pushService.isConfigured()) {

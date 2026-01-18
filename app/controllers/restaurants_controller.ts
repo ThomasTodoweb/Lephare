@@ -4,7 +4,7 @@ import { restaurantTypeValidator } from '#validators/restaurant'
 
 export default class RestaurantsController {
   async showTypeChoice({ inertia, auth, response }: HttpContext) {
-    const user = auth.user!
+    const user = auth.getUserOrFail()
     const existingRestaurant = await user.related('restaurant').query().first()
 
     if (existingRestaurant) {
@@ -15,7 +15,7 @@ export default class RestaurantsController {
   }
 
   async storeType({ request, response, auth }: HttpContext) {
-    const user = auth.user!
+    const user = auth.getUserOrFail()
 
     const existingRestaurant = await user.related('restaurant').query().first()
     if (existingRestaurant) {

@@ -15,7 +15,7 @@ export default class PublicationsController {
    * Show photo capture/upload page
    */
   async photo({ inertia, auth, params }: HttpContext) {
-    const user = auth.user!
+    const user = auth.getUserOrFail()
     const missionId = params.id
 
     const mission = await Mission.query()
@@ -44,7 +44,7 @@ export default class PublicationsController {
    * Handle photo upload
    */
   async uploadPhoto({ request, response, auth, params, session }: HttpContext) {
-    const user = auth.user!
+    const user = auth.getUserOrFail()
     const missionId = params.id
 
     const mission = await Mission.query()
@@ -91,7 +91,7 @@ export default class PublicationsController {
    * Show description editing page
    */
   async description({ inertia, auth, params }: HttpContext) {
-    const user = auth.user!
+    const user = auth.getUserOrFail()
     const publicationId = params.id
 
     const publication = await Publication.query()
@@ -146,7 +146,7 @@ export default class PublicationsController {
    * Update caption
    */
   async updateCaption({ request, response, auth, params, session }: HttpContext) {
-    const user = auth.user!
+    const user = auth.getUserOrFail()
     const publicationId = params.id
 
     const publication = await Publication.query()
@@ -170,7 +170,7 @@ export default class PublicationsController {
    * Publish to Instagram
    */
   async publish({ response, auth, params, session }: HttpContext) {
-    const user = auth.user!
+    const user = auth.getUserOrFail()
     const publicationId = params.id
 
     const publication = await Publication.query()
@@ -225,7 +225,7 @@ export default class PublicationsController {
    * Show bravo/celebration page
    */
   async bravo({ inertia, auth, params }: HttpContext) {
-    const user = auth.user!
+    const user = auth.getUserOrFail()
     const publicationId = params.id
 
     const publication = await Publication.query()

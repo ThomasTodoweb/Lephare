@@ -7,7 +7,7 @@ export default class StatisticsController {
    * Show statistics dashboard
    */
   async index({ inertia, auth }: HttpContext) {
-    const user = auth.user!
+    const user = auth.getUserOrFail()
     const statsService = new StatisticsService()
 
     const keyMetrics = await statsService.getKeyMetrics(user.id)
@@ -25,7 +25,7 @@ export default class StatisticsController {
    * Get evolution data for a specific metric
    */
   async evolution({ request, response, auth }: HttpContext) {
-    const user = auth.user!
+    const user = auth.getUserOrFail()
     const metricTypeInput = request.input('metric', 'missions_completed')
     const days = Number(request.input('days', 30))
 
@@ -59,7 +59,7 @@ export default class StatisticsController {
    * Get activity summary
    */
   async summary({ response, auth }: HttpContext) {
-    const user = auth.user!
+    const user = auth.getUserOrFail()
     const statsService = new StatisticsService()
 
     const summary = await statsService.getActivitySummary(user.id)

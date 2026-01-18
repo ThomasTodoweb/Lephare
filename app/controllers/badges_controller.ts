@@ -6,7 +6,7 @@ export default class BadgesController {
    * Show user's badge collection
    */
   async index({ inertia, auth }: HttpContext) {
-    const user = auth.user!
+    const user = auth.getUserOrFail()
     const gamificationService = new GamificationService()
 
     const userBadges = await gamificationService.getUserBadges(user.id)

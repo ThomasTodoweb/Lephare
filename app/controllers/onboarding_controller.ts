@@ -8,7 +8,7 @@ export default class OnboardingController {
    * Show strategy selection page
    */
   async showStrategy({ inertia, auth, response }: HttpContext) {
-    const user = auth.user!
+    const user = auth.getUserOrFail()
     const restaurant = await user.related('restaurant').query().first()
 
     if (!restaurant) {
@@ -37,7 +37,7 @@ export default class OnboardingController {
    * Store selected strategy
    */
   async storeStrategy({ request, response, auth, session }: HttpContext) {
-    const user = auth.user!
+    const user = auth.getUserOrFail()
     const restaurant = await user.related('restaurant').query().first()
 
     if (!restaurant) {
@@ -58,7 +58,7 @@ export default class OnboardingController {
    * Show publication rhythm selection page
    */
   async showRhythm({ inertia, auth, response }: HttpContext) {
-    const user = auth.user!
+    const user = auth.getUserOrFail()
     const restaurant = await user.related('restaurant').query().first()
 
     if (!restaurant) {
@@ -83,7 +83,7 @@ export default class OnboardingController {
    * Store selected rhythm
    */
   async storeRhythm({ request, response, auth, session }: HttpContext) {
-    const user = auth.user!
+    const user = auth.getUserOrFail()
     const restaurant = await user.related('restaurant').query().first()
 
     if (!restaurant) {
@@ -104,7 +104,7 @@ export default class OnboardingController {
    * Show Instagram connection page
    */
   async showInstagram({ inertia, auth, response }: HttpContext) {
-    const user = auth.user!
+    const user = auth.getUserOrFail()
     const restaurant = await user.related('restaurant').query().first()
     const instagramConnection = await user.related('instagramConnection').query().first()
 
@@ -130,7 +130,7 @@ export default class OnboardingController {
    * Skip Instagram connection (optional)
    */
   async skipInstagram({ response, auth, session }: HttpContext) {
-    const user = auth.user!
+    const user = auth.getUserOrFail()
     const restaurant = await user.related('restaurant').query().first()
 
     if (!restaurant) {
@@ -149,7 +149,7 @@ export default class OnboardingController {
    * Complete onboarding after Instagram connection
    */
   async complete({ response, auth, session }: HttpContext) {
-    const user = auth.user!
+    const user = auth.getUserOrFail()
     const restaurant = await user.related('restaurant').query().first()
 
     if (!restaurant) {

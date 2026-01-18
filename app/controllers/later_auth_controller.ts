@@ -7,7 +7,7 @@ export default class LaterAuthController {
    * Redirect to Later OAuth authorization
    */
   async redirect({ response, auth, session }: HttpContext) {
-    const user = auth.user!
+    const user = auth.getUserOrFail()
     const laterService = new LaterService()
 
     if (!laterService.isConfigured()) {

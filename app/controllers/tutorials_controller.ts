@@ -10,7 +10,7 @@ export default class TutorialsController {
    * List all tutorial categories with their tutorials
    */
   async index({ inertia, auth }: HttpContext) {
-    const user = auth.user!
+    const user = auth.getUserOrFail()
 
     const categories = await TutorialCategory.query()
       .where('is_active', true)
@@ -54,7 +54,7 @@ export default class TutorialsController {
    * Search tutorials
    */
   async search({ request, inertia, auth }: HttpContext) {
-    const user = auth.user!
+    const user = auth.getUserOrFail()
     const query = request.input('q', '').trim()
 
     let tutorials: Tutorial[] = []
@@ -97,7 +97,7 @@ export default class TutorialsController {
    * Show tutorial detail
    */
   async show({ inertia, auth, params }: HttpContext) {
-    const user = auth.user!
+    const user = auth.getUserOrFail()
     const tutorialId = Number(params.id)
 
     if (Number.isNaN(tutorialId)) {
@@ -140,7 +140,7 @@ export default class TutorialsController {
    * Mark tutorial as completed
    */
   async complete({ response, auth, params, session }: HttpContext) {
-    const user = auth.user!
+    const user = auth.getUserOrFail()
     const tutorialId = Number(params.id)
 
     if (Number.isNaN(tutorialId)) {
@@ -191,7 +191,7 @@ export default class TutorialsController {
    * Show bravo page for completed tutorial mission
    */
   async bravo({ inertia, auth, params }: HttpContext) {
-    const user = auth.user!
+    const user = auth.getUserOrFail()
     const tutorialId = Number(params.id)
 
     if (Number.isNaN(tutorialId)) {
@@ -228,7 +228,7 @@ export default class TutorialsController {
    * Submit feedback for a tutorial
    */
   async feedback({ request, response, auth, params, session }: HttpContext) {
-    const user = auth.user!
+    const user = auth.getUserOrFail()
     const tutorialId = Number(params.id)
 
     if (Number.isNaN(tutorialId)) {

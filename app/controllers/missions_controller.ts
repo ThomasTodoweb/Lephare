@@ -7,7 +7,7 @@ export default class MissionsController {
    * Show today's mission page
    */
   async today({ inertia, auth }: HttpContext) {
-    const user = auth.user!
+    const user = auth.getUserOrFail()
     const missionService = new MissionService()
 
     const mission = await missionService.getTodayMission(user.id)
@@ -34,7 +34,7 @@ export default class MissionsController {
    * Accept mission and start the flow
    */
   async accept({ response, auth, params, session }: HttpContext) {
-    const user = auth.user!
+    const user = auth.getUserOrFail()
     const missionId = Number(params.id)
 
     // Verify user owns this mission before redirecting
@@ -62,7 +62,7 @@ export default class MissionsController {
    * Skip today's mission
    */
   async skip({ response, auth, params, session }: HttpContext) {
-    const user = auth.user!
+    const user = auth.getUserOrFail()
     const missionService = new MissionService()
 
     const result = await missionService.skipMission(Number(params.id), user.id)
@@ -80,7 +80,7 @@ export default class MissionsController {
    * Reload mission (get a different one)
    */
   async reload({ response, auth, params, session }: HttpContext) {
-    const user = auth.user!
+    const user = auth.getUserOrFail()
     const missionService = new MissionService()
 
     const result = await missionService.reloadMission(Number(params.id), user.id)
@@ -98,7 +98,7 @@ export default class MissionsController {
    * Show mission history
    */
   async history({ inertia, auth }: HttpContext) {
-    const user = auth.user!
+    const user = auth.getUserOrFail()
     const missionService = new MissionService()
 
     const missions = await missionService.getMissionHistory(user.id)

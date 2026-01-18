@@ -111,13 +111,19 @@ export default class SubscriptionsController {
 
   /**
    * Handle Stripe webhook
-   * In production, this should verify the Stripe signature
+   *
+   * FIXME: CRITICAL BEFORE PRODUCTION
+   * Enable signature verification below by:
+   * 1. Installing stripe: npm install stripe
+   * 2. Adding STRIPE_WEBHOOK_SECRET to .env
+   * 3. Uncommenting the verification block
+   * Without this, webhooks can be forged by attackers!
    */
   async webhook({ request, response }: HttpContext) {
     const body = request.body()
     const signature = request.header('stripe-signature')
 
-    // In production, verify the webhook signature
+    // FIXME: Uncomment in production to verify webhook signature
     // const webhookSecret = env.get('STRIPE_WEBHOOK_SECRET')
     // if (webhookSecret && signature) {
     //   try {

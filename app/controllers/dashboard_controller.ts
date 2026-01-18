@@ -4,7 +4,7 @@ import GamificationService from '#services/gamification_service'
 
 export default class DashboardController {
   async index({ inertia, auth, response }: HttpContext) {
-    const user = auth.user!
+    const user = auth.getUserOrFail()
     const restaurant = await user.related('restaurant').query().first()
 
     if (!restaurant) {

@@ -35,11 +35,12 @@ const AdminReportsController = () => import('#controllers/admin/reports_controll
 router.on('/').renderInertia('home')
 
 // Auth routes (guest only - redirect to dashboard if logged in)
+// Rate limited to prevent brute force attacks (5 attempts per 15 min)
 router.group(() => {
   router.get('/register', [AuthController, 'showRegister']).as('register')
-  router.post('/register', [AuthController, 'register'])
+  router.post('/register', [AuthController, 'register']).middleware(middleware.throttle())
   router.get('/login', [AuthController, 'showLogin']).as('login')
-  router.post('/login', [AuthController, 'login'])
+  router.post('/login', [AuthController, 'login']).middleware(middleware.throttle())
 }).middleware(middleware.guest())
 
 // Logout route (auth required)

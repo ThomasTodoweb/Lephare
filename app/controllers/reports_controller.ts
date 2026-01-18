@@ -11,7 +11,7 @@ export default class ReportsController {
    * Show list of weekly reports
    */
   async index({ inertia, auth }: HttpContext) {
-    const user = auth.user!
+    const user = auth.getUserOrFail()
 
     const reports = await WeeklyReport.query()
       .where('user_id', user.id)
@@ -38,7 +38,7 @@ export default class ReportsController {
    * Show a specific weekly report
    */
   async show({ inertia, auth, params, response }: HttpContext) {
-    const user = auth.user!
+    const user = auth.getUserOrFail()
     const reportId = Number(params.id)
 
     if (Number.isNaN(reportId)) {
@@ -76,7 +76,7 @@ export default class ReportsController {
    * Generate a weekly report for the current user (called by cron job or manually)
    */
   async generate({ auth, response, session }: HttpContext) {
-    const user = auth.user!
+    const user = auth.getUserOrFail()
     await user.load('restaurant')
 
     // Get the start of last week (Monday)
