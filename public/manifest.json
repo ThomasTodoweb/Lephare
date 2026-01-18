@@ -2,7 +2,7 @@
   "name": "LE PHARE",
   "short_name": "LE PHARE",
   "description": "Votre coach Instagram pour restaurateurs",
-  "start_url": "/",
+  "start_url": "/dashboard",
   "display": "standalone",
   "orientation": "portrait",
   "theme_color": "#dd2c0c",

@@ -76,8 +76,8 @@ self.addEventListener('push', (event) => {
   const data = event.data.json()
   const options = {
     body: data.body,
-    icon: data.icon || '/icons/icon-192x192.png',
-    badge: '/icons/icon-192x192.png',
+    icon: data.icon || '/assets/icons/icon-192x192.png',
+    badge: '/assets/icons/icon-192x192.png',
     tag: data.tag || 'lephare-notification',
     data: {
       url: data.url || '/dashboard',

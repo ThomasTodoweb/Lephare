@@ -8,7 +8,7 @@ interface BottomNavProps {
 }
 
 const navItems = [
-  { icon: Home, label: 'Accueil', href: '/', page: 'home' as PageType },
+  { icon: Home, label: 'Accueil', href: '/dashboard', page: 'home' as PageType },
   { icon: Target, label: 'Missions', href: '/missions', page: 'missions' as PageType },
   { icon: BookOpen, label: 'Tutos', href: '/tutorials', page: 'tutorials' as PageType },
   { icon: User, label: 'Profil', href: '/profile', page: 'profile' as PageType },
