@@ -2,6 +2,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 import MissionTemplate from '#models/mission_template'
 import Strategy from '#models/strategy'
 import Tutorial from '#models/tutorial'
+import { createTemplateValidator, updateTemplateValidator } from '#validators/admin'
 
 export default class TemplatesController {
   /**
@@ -61,34 +62,27 @@ export default class TemplatesController {
   }
 
   /**
-   * Store new template
+   * Store new template with validation
    */
   async store({ request, response }: HttpContext) {
-    const data = request.only([
-      'strategyId',
-      'type',
-      'title',
-      'contentIdea',
-      'order',
-      'isActive',
-      'tutorialId',
-    ])
+    const data = await request.validateUsing(createTemplateValidator)
 
     // Get max order for this strategy if not provided
-    if (!data.order) {
+    let order = data.order
+    if (!order) {
       const maxOrder = await MissionTemplate.query()
         .where('strategy_id', data.strategyId)
         .max('order as max')
         .first()
-      data.order = (maxOrder?.$extras.max || 0) + 1
+      order = (maxOrder?.$extras.max || 0) + 1
     }
 
     await MissionTemplate.create({
       strategyId: data.strategyId,
       type: data.type,
       title: data.title,
-      contentIdea: data.contentIdea,
-      order: data.order,
+      contentIdea: data.contentIdea || '',
+      order,
       isActive: data.isActive ?? true,
       tutorialId: data.tutorialId || null,
     })
@@ -129,30 +123,27 @@ export default class TemplatesController {
   }
 
   /**
-   * Update template
+   * Update template with validation
    */
   async update({ request, response, params }: HttpContext) {
-    const template = await MissionTemplate.find(params.id)
+    const templateId = Number(params.id)
+    if (Number.isNaN(templateId) || templateId <= 0) {
+      return response.badRequest({ error: 'ID invalide' })
+    }
+
+    const template = await MissionTemplate.find(templateId)
 
     if (!template) {
       return response.notFound({ error: 'Template non trouvé' })
     }
 
-    const data = request.only([
-      'strategyId',
-      'type',
-      'title',
-      'contentIdea',
-      'order',
-      'isActive',
-      'tutorialId',
-    ])
+    const data = await request.validateUsing(updateTemplateValidator)
 
     template.merge({
       strategyId: data.strategyId,
       type: data.type,
       title: data.title,
-      contentIdea: data.contentIdea,
+      contentIdea: data.contentIdea ?? '',
       order: data.order,
       isActive: data.isActive,
       tutorialId: data.tutorialId || null,

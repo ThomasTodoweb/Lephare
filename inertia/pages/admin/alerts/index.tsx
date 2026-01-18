@@ -71,35 +71,31 @@ export default function AdminAlertsIndex({ stats, targets }: Props) {
     }
   }
 
-  const sendAlert = async (userId: number, alertType: string) => {
+  const sendAlert = (userId: number, alertType: string) => {
     setSending(true)
-    try {
-      await fetch('/admin/alerts/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, alertType }),
-      })
-      router.reload()
-    } finally {
-      setSending(false)
-    }
+    router.post(
+      '/admin/alerts/send',
+      { userId, alertType },
+      {
+        preserveState: true,
+        onFinish: () => setSending(false),
+      }
+    )
   }
 
-  const sendBulkAlerts = async () => {
+  const sendBulkAlerts = () => {
     if (selectedIds.length === 0) return
 
     setSending(true)
-    try {
-      await fetch('/admin/alerts/send-bulk', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userIds: selectedIds, alertType: 'inactive' }),
-      })
-      setSelectedIds([])
-      router.reload()
-    } finally {
-      setSending(false)
-    }
+    router.post(
+      '/admin/alerts/send-bulk',
+      { userIds: selectedIds, alertType: 'inactive' },
+      {
+        preserveState: true,
+        onSuccess: () => setSelectedIds([]),
+        onFinish: () => setSending(false),
+      }
+    )
   }
 
   return (

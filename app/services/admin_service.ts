@@ -219,6 +219,7 @@ export default class AdminService {
 
   /**
    * Get list of users with filtering
+   * Optimized with preload and subquery to avoid N+1
    */
   async getUsers(options: {
     page?: number
@@ -232,8 +233,10 @@ export default class AdminService {
     let query = User.query().where('role', 'user')
 
     if (search) {
+      // Sanitize search input to prevent injection
+      const sanitizedSearch = search.slice(0, 100).replace(/[%_]/g, '\\$&')
       query = query.where((q) => {
-        q.whereILike('email', `%${search}%`).orWhereILike('full_name', `%${search}%`)
+        q.whereILike('email', `%${sanitizedSearch}%`).orWhereILike('full_name', `%${sanitizedSearch}%`)
       })
     }
 
@@ -246,28 +249,21 @@ export default class AdminService {
     const totalResult = await query.clone().count('* as total').first()
     const total = Number(totalResult?.$extras.total || 0)
 
+    // Preload subscription to avoid N+1
     const users = await query
+      .preload('subscription')
+      .withCount('missions', (q) => q.where('status', 'completed').as('missions_completed'))
       .orderBy('created_at', 'desc')
       .offset((page - 1) * limit)
       .limit(limit)
 
-    // Get additional data for each user
-    const userList: UserListItem[] = []
-
-    for (const user of users) {
-      const missionsCompleted = await Mission.query()
-        .where('user_id', user.id)
-        .where('status', 'completed')
-        .count('* as total')
-        .first()
-
-      const subscription = await Subscription.query().where('user_id', user.id).first()
-
+    // Map users without additional queries
+    const userList: UserListItem[] = users.map((user) => {
       const isActive = user.updatedAt
         ? user.updatedAt >= thirtyDaysAgo
         : user.createdAt >= thirtyDaysAgo
 
-      userList.push({
+      return {
         id: user.id,
         fullName: user.fullName,
         email: user.email,
@@ -275,10 +271,10 @@ export default class AdminService {
         createdAt: user.createdAt.toISO() || '',
         lastActivity: user.updatedAt?.toISO() || null,
         isActive,
-        missionsCompleted: Number(missionsCompleted?.$extras.total || 0),
-        subscriptionStatus: subscription?.status || null,
-      })
-    }
+        missionsCompleted: Number(user.$extras.missions_completed || 0),
+        subscriptionStatus: user.subscription?.status || null,
+      }
+    })
 
     return {
       users: userList,

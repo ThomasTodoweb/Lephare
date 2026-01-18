@@ -23,14 +23,15 @@ export default class AdminController {
    * Users list with filtering (FR39)
    */
   async users({ inertia, request }: HttpContext) {
-    const page = Number(request.input('page', 1))
+    const rawPage = Number(request.input('page', 1))
+    const page = Number.isNaN(rawPage) || rawPage < 1 ? 1 : rawPage
     const filter = request.input('filter', 'all') as 'all' | 'active' | 'inactive'
-    const search = request.input('search', '')
+    const search = request.input('search', '') as string
 
     const result = await this.adminService.getUsers({
       page,
       filter,
-      search,
+      search: search.slice(0, 100), // Limit search length
       limit: 20,
     })
 
@@ -46,6 +47,11 @@ export default class AdminController {
    */
   async userDetail({ inertia, params }: HttpContext) {
     const userId = Number(params.id)
+
+    if (Number.isNaN(userId) || userId <= 0) {
+      return inertia.render('admin/users/not-found')
+    }
+
     const result = await this.adminService.getUserDetail(userId)
 
     if (!result) {
@@ -60,6 +66,11 @@ export default class AdminController {
    */
   async userStats({ response, params }: HttpContext) {
     const userId = Number(params.id)
+
+    if (Number.isNaN(userId) || userId <= 0) {
+      return response.badRequest({ error: 'Invalid user ID' })
+    }
+
     const result = await this.adminService.getUserDetail(userId)
 
     if (!result) {
@@ -90,7 +101,8 @@ export default class AdminController {
    * API: Get user growth data
    */
   async growth({ response, request }: HttpContext) {
-    const days = Number(request.input('days', 30))
+    const rawDays = Number(request.input('days', 30))
+    const days = Number.isNaN(rawDays) || rawDays < 1 ? 30 : Math.min(rawDays, 365)
     const growth = await this.adminService.getUserGrowth(days)
     return response.json({ growth })
   }
@@ -99,7 +111,8 @@ export default class AdminController {
    * API: Get recent activity
    */
   async activity({ response, request }: HttpContext) {
-    const limit = Number(request.input('limit', 20))
+    const rawLimit = Number(request.input('limit', 20))
+    const limit = Number.isNaN(rawLimit) || rawLimit < 1 ? 20 : Math.min(rawLimit, 100)
     const activity = await this.adminService.getRecentActivity(limit)
     return response.json({ activity })
   }

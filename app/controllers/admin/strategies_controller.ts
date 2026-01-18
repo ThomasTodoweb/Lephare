@@ -1,6 +1,9 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import Strategy from '#models/strategy'
 import { DateTime } from 'luxon'
+import db from '@adonisjs/lucid/services/db'
+import { createStrategyValidator, updateStrategyValidator } from '#validators/admin'
+import audit from '#services/audit_service'
 
 export default class StrategiesController {
   /**
@@ -35,23 +38,48 @@ export default class StrategiesController {
   }
 
   /**
-   * Store new strategy
+   * Store new strategy with validation and race condition protection
    */
   async store({ request, response }: HttpContext) {
-    const data = request.only(['name', 'slug', 'description', 'icon', 'isActive'])
+    const data = await request.validateUsing(createStrategyValidator)
 
-    // Validate slug uniqueness
-    const existing = await Strategy.findBy('slug', data.slug)
-    if (existing) {
+    // Use transaction to prevent race condition on slug uniqueness
+    const strategy = await db.transaction(async (trx) => {
+      const existing = await Strategy.query({ client: trx })
+        .where('slug', data.slug)
+        .forUpdate()
+        .first()
+
+      if (existing) {
+        throw new Error('SLUG_EXISTS')
+      }
+
+      return await Strategy.create(
+        {
+          name: data.name,
+          slug: data.slug,
+          description: data.description || '',
+          icon: data.icon || '📌',
+          isActive: data.isActive ?? true,
+        },
+        { client: trx }
+      )
+    }).catch((err) => {
+      if (err.message === 'SLUG_EXISTS') {
+        return null
+      }
+      throw err
+    })
+
+    if (!strategy) {
       return response.badRequest({ error: 'Ce slug est déjà utilisé' })
     }
 
-    await Strategy.create({
-      name: data.name,
-      slug: data.slug,
-      description: data.description,
-      icon: data.icon || '📌',
-      isActive: data.isActive ?? true,
+    // Audit log
+    audit.log('strategy_create', 0, {
+      targetId: strategy.id,
+      targetType: 'strategy',
+      details: { name: strategy.name, slug: strategy.slug },
     })
 
     return response.redirect('/admin/strategies')
@@ -80,35 +108,66 @@ export default class StrategiesController {
   }
 
   /**
-   * Update strategy
+   * Update strategy with validation and race condition protection
    */
   async update({ request, response, params }: HttpContext) {
-    const strategy = await Strategy.find(params.id)
+    const strategyId = Number(params.id)
+    if (Number.isNaN(strategyId)) {
+      return response.badRequest({ error: 'ID invalide' })
+    }
 
-    if (!strategy) {
+    const data = await request.validateUsing(updateStrategyValidator)
+
+    // Use transaction to prevent race condition on slug uniqueness
+    const result = await db.transaction(async (trx) => {
+      const strategy = await Strategy.query({ client: trx })
+        .where('id', strategyId)
+        .forUpdate()
+        .first()
+
+      if (!strategy) {
+        return { error: 'NOT_FOUND' }
+      }
+
+      // Check slug uniqueness if changed
+      if (data.slug !== strategy.slug) {
+        const existing = await Strategy.query({ client: trx })
+          .where('slug', data.slug)
+          .whereNot('id', strategyId)
+          .first()
+
+        if (existing) {
+          return { error: 'SLUG_EXISTS' }
+        }
+      }
+
+      strategy.merge({
+        name: data.name,
+        slug: data.slug,
+        description: data.description ?? '',
+        icon: data.icon,
+        isActive: data.isActive,
+        updatedAt: DateTime.utc(),
+      })
+
+      await strategy.save()
+      return { success: true }
+    })
+
+    if (result.error === 'NOT_FOUND') {
       return response.notFound({ error: 'Stratégie non trouvée' })
     }
 
-    const data = request.only(['name', 'slug', 'description', 'icon', 'isActive'])
-
-    // Validate slug uniqueness (except for current strategy)
-    if (data.slug !== strategy.slug) {
-      const existing = await Strategy.findBy('slug', data.slug)
-      if (existing) {
-        return response.badRequest({ error: 'Ce slug est déjà utilisé' })
-      }
+    if (result.error === 'SLUG_EXISTS') {
+      return response.badRequest({ error: 'Ce slug est déjà utilisé' })
     }
 
-    strategy.merge({
-      name: data.name,
-      slug: data.slug,
-      description: data.description,
-      icon: data.icon,
-      isActive: data.isActive,
-      updatedAt: DateTime.utc(),
+    // Audit log
+    audit.log('strategy_update', 0, {
+      targetId: strategyId,
+      targetType: 'strategy',
+      details: { name: data.name, slug: data.slug },
     })
-
-    await strategy.save()
 
     return response.redirect('/admin/strategies')
   }
@@ -150,6 +209,13 @@ export default class StrategiesController {
     }
 
     await strategy.delete()
+
+    // Audit log
+    audit.log('strategy_delete', 0, {
+      targetId: strategy.id,
+      targetType: 'strategy',
+      details: { name: strategy.name },
+    })
 
     return response.json({ success: true })
   }

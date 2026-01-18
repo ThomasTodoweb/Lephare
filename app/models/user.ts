@@ -7,6 +7,7 @@ import { withAuthFinder } from '@adonisjs/auth/mixins/lucid'
 import Restaurant from './restaurant.js'
 import InstagramConnection from './instagram_connection.js'
 import Mission from './mission.js'
+import Subscription from './subscription.js'
 
 const AuthFinder = withAuthFinder(() => hash.use('scrypt'), {
   uids: ['email'],
@@ -45,4 +46,7 @@ export default class User extends compose(BaseModel, AuthFinder) {
 
   @hasMany(() => Mission)
   declare missions: HasMany<typeof Mission>
+
+  @hasOne(() => Subscription)
+  declare subscription: HasOne<typeof Subscription>
 }

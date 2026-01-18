@@ -1,13 +1,15 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import Tutorial from '#models/tutorial'
 import TutorialCategory from '#models/tutorial_category'
+import { createTutorialValidator, updateTutorialValidator } from '#validators/admin'
 
 export default class TutorialsController {
   /**
    * List all tutorials (FR46)
    */
   async index({ inertia, request }: HttpContext) {
-    const categoryFilter = request.input('category')
+    const rawCategoryFilter = request.input('category')
+    const categoryFilter = rawCategoryFilter ? Number(rawCategoryFilter) : null
 
     let query = Tutorial.query()
       .preload('category')
@@ -15,7 +17,7 @@ export default class TutorialsController {
       .orderBy('category_id', 'asc')
       .orderBy('order', 'asc')
 
-    if (categoryFilter) {
+    if (categoryFilter && !Number.isNaN(categoryFilter) && categoryFilter > 0) {
       query = query.where('category_id', categoryFilter)
     }
 
@@ -60,27 +62,19 @@ export default class TutorialsController {
   }
 
   /**
-   * Store new tutorial
+   * Store new tutorial with validation
    */
   async store({ request, response }: HttpContext) {
-    const data = request.only([
-      'categoryId',
-      'title',
-      'description',
-      'videoUrl',
-      'contentText',
-      'durationMinutes',
-      'order',
-      'isActive',
-    ])
+    const data = await request.validateUsing(createTutorialValidator)
 
     // Get max order for this category if not provided
-    if (!data.order) {
+    let order = data.order
+    if (!order) {
       const maxOrder = await Tutorial.query()
         .where('category_id', data.categoryId)
         .max('order as max')
         .first()
-      data.order = (maxOrder?.$extras.max || 0) + 1
+      order = (maxOrder?.$extras.max || 0) + 1
     }
 
     await Tutorial.create({
@@ -90,7 +84,7 @@ export default class TutorialsController {
       videoUrl: data.videoUrl || null,
       contentText: data.contentText || null,
       durationMinutes: data.durationMinutes || 5,
-      order: data.order,
+      order,
       isActive: data.isActive ?? true,
     })
 
@@ -101,7 +95,12 @@ export default class TutorialsController {
    * Show edit form
    */
   async edit({ inertia, params }: HttpContext) {
-    const tutorial = await Tutorial.query().where('id', params.id).preload('category').first()
+    const tutorialId = Number(params.id)
+    if (Number.isNaN(tutorialId) || tutorialId <= 0) {
+      return inertia.render('admin/tutorials/not-found')
+    }
+
+    const tutorial = await Tutorial.query().where('id', tutorialId).preload('category').first()
 
     if (!tutorial) {
       return inertia.render('admin/tutorials/not-found')
@@ -128,32 +127,28 @@ export default class TutorialsController {
   }
 
   /**
-   * Update tutorial
+   * Update tutorial with validation
    */
   async update({ request, response, params }: HttpContext) {
-    const tutorial = await Tutorial.find(params.id)
+    const tutorialId = Number(params.id)
+    if (Number.isNaN(tutorialId) || tutorialId <= 0) {
+      return response.badRequest({ error: 'ID invalide' })
+    }
+
+    const tutorial = await Tutorial.find(tutorialId)
 
     if (!tutorial) {
       return response.notFound({ error: 'Tutoriel non trouvé' })
     }
 
-    const data = request.only([
-      'categoryId',
-      'title',
-      'description',
-      'videoUrl',
-      'contentText',
-      'durationMinutes',
-      'order',
-      'isActive',
-    ])
+    const data = await request.validateUsing(updateTutorialValidator)
 
     tutorial.merge({
       categoryId: data.categoryId,
       title: data.title,
-      description: data.description || null,
-      videoUrl: data.videoUrl || null,
-      contentText: data.contentText || null,
+      description: data.description ?? null,
+      videoUrl: data.videoUrl ?? null,
+      contentText: data.contentText ?? null,
       durationMinutes: data.durationMinutes,
       order: data.order,
       isActive: data.isActive,
@@ -168,7 +163,12 @@ export default class TutorialsController {
    * Toggle tutorial active status
    */
   async toggleActive({ response, params }: HttpContext) {
-    const tutorial = await Tutorial.find(params.id)
+    const tutorialId = Number(params.id)
+    if (Number.isNaN(tutorialId) || tutorialId <= 0) {
+      return response.badRequest({ error: 'ID invalide' })
+    }
+
+    const tutorial = await Tutorial.find(tutorialId)
 
     if (!tutorial) {
       return response.notFound({ error: 'Tutoriel non trouvé' })
@@ -184,8 +184,13 @@ export default class TutorialsController {
    * Delete tutorial
    */
   async destroy({ response, params }: HttpContext) {
+    const tutorialId = Number(params.id)
+    if (Number.isNaN(tutorialId) || tutorialId <= 0) {
+      return response.badRequest({ error: 'ID invalide' })
+    }
+
     const tutorial = await Tutorial.query()
-      .where('id', params.id)
+      .where('id', tutorialId)
       .withCount('completions')
       .first()
 
