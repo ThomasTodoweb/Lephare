@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lephare-v1'
+const CACHE_NAME = 'lephare-v3'
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
@@ -39,10 +39,18 @@ self.addEventListener('fetch', (event) => {
   // Skip API calls and external resources
   if (url.pathname.startsWith('/api') || url.origin !== location.origin) return
 
+  // Skip auth/OAuth routes - let browser handle these directly with cookies
+  if (url.pathname.startsWith('/instagram/') ||
+      url.pathname.startsWith('/auth/') ||
+      url.pathname.startsWith('/login') ||
+      url.pathname.startsWith('/logout')) {
+    return
+  }
+
   // Network first for HTML pages
   if (request.mode === 'navigate') {
     event.respondWith(
-      fetch(request).catch(() => caches.match('/'))
+      fetch(request, { credentials: 'same-origin' }).catch(() => caches.match('/'))
     )
     return
   }
@@ -65,7 +73,7 @@ self.addEventListener('fetch', (event) => {
 
   // Default: network first
   event.respondWith(
-    fetch(request).catch(() => caches.match(request))
+    fetch(request, { credentials: 'same-origin' }).catch(() => caches.match(request))
   )
 })
 

@@ -1,7 +1,17 @@
 import { Head, Link, router } from '@inertiajs/react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { AppLayout } from '~/components/layout'
 import { Button, Card } from '~/components/ui'
+
+interface Invoice {
+  id: string
+  number: string | null
+  amount: number
+  currency: string
+  status: string
+  date: string
+  pdfUrl: string | null
+}
 
 interface Pricing {
   monthly: {
@@ -36,10 +46,62 @@ export default function SubscriptionIndex({ subscription, trialInfo, pricing, is
   const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('monthly')
   const [isLoading, setIsLoading] = useState(false)
   const [isCanceling, setIsCanceling] = useState(false)
+  const [isOpeningPortal, setIsOpeningPortal] = useState(false)
+  const [invoices, setInvoices] = useState<Invoice[]>([])
+  const [loadingInvoices, setLoadingInvoices] = useState(false)
 
   const isActive = subscription?.status === 'active'
   const isTrialing = subscription?.status === 'trialing'
   const isCanceled = subscription?.status === 'canceled'
+
+  // Load invoices when component mounts
+  useEffect(() => {
+    if (isActive || isCanceled) {
+      loadInvoices()
+    }
+  }, [isActive, isCanceled])
+
+  const loadInvoices = async () => {
+    setLoadingInvoices(true)
+    try {
+      const response = await fetch('/subscription/invoices')
+      if (response.ok) {
+        const data = await response.json()
+        setInvoices(data.invoices || [])
+      }
+    } catch (error) {
+      console.error('Failed to load invoices:', error)
+    } finally {
+      setLoadingInvoices(false)
+    }
+  }
+
+  const handleOpenBillingPortal = async () => {
+    setIsOpeningPortal(true)
+    try {
+      const response = await fetch('/subscription/billing-portal', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-XSRF-TOKEN': getXsrfToken() || '',
+        },
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        if (data.url) {
+          window.location.href = data.url
+        }
+      } else {
+        alert('Impossible d\'ouvrir le portail de facturation.')
+      }
+    } catch (error) {
+      console.error('Billing portal error:', error)
+      alert('Une erreur est survenue.')
+    } finally {
+      setIsOpeningPortal(false)
+    }
+  }
 
   const handleSubscribe = async () => {
     if (!isConfigured) {
@@ -181,14 +243,69 @@ export default function SubscriptionIndex({ subscription, trialInfo, pricing, is
             </div>
 
             {isActive && (
-              <Button
-                variant="outlined"
-                onClick={handleCancel}
-                disabled={isCanceling}
-                className="w-full mt-4 !border-red-500 !text-red-500"
-              >
-                {isCanceling ? 'Annulation...' : 'Annuler l\'abonnement'}
-              </Button>
+              <div className="space-y-2 mt-4">
+                <Button
+                  variant="outlined"
+                  onClick={handleOpenBillingPortal}
+                  disabled={isOpeningPortal}
+                  className="w-full"
+                >
+                  {isOpeningPortal ? 'Chargement...' : 'Gérer mon abonnement'}
+                </Button>
+                <Button
+                  variant="outlined"
+                  onClick={handleCancel}
+                  disabled={isCanceling}
+                  className="w-full !border-red-500 !text-red-500"
+                >
+                  {isCanceling ? 'Annulation...' : 'Annuler l\'abonnement'}
+                </Button>
+              </div>
+            )}
+          </Card>
+        )}
+
+        {/* Invoices History */}
+        {(isActive || isCanceled) && (
+          <Card className="mb-6">
+            <h2 className="font-bold text-lg text-neutral-900 mb-4">Historique des factures</h2>
+            {loadingInvoices ? (
+              <p className="text-neutral-500 text-sm">Chargement...</p>
+            ) : invoices.length === 0 ? (
+              <p className="text-neutral-500 text-sm">Aucune facture disponible</p>
+            ) : (
+              <div className="space-y-3">
+                {invoices.map((invoice) => (
+                  <div
+                    key={invoice.id}
+                    className="flex items-center justify-between py-2 border-b border-neutral-100 last:border-0"
+                  >
+                    <div>
+                      <p className="font-medium text-neutral-900">
+                        {invoice.number || 'Facture'}
+                      </p>
+                      <p className="text-sm text-neutral-500">
+                        {new Date(invoice.date).toLocaleDateString('fr-FR')}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="font-bold text-neutral-900">
+                        {invoice.amount}€
+                      </span>
+                      {invoice.pdfUrl && (
+                        <a
+                          href={invoice.pdfUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary text-sm hover:underline"
+                        >
+                          PDF
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
           </Card>
         )}

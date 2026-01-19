@@ -41,6 +41,7 @@ export default class MissionService {
 
   /**
    * Prescribe a daily mission based on user's strategy and progress
+   * Always creates a mission - publication missions on rhythm days, engagement/tuto missions otherwise
    */
   async prescribeDailyMission(userId: number): Promise<Mission | null> {
     const user = await User.query()
@@ -55,10 +56,8 @@ export default class MissionService {
     const strategyId = user.restaurant.strategyId
     const publicationRhythm = user.restaurant.publicationRhythm
 
-    // Check if user should have a mission today based on rhythm
-    if (!this.shouldHaveMissionToday(publicationRhythm)) {
-      return null
-    }
+    // Check if today is a publication day based on rhythm
+    const isPublicationDay = this.isPublicationDay(publicationRhythm)
 
     // Get completed mission template IDs for this user
     const completedMissions = await Mission.query()
@@ -68,21 +67,55 @@ export default class MissionService {
 
     const completedTemplateIds = completedMissions.map((m) => m.missionTemplateId)
 
-    // Find next available mission template
-    let template = await MissionTemplate.query()
-      .where('strategy_id', strategyId)
-      .where('is_active', true)
-      .whereNotIn('id', completedTemplateIds.length > 0 ? completedTemplateIds : [0])
-      .orderBy('order', 'asc')
-      .first()
+    let template: MissionTemplate | null = null
 
-    // If all missions completed, cycle back to the first one
-    if (!template) {
+    if (isPublicationDay) {
+      // On publication days: get post/story/reel missions
       template = await MissionTemplate.query()
         .where('strategy_id', strategyId)
         .where('is_active', true)
+        .whereIn('type', ['post', 'story', 'reel'])
+        .whereNotIn('id', completedTemplateIds.length > 0 ? completedTemplateIds : [0])
         .orderBy('order', 'asc')
         .first()
+
+      // If all publication missions completed, cycle back
+      if (!template) {
+        template = await MissionTemplate.query()
+          .where('strategy_id', strategyId)
+          .where('is_active', true)
+          .whereIn('type', ['post', 'story', 'reel'])
+          .orderBy('order', 'asc')
+          .first()
+      }
+    } else {
+      // On non-publication days: get engagement or tuto missions
+      template = await MissionTemplate.query()
+        .where('strategy_id', strategyId)
+        .where('is_active', true)
+        .whereIn('type', ['engagement', 'tuto'])
+        .whereNotIn('id', completedTemplateIds.length > 0 ? completedTemplateIds : [0])
+        .orderByRaw('RANDOM()')
+        .first()
+
+      // If none found, try any engagement/tuto mission
+      if (!template) {
+        template = await MissionTemplate.query()
+          .where('strategy_id', strategyId)
+          .where('is_active', true)
+          .whereIn('type', ['engagement', 'tuto'])
+          .orderByRaw('RANDOM()')
+          .first()
+      }
+
+      // Fallback: if no engagement missions exist, get a regular mission
+      if (!template) {
+        template = await MissionTemplate.query()
+          .where('strategy_id', strategyId)
+          .where('is_active', true)
+          .orderByRaw('RANDOM()')
+          .first()
+      }
     }
 
     if (!template) {
@@ -104,10 +137,10 @@ export default class MissionService {
   }
 
   /**
-   * Check if user should have a mission today based on their rhythm preference
+   * Check if today is a publication day based on rhythm preference
    * Uses UTC for consistency
    */
-  private shouldHaveMissionToday(rhythm: string | null): boolean {
+  private isPublicationDay(rhythm: string | null): boolean {
     if (!rhythm) return true
 
     const dayOfWeek = DateTime.utc().weekday // 1 = Monday, 7 = Sunday
@@ -236,6 +269,7 @@ export default class MissionService {
     return Mission.query()
       .where('user_id', userId)
       .preload('missionTemplate')
+      .preload('publication')
       .orderBy('assigned_at', 'desc')
       .limit(limit)
   }

@@ -50,12 +50,12 @@ updateStrategyValidator.messagesProvider = messages
 
 /**
  * Mission Template validation (FR44)
- * Type must match MissionType: 'post' | 'story' | 'reel' | 'tuto'
+ * Type must match MissionType: 'post' | 'story' | 'reel' | 'tuto' | 'engagement'
  */
 export const createTemplateValidator = vine.compile(
   vine.object({
     strategyId: vine.number().positive(),
-    type: vine.enum(['reel', 'story', 'post', 'tuto'] as const),
+    type: vine.enum(['reel', 'story', 'post', 'tuto', 'engagement'] as const),
     title: vine.string().minLength(3).maxLength(200).trim(),
     contentIdea: vine.string().maxLength(1000).trim().optional(),
     order: vine.number().positive().optional(),
@@ -68,7 +68,7 @@ createTemplateValidator.messagesProvider = messages
 export const updateTemplateValidator = vine.compile(
   vine.object({
     strategyId: vine.number().positive(),
-    type: vine.enum(['reel', 'story', 'post', 'tuto'] as const),
+    type: vine.enum(['reel', 'story', 'post', 'tuto', 'engagement'] as const),
     title: vine.string().minLength(3).maxLength(200).trim(),
     contentIdea: vine.string().maxLength(1000).trim().optional().nullable(),
     order: vine.number().positive().optional(),

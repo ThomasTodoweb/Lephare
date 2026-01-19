@@ -1,5 +1,6 @@
 import { Head, Link, useForm } from '@inertiajs/react'
 import { useState } from 'react'
+import { AppLayout } from '~/components/layout'
 import { Button } from '~/components/ui/Button'
 import { Card } from '~/components/ui/Card'
 
@@ -78,32 +79,31 @@ export default function TutorialShow({ tutorial, isCompleted, feedback }: Props)
   }
 
   return (
-    <>
+    <AppLayout currentPage="tutorials">
       <Head title={`${tutorial.title} - Le Phare`} />
-      <div className="min-h-screen bg-background flex flex-col">
-        {/* Header */}
-        <div className="px-6 pt-8 pb-4">
-          <Link href="/tutorials" className="text-primary text-sm mb-2 inline-block">
-            ← Retour aux tutoriels
-          </Link>
-          <div className="flex items-center gap-2 mb-2">
-            {tutorial.categorySlug && (
-              <span className="text-2xl">{CATEGORY_ICONS[tutorial.categorySlug] || '📚'}</span>
-            )}
-            {tutorial.categoryName && (
-              <span className="text-xs font-bold text-primary uppercase">{tutorial.categoryName}</span>
-            )}
-          </div>
-          <h1 className="text-xl font-extrabold text-neutral-900">
-            {tutorial.title}
-          </h1>
-          <p className="text-sm text-neutral-500 mt-1">
-            ⏱ {tutorial.durationMinutes} min
-          </p>
+      {/* Header */}
+      <div className="pb-4">
+        <Link href="/tutorials" className="text-primary text-sm mb-2 inline-block">
+          ← Retour aux tutoriels
+        </Link>
+        <div className="flex items-center gap-2 mb-2">
+          {tutorial.categorySlug && (
+            <span className="text-2xl">{CATEGORY_ICONS[tutorial.categorySlug] || '📚'}</span>
+          )}
+          {tutorial.categoryName && (
+            <span className="text-xs font-bold text-primary uppercase">{tutorial.categoryName}</span>
+          )}
         </div>
+        <h1 className="text-xl font-extrabold text-neutral-900">
+          {tutorial.title}
+        </h1>
+        <p className="text-sm text-neutral-500 mt-1">
+          ⏱ {tutorial.durationMinutes} min
+        </p>
+      </div>
 
-        {/* Content */}
-        <div className="flex-1 px-6 pb-40 overflow-y-auto">
+      {/* Content */}
+      <div className="pb-40">
           {/* Video */}
           {tutorial.videoUrl && (
             <div className="mb-6 rounded-2xl overflow-hidden border-4 border-primary">
@@ -165,60 +165,59 @@ export default function TutorialShow({ tutorial, isCompleted, feedback }: Props)
           </div>
         </div>
 
-        {/* Fixed bottom button */}
-        <div className="fixed bottom-0 left-0 right-0 p-6 bg-background border-t border-neutral-200">
-          {isCompleted ? (
-            <Link href="/tutorials" className="block">
-              <Button className="w-full" variant="outlined">
-                Retour aux tutoriels
-              </Button>
-            </Link>
-          ) : (
-            <Button
-              onClick={handleComplete}
-              disabled={completeForm.processing}
-              className="w-full"
-            >
-              {completeForm.processing ? 'Chargement...' : "J'ai compris !"}
+      {/* Fixed bottom button */}
+      <div className="fixed bottom-20 left-0 right-0 p-6 bg-background border-t border-neutral-200">
+        {isCompleted ? (
+          <Link href="/tutorials" className="block">
+            <Button className="w-full" variant="outlined">
+              Retour aux tutoriels
             </Button>
-          )}
-        </div>
-
-        {/* Feedback Modal */}
-        {showFeedbackModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-6 z-50">
-            <Card className="w-full max-w-sm">
-              <h3 className="text-lg font-bold text-neutral-900 mb-4 text-center">
-                Ce tutoriel vous a-t-il été utile ?
-              </h3>
-              <div className="flex gap-3">
-                <Button
-                  onClick={() => handleFeedback('useful')}
-                  disabled={feedbackForm.processing}
-                  className="flex-1"
-                >
-                  👍 Oui
-                </Button>
-                <Button
-                  variant="outlined"
-                  onClick={() => handleFeedback('not_useful')}
-                  disabled={feedbackForm.processing}
-                  className="flex-1"
-                >
-                  👎 Non
-                </Button>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowFeedbackModal(false)}
-                className="w-full mt-3 text-sm text-neutral-500 hover:text-neutral-700"
-              >
-                Passer
-              </button>
-            </Card>
-          </div>
+          </Link>
+        ) : (
+          <Button
+            onClick={handleComplete}
+            disabled={completeForm.processing}
+            className="w-full"
+          >
+            {completeForm.processing ? 'Chargement...' : "J'ai compris !"}
+          </Button>
         )}
       </div>
-    </>
+
+      {/* Feedback Modal */}
+      {showFeedbackModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-6 z-50">
+          <Card className="w-full max-w-sm">
+            <h3 className="text-lg font-bold text-neutral-900 mb-4 text-center">
+              Ce tutoriel vous a-t-il été utile ?
+            </h3>
+            <div className="flex gap-3">
+              <Button
+                onClick={() => handleFeedback('useful')}
+                disabled={feedbackForm.processing}
+                className="flex-1"
+              >
+                👍 Oui
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={() => handleFeedback('not_useful')}
+                disabled={feedbackForm.processing}
+                className="flex-1"
+              >
+                👎 Non
+              </Button>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowFeedbackModal(false)}
+              className="w-full mt-3 text-sm text-neutral-500 hover:text-neutral-700"
+            >
+              Passer
+            </button>
+          </Card>
+        </div>
+      )}
+    </AppLayout>
   )
 }

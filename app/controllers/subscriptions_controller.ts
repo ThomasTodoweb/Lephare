@@ -129,6 +129,7 @@ export default class SubscriptionsController {
 
   /**
    * Handle Stripe webhook with signature verification
+   * Route must use rawBody middleware to capture body before bodyparser
    */
   async webhook({ request, response }: HttpContext) {
     const signature = request.header('stripe-signature')
@@ -147,15 +148,20 @@ export default class SubscriptionsController {
     }
 
     try {
-      // Get raw body for signature verification
-      const rawBody = request.raw()
-      if (!rawBody) {
-        logger.error('Could not get raw request body')
+      // Get raw body captured by rawBody middleware
+      // @ts-expect-error - Custom property added by middleware
+      const rawBody: Buffer | undefined = request.rawBody
+
+      // Fallback to request.raw() if middleware not applied
+      const body = rawBody || request.raw()
+
+      if (!body) {
+        logger.error('Could not get raw request body - ensure rawBody middleware is applied')
         return response.badRequest({ error: 'Invalid request body' })
       }
 
       // Verify and construct the event
-      const event = this.stripeService.constructWebhookEvent(rawBody, signature)
+      const event = this.stripeService.constructWebhookEvent(body, signature)
 
       // Process the webhook
       await this.stripeService.handleWebhook(event)
@@ -178,5 +184,16 @@ export default class SubscriptionsController {
     }
 
     return response.json({ key, configured: true })
+  }
+
+  /**
+   * Get invoices history
+   */
+  async invoices({ response, auth }: HttpContext) {
+    const user = auth.getUserOrFail()
+
+    const invoices = await this.stripeService.getInvoices(user.id)
+
+    return response.json({ invoices })
   }
 }

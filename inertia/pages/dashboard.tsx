@@ -121,9 +121,16 @@ export default function Dashboard({ user, restaurant, mission, streak }: Props) 
                 {mission.template.title}
               </h2>
 
-              <p className="text-neutral-600 text-sm mb-6">
+              <p className="text-neutral-600 text-sm mb-4">
                 {mission.template.contentIdea}
               </p>
+
+              <Link
+                href="/missions"
+                className="text-primary text-sm font-medium hover:underline mb-4 inline-block"
+              >
+                En savoir plus
+              </Link>
 
               {mission.status === 'pending' ? (
                 <>

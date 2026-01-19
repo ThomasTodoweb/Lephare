@@ -15,6 +15,7 @@ export default function RestaurantType({ restaurantTypes }: Props) {
   const { data, setData, post, processing, errors } = useForm({
     name: '',
     type: '',
+    city: '',
   })
 
   function handleSubmit(e: React.FormEvent) {
@@ -70,9 +71,17 @@ export default function RestaurantType({ restaurantTypes }: Props) {
               placeholder="Ex: Le Petit Bistrot"
             />
 
+            <Input
+              label="Ville"
+              value={data.city}
+              onChange={(e) => setData('city', e.target.value)}
+              error={errors.city}
+              placeholder="Ex: Lyon, Paris, Bordeaux..."
+            />
+
             <Button
               type="submit"
-              disabled={processing || !data.type || !data.name}
+              disabled={processing || !data.type || !data.name || !data.city}
               className="w-full"
             >
               Continuer

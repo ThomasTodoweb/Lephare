@@ -34,16 +34,79 @@ interface EvolutionPoint {
   value: number
 }
 
+interface Interpretation {
+  text: string
+  sentiment: 'positive' | 'neutral' | 'negative'
+}
+
+interface InstagramStats {
+  followers: {
+    current: number
+    growthDaily: number
+    growthWeekly: number
+    growthMonthly: number
+  }
+  engagement: {
+    impressions: number
+    reach: number
+    likes: number
+    comments: number
+    shares: number
+    saves: number
+    averageRate: number
+  }
+  postsCount: number
+  lastUpdated: string | null
+}
+
+interface InstagramComparison {
+  current: InstagramStats
+  previous: InstagramStats | null
+  changes: {
+    followers: number
+    followersPercent: number
+    impressions: number
+    impressionsPercent: number
+    reach: number
+    reachPercent: number
+    engagementRate: number
+  }
+}
+
 interface Props {
   keyMetrics: KeyMetric[]
   summary: Summary
   comparison: Comparison
+  instagram: InstagramStats | null
+  instagramComparison: InstagramComparison | null
 }
 
-export default function StatisticsIndex({ keyMetrics, summary, comparison }: Props) {
+export default function StatisticsIndex({ keyMetrics, summary, comparison, instagram, instagramComparison }: Props) {
   const [selectedPeriod, setSelectedPeriod] = useState<'7' | '30' | '90'>('30')
   const [evolution, setEvolution] = useState<EvolutionPoint[]>([])
   const [isLoadingEvolution, setIsLoadingEvolution] = useState(false)
+  const [interpretation, setInterpretation] = useState<Interpretation | null>(null)
+  const [isLoadingInterpretation, setIsLoadingInterpretation] = useState(true)
+
+  // Fetch AI interpretation on mount
+  useEffect(() => {
+    const fetchInterpretation = async () => {
+      setIsLoadingInterpretation(true)
+      try {
+        const response = await fetch('/statistics/interpretation')
+        if (response.ok) {
+          const data = await response.json()
+          setInterpretation(data.interpretation)
+        }
+      } catch (error) {
+        console.error('Failed to fetch interpretation:', error)
+      } finally {
+        setIsLoadingInterpretation(false)
+      }
+    }
+
+    fetchInterpretation()
+  }, [])
 
   useEffect(() => {
     const fetchEvolution = async () => {
@@ -65,15 +128,12 @@ export default function StatisticsIndex({ keyMetrics, summary, comparison }: Pro
   }, [selectedPeriod])
 
   return (
-    <AppLayout currentPage="profile">
+    <AppLayout currentPage="statistics">
       <Head title="Mes Statistiques - Le Phare" />
 
       <div className="py-4">
         {/* Header */}
         <div className="mb-6">
-          <Link href="/profile" className="text-primary text-sm mb-2 inline-block">
-            ← Retour au profil
-          </Link>
           <h1 className="text-2xl font-extrabold text-neutral-900 uppercase tracking-tight">
             Mes Stats
           </h1>
@@ -81,6 +141,60 @@ export default function StatisticsIndex({ keyMetrics, summary, comparison }: Pro
             Suivez votre progression !
           </p>
         </div>
+
+        {/* AI Interpretation Card */}
+        <Card className="mb-6">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl flex items-center justify-center flex-shrink-0">
+              <span className="text-white text-lg">AI</span>
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <h2 className="font-bold text-neutral-900">Analyse IA</h2>
+                {interpretation ? (
+                  <span
+                    className={`px-2 py-0.5 text-xs font-medium rounded-full ${
+                      interpretation.sentiment === 'positive'
+                        ? 'bg-green-100 text-green-700'
+                        : interpretation.sentiment === 'negative'
+                          ? 'bg-red-100 text-red-700'
+                          : 'bg-yellow-100 text-yellow-700'
+                    }`}
+                  >
+                    {interpretation.sentiment === 'positive'
+                      ? 'Positif'
+                      : interpretation.sentiment === 'negative'
+                        ? 'À améliorer'
+                        : 'Stable'}
+                  </span>
+                ) : !isLoadingInterpretation && instagram ? (
+                  // Show "Bienvenue" badge when using fallback message
+                  <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-blue-100 text-blue-700">
+                    Bienvenue
+                  </span>
+                ) : null}
+              </div>
+              {isLoadingInterpretation ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                  <span className="text-sm text-neutral-500">Analyse en cours...</span>
+                </div>
+              ) : interpretation ? (
+                <p className="text-neutral-700">{interpretation.text}</p>
+              ) : instagram ? (
+                // Fallback message when AI is not available but we have Instagram stats
+                <p className="text-neutral-700">
+                  Bienvenue ! Avec {(instagram.followers?.current ?? 0).toLocaleString('fr-FR')} abonnés et {(instagram.engagement?.impressions ?? 0).toLocaleString('fr-FR')} impressions,
+                  tu as une belle base pour progresser ensemble.
+                </p>
+              ) : (
+                <p className="text-neutral-500 text-sm">
+                  Continuez à utiliser l'app pour obtenir une analyse personnalisée.
+                </p>
+              )}
+            </div>
+          </div>
+        </Card>
 
         {/* Key Metrics */}
         <div className="grid grid-cols-3 gap-3 mb-6">
@@ -114,6 +228,121 @@ export default function StatisticsIndex({ keyMetrics, summary, comparison }: Pro
             </div>
           </div>
         </Card>
+
+        {/* Instagram Stats */}
+        {instagram && (
+          <Card className="mb-6">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-8 h-8 bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 rounded-lg flex items-center justify-center">
+                <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069z" />
+                </svg>
+              </div>
+              <h2 className="font-bold text-lg text-neutral-900">Instagram</h2>
+            </div>
+
+            {/* Followers */}
+            <div className="bg-neutral-50 rounded-xl p-4 mb-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-neutral-600">Abonnés</p>
+                  <p className="text-3xl font-bold text-neutral-900">
+                    {(instagram.followers?.current ?? 0).toLocaleString('fr-FR')}
+                  </p>
+                </div>
+                <div className="text-right">
+                  {(instagram.followers?.growthWeekly ?? 0) >= 0 ? (
+                    <span className="text-green-600 font-bold text-lg">
+                      +{instagram.followers?.growthWeekly ?? 0}
+                    </span>
+                  ) : (
+                    <span className="text-red-500 font-bold text-lg">
+                      {instagram.followers?.growthWeekly ?? 0}
+                    </span>
+                  )}
+                  <p className="text-xs text-neutral-500">cette semaine</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Engagement Metrics Grid */}
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              <div className="bg-neutral-50 rounded-xl p-3 text-center">
+                <p className="text-xl font-bold text-neutral-900">
+                  {(instagram.engagement?.impressions ?? 0).toLocaleString('fr-FR')}
+                </p>
+                <p className="text-xs text-neutral-500">Impressions</p>
+                {instagramComparison && (
+                  <p className={`text-xs font-medium ${(instagramComparison.changes?.impressionsPercent ?? 0) >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+                    {(instagramComparison.changes?.impressionsPercent ?? 0) >= 0 ? '+' : ''}{instagramComparison.changes?.impressionsPercent ?? 0}%
+                  </p>
+                )}
+              </div>
+              <div className="bg-neutral-50 rounded-xl p-3 text-center">
+                <p className="text-xl font-bold text-neutral-900">
+                  {(instagram.engagement?.reach ?? 0).toLocaleString('fr-FR')}
+                </p>
+                <p className="text-xs text-neutral-500">Portée</p>
+                {instagramComparison && (
+                  <p className={`text-xs font-medium ${(instagramComparison.changes?.reachPercent ?? 0) >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+                    {(instagramComparison.changes?.reachPercent ?? 0) >= 0 ? '+' : ''}{instagramComparison.changes?.reachPercent ?? 0}%
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Engagement Details */}
+            <div className="grid grid-cols-4 gap-2 text-center mb-4">
+              <div>
+                <span className="text-lg block">❤️</span>
+                <p className="font-bold text-sm">{(instagram.engagement?.likes ?? 0).toLocaleString('fr-FR')}</p>
+                <p className="text-xs text-neutral-500">Likes</p>
+              </div>
+              <div>
+                <span className="text-lg block">💬</span>
+                <p className="font-bold text-sm">{(instagram.engagement?.comments ?? 0).toLocaleString('fr-FR')}</p>
+                <p className="text-xs text-neutral-500">Commentaires</p>
+              </div>
+              <div>
+                <span className="text-lg block">🔁</span>
+                <p className="font-bold text-sm">{(instagram.engagement?.shares ?? 0).toLocaleString('fr-FR')}</p>
+                <p className="text-xs text-neutral-500">Partages</p>
+              </div>
+              <div>
+                <span className="text-lg block">🔖</span>
+                <p className="font-bold text-sm">{(instagram.engagement?.saves ?? 0).toLocaleString('fr-FR')}</p>
+                <p className="text-xs text-neutral-500">Saves</p>
+              </div>
+            </div>
+
+            {/* Engagement Rate */}
+            <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-neutral-600">Taux d'engagement</p>
+                  <p className="text-2xl font-bold text-neutral-900">
+                    {Number(instagram.engagement?.averageRate ?? 0).toFixed(2)}%
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-neutral-500">
+                    {Number(instagram.engagement?.averageRate ?? 0) >= 3
+                      ? '🔥 Excellent !'
+                      : Number(instagram.engagement?.averageRate ?? 0) >= 1
+                        ? '👍 Bon'
+                        : '📈 À améliorer'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {instagram.lastUpdated && (
+              <p className="text-xs text-neutral-400 mt-3 text-center">
+                Dernière mise à jour : {new Date(instagram.lastUpdated).toLocaleString('fr-FR')}
+              </p>
+            )}
+          </Card>
+        )}
 
         {/* Activity Summary */}
         <Card className="mb-6">

@@ -15,29 +15,89 @@ interface Props {
 }
 
 export default function PhotoCapture({ mission }: Props) {
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const galleryInputRef = useRef<HTMLInputElement>(null)
+  const cameraInputRef = useRef<HTMLInputElement>(null)
   const [preview, setPreview] = useState<string | null>(null)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [isCompressing, setIsCompressing] = useState(false)
 
   const form = useForm<{ photo: File | null }>({
     photo: null,
   })
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Compress image to reduce file size
+  const compressImage = (file: File, maxWidth = 1920, quality = 0.8): Promise<File> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const img = new Image()
+        img.onload = () => {
+          const canvas = document.createElement('canvas')
+          let { width, height } = img
+
+          // Scale down if needed
+          if (width > maxWidth) {
+            height = (height * maxWidth) / width
+            width = maxWidth
+          }
+
+          canvas.width = width
+          canvas.height = height
+
+          const ctx = canvas.getContext('2d')
+          ctx?.drawImage(img, 0, 0, width, height)
+
+          canvas.toBlob(
+            (blob) => {
+              if (blob) {
+                const compressedFile = new File([blob], file.name, {
+                  type: 'image/jpeg',
+                  lastModified: Date.now(),
+                })
+                resolve(compressedFile)
+              } else {
+                resolve(file)
+              }
+            },
+            'image/jpeg',
+            quality
+          )
+        }
+        img.src = e.target?.result as string
+      }
+      reader.readAsDataURL(file)
+    })
+  }
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      setSelectedFile(file)
-      form.setData('photo', file)
+      setIsCompressing(true)
+
+      // Compress if larger than 2MB
+      let processedFile = file
+      if (file.size > 2 * 1024 * 1024) {
+        processedFile = await compressImage(file)
+      }
+
+      setSelectedFile(processedFile)
+      form.setData('photo', processedFile)
+
       const reader = new FileReader()
       reader.onloadend = () => {
         setPreview(reader.result as string)
+        setIsCompressing(false)
       }
-      reader.readAsDataURL(file)
+      reader.readAsDataURL(processedFile)
     }
   }
 
-  const handleChoosePhoto = () => {
-    fileInputRef.current?.click()
+  const handleChooseFromGallery = () => {
+    galleryInputRef.current?.click()
+  }
+
+  const handleTakePhoto = () => {
+    cameraInputRef.current?.click()
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -81,7 +141,7 @@ export default function PhotoCapture({ mission }: Props) {
                 <img
                   src={preview}
                   alt="Aperçu"
-                  className="w-full aspect-square object-cover rounded-2xl border-4 border-primary"
+                  className="w-full max-h-[70vh] object-contain rounded-2xl border-4 border-primary bg-neutral-100"
                 />
                 <button
                   type="button"
@@ -97,19 +157,26 @@ export default function PhotoCapture({ mission }: Props) {
               </div>
             ) : (
               <div
-                onClick={handleChoosePhoto}
-                className="w-full aspect-square bg-neutral-100 rounded-2xl border-4 border-dashed border-neutral-300 flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors"
+                onClick={handleChooseFromGallery}
+                className="w-full aspect-[4/5] bg-neutral-100 rounded-2xl border-4 border-dashed border-neutral-300 flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors"
               >
                 <span className="text-5xl mb-4">📷</span>
                 <p className="text-neutral-600 font-medium">Appuyez pour choisir une photo</p>
-                <p className="text-neutral-500 text-sm mt-1">ou prendre depuis la caméra</p>
+                <p className="text-neutral-500 text-sm mt-1">ou utilisez les boutons ci-dessous</p>
               </div>
             )}
           </div>
 
-          {/* Hidden file input */}
+          {/* Hidden file inputs - one for gallery, one for camera */}
           <input
-            ref={fileInputRef}
+            ref={galleryInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            className="hidden"
+          />
+          <input
+            ref={cameraInputRef}
             type="file"
             accept="image/*"
             capture="environment"
@@ -120,7 +187,11 @@ export default function PhotoCapture({ mission }: Props) {
 
         {/* Fixed bottom buttons */}
         <div className="fixed bottom-0 left-0 right-0 p-6 bg-background border-t border-neutral-200 space-y-3">
-          {preview ? (
+          {isCompressing ? (
+            <div className="text-center py-4">
+              <p className="text-neutral-600">Optimisation de l'image...</p>
+            </div>
+          ) : preview ? (
             <Button
               onClick={handleSubmit}
               disabled={form.processing}
@@ -130,10 +201,10 @@ export default function PhotoCapture({ mission }: Props) {
             </Button>
           ) : (
             <>
-              <Button onClick={handleChoosePhoto} className="w-full">
-                Choisir une photo
+              <Button onClick={handleChooseFromGallery} className="w-full">
+                Choisir depuis la galerie
               </Button>
-              <Button variant="outlined" onClick={handleChoosePhoto} className="w-full">
+              <Button variant="outlined" onClick={handleTakePhoto} className="w-full">
                 Prendre une photo
               </Button>
             </>

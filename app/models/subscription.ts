@@ -50,17 +50,32 @@ export default class Subscription extends BaseModel {
   declare user: BelongsTo<typeof User>
 
   /**
-   * Check if subscription is active (including trial)
+   * Check if subscription is active (including valid trial)
+   * For trials, also verifies the trial hasn't expired
    */
   isActive(): boolean {
-    return this.status === 'active' || this.status === 'trialing'
+    if (this.status === 'active') {
+      return true
+    }
+    // For trials, check if trial period is still valid
+    if (this.status === 'trialing') {
+      return this.isTrialing()
+    }
+    return false
   }
 
   /**
-   * Check if subscription is in trial period
+   * Check if subscription is in valid trial period
    */
   isTrialing(): boolean {
-    return this.status === 'trialing' && this.trialEndsAt !== null && this.trialEndsAt > DateTime.utc()
+    if (this.status !== 'trialing') {
+      return false
+    }
+    // If no trial end date, treat as expired
+    if (!this.trialEndsAt) {
+      return false
+    }
+    return this.trialEndsAt > DateTime.utc()
   }
 
   /**

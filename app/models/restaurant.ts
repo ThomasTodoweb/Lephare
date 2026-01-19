@@ -50,6 +50,9 @@ export default class Restaurant extends BaseModel {
   declare publicationRhythm: PublicationRhythm | null
 
   @column()
+  declare city: string | null
+
+  @column()
   declare onboardingCompleted: boolean
 
   @column.dateTime({ autoCreate: true })

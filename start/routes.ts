@@ -15,7 +15,7 @@ const RestaurantsController = () => import('#controllers/restaurants_controller'
 const DashboardController = () => import('#controllers/dashboard_controller')
 const OnboardingController = () => import('#controllers/onboarding_controller')
 const ProfileController = () => import('#controllers/profile_controller')
-const LaterAuthController = () => import('#controllers/later_auth_controller')
+const InstagramController = () => import('#controllers/instagram_controller')
 const MissionsController = () => import('#controllers/missions_controller')
 const PublicationsController = () => import('#controllers/publications_controller')
 const TutorialsController = () => import('#controllers/tutorials_controller')
@@ -32,6 +32,23 @@ const AdminAlertsController = () => import('#controllers/admin/alerts_controller
 const AdminReportsController = () => import('#controllers/admin/reports_controller')
 const AdminSubscriptionsController = () => import('#controllers/admin/subscriptions_controller')
 
+// Serve storage files (uploaded images and videos)
+router.get('/storage/*', async ({ params, response }) => {
+  const filePath = params['*'].join('/')
+  const app = await import('@adonisjs/core/services/app')
+  const fullPath = app.default.makePath('storage', filePath)
+
+  // Security: only allow specific file types
+  const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.mp4', '.mov', '.webm']
+  const ext = filePath.toLowerCase().slice(filePath.lastIndexOf('.'))
+
+  if (!allowedExtensions.includes(ext)) {
+    return response.notFound('File not found')
+  }
+
+  return response.download(fullPath)
+})
+
 // Public landing page
 router.on('/').renderInertia('home')
 
@@ -47,16 +64,16 @@ router.group(() => {
 // Logout route (auth required)
 router.post('/logout', [AuthController, 'logout']).as('logout').middleware(middleware.auth())
 
-// Protected routes (auth required)
+// Protected routes (auth required) - FREE tier (accessible without subscription)
 router.group(() => {
-  // Dashboard
+  // Dashboard - always accessible to see subscription status
   router.get('/dashboard', [DashboardController, 'index']).as('dashboard')
 
-  // Restaurant setup
+  // Restaurant setup - part of onboarding, must be free
   router.get('/restaurant/type', [RestaurantsController, 'showTypeChoice']).as('restaurant.type')
   router.post('/restaurant/type', [RestaurantsController, 'storeType'])
 
-  // Onboarding flow
+  // Onboarding flow - must be free to complete setup
   router.get('/onboarding/strategy', [OnboardingController, 'showStrategy']).as('onboarding.strategy')
   router.post('/onboarding/strategy', [OnboardingController, 'storeStrategy'])
   router.get('/onboarding/rhythm', [OnboardingController, 'showRhythm']).as('onboarding.rhythm')
@@ -65,22 +82,50 @@ router.group(() => {
   router.post('/onboarding/instagram/skip', [OnboardingController, 'skipInstagram']).as('onboarding.instagram.skip')
   router.post('/onboarding/complete', [OnboardingController, 'complete']).as('onboarding.complete')
 
-  // Profile
+  // Profile - accessible to manage account
   router.get('/profile', [ProfileController, 'index']).as('profile')
   router.post('/profile/instagram/disconnect', [ProfileController, 'disconnectInstagram']).as('profile.instagram.disconnect')
 
-  // Later OAuth (Instagram connection)
-  router.get('/auth/later/redirect', [LaterAuthController, 'redirect']).as('later.redirect')
-  router.get('/auth/later/callback', [LaterAuthController, 'callback']).as('later.callback')
+  // Instagram settings & connection - accessible to connect account
+  router.get('/settings/instagram', [InstagramController, 'index']).as('instagram.settings')
+  router.get('/instagram/connect', [InstagramController, 'connect']).as('instagram.connect')
+  router.get('/instagram/callback', [InstagramController, 'callback']).as('instagram.callback')
+  router.post('/instagram/disconnect', [InstagramController, 'disconnect']).as('instagram.disconnect')
+  router.get('/instagram/accounts', [InstagramController, 'accounts']).as('instagram.accounts')
+  router.get('/instagram/status', [InstagramController, 'status']).as('instagram.status')
 
-  // Missions
+  // Notifications API - accessible to manage notifications
+  router.get('/notifications/public-key', [NotificationsController, 'publicKey']).as('notifications.publicKey')
+  router.post('/notifications/subscribe', [NotificationsController, 'subscribe']).as('notifications.subscribe')
+  router.post('/notifications/unsubscribe', [NotificationsController, 'unsubscribe']).as('notifications.unsubscribe')
+  router.post('/notifications/settings', [NotificationsController, 'updateSettings']).as('notifications.settings')
+  router.post('/notifications/test', [NotificationsController, 'test']).as('notifications.test')
+
+  // Subscriptions - must be free to allow checkout
+  router.get('/subscription', [SubscriptionsController, 'index']).as('subscription.index')
+  router.post('/subscription/checkout', [SubscriptionsController, 'createCheckout']).as('subscription.checkout')
+  router.get('/subscription/success', [SubscriptionsController, 'success']).as('subscription.success')
+  router.post('/subscription/cancel', [SubscriptionsController, 'cancel']).as('subscription.cancel')
+  router.post('/subscription/billing-portal', [SubscriptionsController, 'billingPortal']).as('subscription.billingPortal')
+  router.get('/subscription/public-key', [SubscriptionsController, 'publicKey']).as('subscription.publicKey')
+  router.get('/subscription/invoices', [SubscriptionsController, 'invoices']).as('subscription.invoices')
+}).middleware(middleware.auth())
+
+// Protected routes (auth + subscription required) - PREMIUM features
+router.group(() => {
+  // Instagram posting - premium feature
+  router.post('/instagram/post', [InstagramController, 'post']).as('instagram.post')
+  router.get('/instagram/post/:id', [InstagramController, 'postStatus']).as('instagram.postStatus')
+  router.delete('/instagram/post/:id', [InstagramController, 'deletePost']).as('instagram.deletePost')
+
+  // Missions - core premium feature
   router.get('/missions', [MissionsController, 'today']).as('missions.today')
   router.post('/missions/:id/accept', [MissionsController, 'accept']).as('missions.accept')
   router.post('/missions/:id/skip', [MissionsController, 'skip']).as('missions.skip')
   router.post('/missions/:id/reload', [MissionsController, 'reload']).as('missions.reload')
   router.get('/missions/history', [MissionsController, 'history']).as('missions.history')
 
-  // Publication flow
+  // Publication flow - premium feature
   router.get('/missions/:id/photo', [PublicationsController, 'photo']).as('missions.photo')
   router.post('/missions/:id/photo', [PublicationsController, 'uploadPhoto']).as('missions.photo.upload')
   router.get('/publications/:id/description', [PublicationsController, 'description']).as('publications.description')
@@ -88,7 +133,7 @@ router.group(() => {
   router.post('/publications/:id/publish', [PublicationsController, 'publish']).as('publications.publish')
   router.get('/publications/:id/bravo', [PublicationsController, 'bravo']).as('publications.bravo')
 
-  // Tutorials
+  // Tutorials - premium feature
   router.get('/tutorials', [TutorialsController, 'index']).as('tutorials.index')
   router.get('/tutorials/search', [TutorialsController, 'search']).as('tutorials.search')
   router.get('/tutorials/:id', [TutorialsController, 'show']).as('tutorials.show')
@@ -96,37 +141,26 @@ router.group(() => {
   router.post('/tutorials/:id/feedback', [TutorialsController, 'feedback']).as('tutorials.feedback')
   router.get('/tutorials/:id/bravo', [TutorialsController, 'bravo']).as('tutorials.bravo')
 
-  // Badges
+  // Badges - premium feature
   router.get('/badges', [BadgesController, 'index']).as('badges.index')
 
-  // Weekly Reports
+  // Weekly Reports - premium feature
   router.get('/reports', [ReportsController, 'index']).as('reports.index')
   router.get('/reports/:id', [ReportsController, 'show']).as('reports.show')
   router.post('/reports/generate', [ReportsController, 'generate']).as('reports.generate')
 
-  // Notifications API
-  router.get('/notifications/public-key', [NotificationsController, 'publicKey']).as('notifications.publicKey')
-  router.post('/notifications/subscribe', [NotificationsController, 'subscribe']).as('notifications.subscribe')
-  router.post('/notifications/unsubscribe', [NotificationsController, 'unsubscribe']).as('notifications.unsubscribe')
-  router.post('/notifications/settings', [NotificationsController, 'updateSettings']).as('notifications.settings')
-  router.post('/notifications/test', [NotificationsController, 'test']).as('notifications.test')
-
-  // Statistics
+  // Statistics - premium feature
   router.get('/statistics', [StatisticsController, 'index']).as('statistics.index')
   router.get('/statistics/evolution', [StatisticsController, 'evolution']).as('statistics.evolution')
   router.get('/statistics/summary', [StatisticsController, 'summary']).as('statistics.summary')
+  router.get('/statistics/interpretation', [StatisticsController, 'interpretation']).as('statistics.interpretation')
+}).middleware([middleware.auth(), middleware.subscription()])
 
-  // Subscriptions
-  router.get('/subscription', [SubscriptionsController, 'index']).as('subscription.index')
-  router.post('/subscription/checkout', [SubscriptionsController, 'createCheckout']).as('subscription.checkout')
-  router.get('/subscription/success', [SubscriptionsController, 'success']).as('subscription.success')
-  router.post('/subscription/cancel', [SubscriptionsController, 'cancel']).as('subscription.cancel')
-  router.post('/subscription/billing-portal', [SubscriptionsController, 'billingPortal']).as('subscription.billingPortal')
-  router.get('/subscription/public-key', [SubscriptionsController, 'publicKey']).as('subscription.publicKey')
-}).middleware(middleware.auth())
-
-// Stripe webhook (no auth, uses signature verification)
-router.post('/webhooks/stripe', [SubscriptionsController, 'webhook']).as('webhooks.stripe')
+// Stripe webhook (no auth, uses signature verification + rate limiting)
+router
+  .post('/webhooks/stripe', [SubscriptionsController, 'webhook'])
+  .as('webhooks.stripe')
+  .middleware([middleware.rawBody(), middleware.throttle()])
 
 // Admin routes (FR38-FR49)
 router.group(() => {

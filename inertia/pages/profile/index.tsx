@@ -1,5 +1,6 @@
 import { Head, Link, useForm } from '@inertiajs/react'
 import { useState } from 'react'
+import { AppLayout } from '~/components/layout'
 import { Button } from '~/components/ui/Button'
 import { Card } from '~/components/ui/Card'
 import { RHYTHM_LABELS, TYPE_LABELS } from '~/lib/constants'
@@ -17,7 +18,8 @@ interface Props {
   } | null
   instagram: {
     username: string
-    connectedAt: string
+    profilePictureUrl?: string
+    status: 'connected' | 'disconnected' | 'error'
   } | null
   subscription: {
     planType: string
@@ -52,7 +54,7 @@ export default function Profile({ user, restaurant, instagram, subscription, str
   }
 
   const handleReconnectInstagram = () => {
-    reconnectForm.get('/auth/later/redirect')
+    window.location.href = '/instagram/connect'
   }
 
   const handleLogout = () => {
@@ -75,41 +77,36 @@ export default function Profile({ user, restaurant, instagram, subscription, str
   }
 
   return (
-    <>
+    <AppLayout currentPage="profile">
       <Head title="Mon profil - Le Phare" />
-      <div className="min-h-screen bg-background">
-        {/* Header */}
-        <div className="px-6 pt-8 pb-4">
-          <h1 className="text-2xl font-extrabold text-neutral-900 uppercase tracking-tight">
-            Mon profil
-          </h1>
-        </div>
+      {/* Header */}
+      <div className="pt-4 pb-4">
+        <h1 className="text-2xl font-extrabold text-neutral-900 uppercase tracking-tight">
+          Mon profil
+        </h1>
+      </div>
 
-        {/* Content */}
-        <div className="px-6 pb-32 space-y-6">
-          {/* Quick Actions */}
-          <div className="grid grid-cols-2 gap-3">
-            <Link href="/statistics">
-              <Card className="text-center hover:bg-neutral-50 transition-colors">
-                <span className="text-2xl block mb-1">📊</span>
-                <p className="font-bold text-neutral-900">Mes Stats</p>
-                <p className="text-xs text-neutral-500">Voir ma progression</p>
-              </Card>
-            </Link>
-            <Link href="/subscription">
-              <Card className="text-center hover:bg-neutral-50 transition-colors">
-                <span className="text-2xl block mb-1">💳</span>
-                <p className="font-bold text-neutral-900">Abonnement</p>
-                <p className="text-xs text-neutral-500">
-                  {subscription?.status === 'trialing'
-                    ? `Essai (${subscription.trialDaysRemaining}j)`
-                    : subscription?.status === 'active'
-                    ? 'Actif'
-                    : 'Gérer'}
-                </p>
-              </Card>
-            </Link>
-          </div>
+      {/* Content */}
+      <div className="pb-8 space-y-6">
+          {/* Subscription card */}
+          <Link href="/subscription" className="block">
+            <Card className="hover:bg-neutral-50 transition-colors">
+              <div className="flex items-center gap-4">
+                <span className="text-3xl">💳</span>
+                <div className="flex-1">
+                  <p className="font-bold text-neutral-900">Abonnement</p>
+                  <p className="text-sm text-neutral-500">
+                    {subscription?.status === 'trialing'
+                      ? `Période d'essai (${subscription.trialDaysRemaining} jours restants)`
+                      : subscription?.status === 'active'
+                      ? 'Abonnement actif'
+                      : 'Gérer mon abonnement'}
+                  </p>
+                </div>
+                <span className="text-neutral-400">→</span>
+              </div>
+            </Card>
+          </Link>
 
           {/* Streak Info */}
           {streak && streak.currentStreak > 0 && (
@@ -170,53 +167,59 @@ export default function Profile({ user, restaurant, instagram, subscription, str
 
           {/* Instagram connection */}
           <Card>
-            <h2 className="font-bold text-lg text-neutral-900 mb-4">Instagram</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-bold text-lg text-neutral-900">Instagram</h2>
+              {instagram && (
+                <div className="flex items-center gap-2">
+                  {instagram.profilePictureUrl ? (
+                    <img
+                      src={instagram.profilePictureUrl}
+                      alt={instagram.username}
+                      className="w-8 h-8 rounded-lg object-cover"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 rounded-lg flex items-center justify-center">
+                      <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069z" />
+                      </svg>
+                    </div>
+                  )}
+                  <span className="text-sm font-medium text-neutral-700">@{instagram.username}</span>
+                  <span
+                    className={`w-2 h-2 rounded-full ${
+                      instagram.status === 'connected'
+                        ? 'bg-green-500'
+                        : instagram.status === 'error'
+                          ? 'bg-red-500'
+                          : 'bg-yellow-500'
+                    }`}
+                    title={
+                      instagram.status === 'connected'
+                        ? 'Connecté'
+                        : instagram.status === 'error'
+                          ? 'Erreur'
+                          : 'Déconnecté'
+                    }
+                  />
+                </div>
+              )}
+            </div>
             {instagram ? (
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 rounded-xl flex items-center justify-center">
-                    <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="font-medium">@{instagram.username}</p>
-                    <p className="text-sm text-neutral-500">
-                      Connecté le {new Date(instagram.connectedAt).toLocaleDateString('fr-FR')}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outlined"
-                    onClick={handleReconnectInstagram}
-                    disabled={reconnectForm.processing}
-                    className="flex-1"
-                  >
-                    Reconnecter
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    onClick={handleDisconnectInstagram}
-                    disabled={disconnectForm.processing}
-                    className="flex-1 !border-red-500 !text-red-500"
-                  >
-                    Déconnecter
-                  </Button>
-                </div>
-              </div>
+              <Link href="/settings/instagram">
+                <Button variant="outlined" className="w-full">
+                  Gérer Instagram
+                </Button>
+              </Link>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <p className="text-neutral-600 text-sm">
                   Aucun compte Instagram connecté
                 </p>
-                <Button
-                  onClick={handleReconnectInstagram}
-                  disabled={reconnectForm.processing}
-                  className="w-full"
-                >
-                  Connecter Instagram
-                </Button>
+                <Link href="/settings/instagram">
+                  <Button className="w-full">
+                    Connecter Instagram
+                  </Button>
+                </Link>
               </div>
             )}
           </Card>
@@ -277,17 +280,16 @@ export default function Profile({ user, restaurant, instagram, subscription, str
             </Card>
           )}
 
-          {/* Logout */}
-          <Button
-            variant="outlined"
-            onClick={handleLogout}
-            disabled={logoutForm.processing}
-            className="w-full"
-          >
-            Déconnexion
-          </Button>
-        </div>
+        {/* Logout */}
+        <Button
+          variant="outlined"
+          onClick={handleLogout}
+          disabled={logoutForm.processing}
+          className="w-full"
+        >
+          Déconnexion
+        </Button>
       </div>
-    </>
+    </AppLayout>
   )
 }

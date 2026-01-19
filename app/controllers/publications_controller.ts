@@ -2,17 +2,30 @@ import type { HttpContext } from '@adonisjs/core/http'
 import app from '@adonisjs/core/services/app'
 import { cuid } from '@adonisjs/core/helpers'
 import { DateTime } from 'luxon'
+import { readFile } from 'node:fs/promises'
 import Mission from '#models/mission'
-import Publication from '#models/publication'
+import Publication, { type ContentType, type PublicationMediaItem } from '#models/publication'
+import Restaurant from '#models/restaurant'
 import MissionService from '#services/mission_service'
 import AIService from '#services/ai_service'
-import LaterService from '#services/later_service'
+import LateService, { type MediaItem } from '#services/late_service'
 
 const MAX_CAPTION_LENGTH = 2200 // Instagram's limit
 
+// Map mission template type to content type
+const MISSION_TYPE_TO_CONTENT_TYPE: Record<string, ContentType> = {
+  post: 'post',
+  carousel: 'carousel',
+  reel: 'reel',
+  story: 'story',
+  tuto: 'reel', // Tutorials are reels
+  engagement: 'post', // Engagement missions default to post
+}
+
 export default class PublicationsController {
   /**
-   * Show photo capture/upload page
+   * Show media capture/upload page
+   * Adapts based on the mission type (post, carousel, reel, story)
    */
   async photo({ inertia, auth, params }: HttpContext) {
     const user = auth.getUserOrFail()
@@ -28,7 +41,10 @@ export default class PublicationsController {
       return inertia.render('errors/not_found')
     }
 
-    return inertia.render('publications/photo', {
+    // Determine content type from mission template
+    const contentType = MISSION_TYPE_TO_CONTENT_TYPE[mission.missionTemplate.type] || 'post'
+
+    return inertia.render('publications/media', {
       mission: {
         id: mission.id,
         template: {
@@ -37,11 +53,14 @@ export default class PublicationsController {
           contentIdea: mission.missionTemplate.contentIdea,
         },
       },
+      contentType,
+      maxImages: contentType === 'carousel' ? 10 : 1,
+      acceptVideo: contentType === 'reel' || contentType === 'story',
     })
   }
 
   /**
-   * Handle photo upload
+   * Handle media upload (photos, videos, multiple files for carousel)
    */
   async uploadPhoto({ request, response, auth, params, session }: HttpContext) {
     const user = auth.getUserOrFail()
@@ -50,6 +69,7 @@ export default class PublicationsController {
     const mission = await Mission.query()
       .where('id', missionId)
       .where('user_id', user.id)
+      .preload('missionTemplate')
       .first()
 
     if (!mission) {
@@ -57,6 +77,111 @@ export default class PublicationsController {
       return response.redirect().toRoute('missions.today')
     }
 
+    // Determine content type from mission template
+    const contentType = MISSION_TYPE_TO_CONTENT_TYPE[mission.missionTemplate.type] || 'post'
+    const isVideo = contentType === 'reel'
+    const isCarousel = contentType === 'carousel'
+
+    // Handle video upload for reels
+    if (isVideo) {
+      const video = request.file('video', {
+        size: '100mb',
+        extnames: ['mp4', 'mov', 'webm'],
+      })
+
+      if (!video || !video.isValid) {
+        session.flash('error', video?.errors?.[0]?.message || 'Vidéo invalide')
+        return response.redirect().back()
+      }
+
+      const fileName = `${user.id}_${cuid()}.${video.extname}`
+      await video.move(app.makePath('storage/uploads'), { name: fileName })
+
+      // Handle optional cover image
+      let coverImagePath: string | null = null
+      const coverImage = request.file('cover', {
+        size: '5mb',
+        extnames: ['jpg', 'jpeg', 'png', 'webp'],
+      })
+      if (coverImage && coverImage.isValid) {
+        const coverFileName = `${user.id}_cover_${cuid()}.${coverImage.extname}`
+        await coverImage.move(app.makePath('storage/uploads'), { name: coverFileName })
+        coverImagePath = `storage/uploads/${coverFileName}`
+      }
+
+      const shareToFeed = request.input('shareToFeed') === 'true'
+
+      const mediaItems: PublicationMediaItem[] = [
+        { type: 'video', path: `storage/uploads/${fileName}`, order: 0 },
+      ]
+
+      const publication = await Publication.create({
+        userId: user.id,
+        missionId: mission.id,
+        imagePath: `storage/uploads/${fileName}`, // Keep for backward compatibility
+        contentType: 'reel',
+        mediaItems,
+        shareToFeed,
+        coverImagePath,
+        caption: '',
+        status: 'draft',
+      })
+
+      return response.redirect().toRoute('publications.description', { id: publication.id })
+    }
+
+    // Handle carousel (multiple images)
+    if (isCarousel) {
+      const photos = request.files('photos', {
+        size: '5mb',
+        extnames: ['jpg', 'jpeg', 'png', 'webp'],
+      })
+
+      if (!photos || photos.length === 0) {
+        session.flash('error', 'Veuillez sélectionner au moins une image')
+        return response.redirect().back()
+      }
+
+      if (photos.length > 10) {
+        session.flash('error', 'Maximum 10 images pour un carrousel')
+        return response.redirect().back()
+      }
+
+      const mediaItems: PublicationMediaItem[] = []
+      let firstImagePath = ''
+
+      for (let i = 0; i < photos.length; i++) {
+        const photo = photos[i]
+        if (!photo.isValid) {
+          session.flash('error', photo.errors?.[0]?.message || `Image ${i + 1} invalide`)
+          return response.redirect().back()
+        }
+
+        const fileName = `${user.id}_${cuid()}.${photo.extname}`
+        await photo.move(app.makePath('storage/uploads'), { name: fileName })
+
+        const path = `storage/uploads/${fileName}`
+        mediaItems.push({ type: 'image', path, order: i })
+
+        if (i === 0) {
+          firstImagePath = path
+        }
+      }
+
+      const publication = await Publication.create({
+        userId: user.id,
+        missionId: mission.id,
+        imagePath: firstImagePath, // First image for backward compatibility
+        contentType: 'carousel',
+        mediaItems,
+        caption: '',
+        status: 'draft',
+      })
+
+      return response.redirect().toRoute('publications.description', { id: publication.id })
+    }
+
+    // Handle single photo (post or story)
     const photo = request.file('photo', {
       size: '5mb',
       extnames: ['jpg', 'jpeg', 'png', 'webp'],
@@ -67,19 +192,19 @@ export default class PublicationsController {
       return response.redirect().back()
     }
 
-    // Generate unique filename
     const fileName = `${user.id}_${cuid()}.${photo.extname}`
+    await photo.move(app.makePath('storage/uploads'), { name: fileName })
 
-    // Move to uploads folder
-    await photo.move(app.makePath('storage/uploads'), {
-      name: fileName,
-    })
+    const mediaItems: PublicationMediaItem[] = [
+      { type: 'image', path: `storage/uploads/${fileName}`, order: 0 },
+    ]
 
-    // Create publication draft
     const publication = await Publication.create({
       userId: user.id,
       missionId: mission.id,
       imagePath: `storage/uploads/${fileName}`,
+      contentType: contentType as ContentType,
+      mediaItems,
       caption: '',
       status: 'draft',
     })
@@ -106,14 +231,45 @@ export default class PublicationsController {
       return inertia.render('errors/not_found')
     }
 
+    // Load restaurant for context
+    const restaurant = await Restaurant.query().where('user_id', user.id).first()
+
     // Generate AI description if not already done
     let aiCaption = publication.aiGeneratedCaption
     if (!aiCaption && publication.mission?.missionTemplate) {
       const aiService = new AIService()
+
+      // Try to read the image for vision analysis
+      let imageBase64: string | undefined
+      let imageMimeType: string | undefined
+
+      try {
+        const imagePath = app.makePath(publication.imagePath)
+        const imageBuffer = await readFile(imagePath)
+        imageBase64 = imageBuffer.toString('base64')
+
+        // Determine mime type from extension
+        const ext = publication.imagePath.split('.').pop()?.toLowerCase()
+        if (ext === 'jpg' || ext === 'jpeg') {
+          imageMimeType = 'image/jpeg'
+        } else if (ext === 'png') {
+          imageMimeType = 'image/png'
+        } else if (ext === 'webp') {
+          imageMimeType = 'image/webp'
+        }
+      } catch (error) {
+        console.error('Failed to read image for AI analysis:', error)
+      }
+
       aiCaption = await aiService.generateDescription({
         missionTitle: publication.mission.missionTemplate.title,
         missionType: publication.mission.missionTemplate.type,
         contentIdea: publication.mission.missionTemplate.contentIdea,
+        restaurantName: restaurant?.name,
+        restaurantType: restaurant?.type,
+        restaurantCity: restaurant?.city || undefined,
+        imageBase64,
+        imageMimeType,
       })
 
       if (aiCaption) {
@@ -127,6 +283,10 @@ export default class PublicationsController {
       publication: {
         id: publication.id,
         imagePath: publication.imagePath,
+        contentType: publication.contentType || 'post',
+        mediaItems: publication.mediaItems || [],
+        shareToFeed: publication.shareToFeed,
+        coverImagePath: publication.coverImagePath,
         caption: publication.caption || aiCaption || '',
         aiGeneratedCaption: aiCaption,
       },
@@ -159,7 +319,8 @@ export default class PublicationsController {
       return response.redirect().toRoute('missions.today')
     }
 
-    const caption = request.input('caption', '').substring(0, MAX_CAPTION_LENGTH)
+    const rawCaption = request.input('caption') || ''
+    const caption = rawCaption.substring(0, MAX_CAPTION_LENGTH)
     publication.caption = caption
     await publication.save()
 
@@ -168,6 +329,7 @@ export default class PublicationsController {
 
   /**
    * Publish to Instagram
+   * Supports post, carousel, reel, and story content types
    */
   async publish({ response, auth, params, session }: HttpContext) {
     const user = auth.getUserOrFail()
@@ -183,24 +345,60 @@ export default class PublicationsController {
       return response.redirect().toRoute('missions.today')
     }
 
-    // Check if user has Instagram connected
-    await user.load('instagramConnection')
-    if (!user.instagramConnection) {
-      session.flash('error', 'Veuillez d\'abord connecter votre compte Instagram')
+    // Check if Late API is configured and has Instagram account
+    const lateService = new LateService()
+    if (!lateService.isConfigured()) {
+      session.flash('error', 'La publication Instagram n\'est pas encore configurée')
       return response.redirect().toRoute('profile')
     }
 
-    // Try to publish via Later
-    const laterService = new LaterService()
-    const result = await laterService.publishToInstagram(
-      user.id,
-      publication.imagePath,
-      publication.caption
-    )
+    const instagramAccount = await lateService.getInstagramAccountForUser(user.id)
+    if (!instagramAccount) {
+      session.flash('error', 'Aucun compte Instagram connecté. Connectez-vous sur getlate.dev')
+      return response.redirect().toRoute('profile')
+    }
+
+    // Build media URLs
+    const baseUrl = process.env.APP_URL || 'http://localhost:3333'
+
+    // Build media items for Late API
+    const mediaItems: MediaItem[] = []
+
+    if (publication.mediaItems && publication.mediaItems.length > 0) {
+      for (const item of publication.mediaItems) {
+        mediaItems.push({
+          type: item.type,
+          url: `${baseUrl}/${item.path}`,
+        })
+      }
+    } else {
+      // Fallback to imagePath for backward compatibility
+      mediaItems.push({
+        type: publication.contentType === 'reel' ? 'video' : 'image',
+        url: `${baseUrl}/${publication.imagePath}`,
+      })
+    }
+
+    // Build cover image URL for reels
+    let coverImageUrl: string | undefined
+    if (publication.coverImagePath) {
+      coverImageUrl = `${baseUrl}/${publication.coverImagePath}`
+    }
+
+    // Try to publish via Late API with full content type support
+    const result = await lateService.createInstagramPost({
+      accountId: instagramAccount.id,
+      contentType: publication.contentType || 'post',
+      content: publication.caption,
+      mediaItems,
+      publishNow: true,
+      shareReelToFeed: publication.shareToFeed,
+      coverImageUrl,
+    })
 
     if (result.success) {
       publication.status = 'published'
-      publication.laterMediaId = result.mediaId || null
+      publication.laterMediaId = result.postId || null
       publication.publishedAt = DateTime.now()
       await publication.save()
 

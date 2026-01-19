@@ -2,29 +2,48 @@ import type { HttpContext } from '@adonisjs/core/http'
 import Subscription from '#models/subscription'
 import { DateTime } from 'luxon'
 import db from '@adonisjs/lucid/services/db'
+import logger from '@adonisjs/core/services/logger'
+
+// Input validation constants
+const MAX_DAYS = 365
+const MAX_MONTHS = 24
+const MAX_SEARCH_LENGTH = 100
+const MAX_REASON_LENGTH = 500
+
+/**
+ * Escape special LIKE/ILIKE pattern characters to prevent injection
+ */
+function escapeLikePattern(pattern: string): string {
+  return pattern.replace(/[%_\\]/g, '\\$&')
+}
 
 export default class AdminSubscriptionsController {
   /**
    * List all subscriptions with user info
    */
   async index({ inertia, request }: HttpContext) {
-    const page = request.input('page', 1)
+    const page = Math.max(1, Number(request.input('page', 1)) || 1)
     const status = request.input('status', 'all')
-    const search = request.input('search', '')
+    const rawSearch = String(request.input('search', '')).trim()
+
+    // Validate and sanitize search input
+    const search = rawSearch.substring(0, MAX_SEARCH_LENGTH)
 
     let query = Subscription.query()
       .preload('user')
       .orderBy('created_at', 'desc')
 
-    // Filter by status
-    if (status !== 'all') {
+    // Filter by status (whitelist allowed values)
+    const allowedStatuses = ['active', 'trialing', 'canceled', 'past_due', 'incomplete']
+    if (status !== 'all' && allowedStatuses.includes(status)) {
       query = query.where('status', status)
     }
 
-    // Search by user email
+    // Search by user email (escape special LIKE characters)
     if (search) {
+      const escapedSearch = escapeLikePattern(search)
       query = query.whereHas('user', (userQuery) => {
-        userQuery.where('email', 'ilike', `%${search}%`)
+        userQuery.where('email', 'ilike', `%${escapedSearch}%`)
       })
     }
 
@@ -59,9 +78,13 @@ export default class AdminSubscriptionsController {
   /**
    * Extend trial period for a user
    */
-  async extendTrial({ params, request, response }: HttpContext) {
+  async extendTrial({ params, request, response, auth }: HttpContext) {
+    const admin = auth.getUserOrFail()
     const subscription = await Subscription.findOrFail(params.id)
-    const days = request.input('days', 7)
+
+    // Validate days input
+    const rawDays = request.input('days', 7)
+    const days = Math.min(Math.max(1, Number(rawDays) || 7), MAX_DAYS)
 
     if (subscription.status !== 'trialing') {
       return response.badRequest({ error: 'User is not in trial period' })
@@ -76,6 +99,12 @@ export default class AdminSubscriptionsController {
     subscription.currentPeriodEnd = newTrialEnd
     await subscription.save()
 
+    // Audit log
+    logger.info(
+      { adminId: admin.id, userId: subscription.userId, days },
+      'Admin extended trial period'
+    )
+
     return response.json({
       success: true,
       message: `Trial extended by ${days} days`,
@@ -86,10 +115,15 @@ export default class AdminSubscriptionsController {
   /**
    * Grant free premium access to a user
    */
-  async grantPremium({ params, request, response }: HttpContext) {
+  async grantPremium({ params, request, response, auth }: HttpContext) {
+    const admin = auth.getUserOrFail()
     const subscription = await Subscription.findOrFail(params.id)
-    const months = request.input('months', 1)
-    const reason = request.input('reason', 'Admin granted')
+
+    // Validate inputs
+    const rawMonths = request.input('months', 1)
+    const months = Math.min(Math.max(1, Number(rawMonths) || 1), MAX_MONTHS)
+    const rawReason = String(request.input('reason', 'Admin granted'))
+    const reason = rawReason.substring(0, MAX_REASON_LENGTH)
 
     const periodEnd = DateTime.utc().plus({ months })
 
@@ -102,8 +136,11 @@ export default class AdminSubscriptionsController {
     // Note: stripeSubscriptionId stays null for admin-granted subscriptions
     await subscription.save()
 
-    // Log the action (in production, you'd want a proper audit log)
-    console.log(`Admin granted ${months} months premium to user ${subscription.userId}: ${reason}`)
+    // Audit log with admin ID
+    logger.info(
+      { adminId: admin.id, userId: subscription.userId, months, reason },
+      'Admin granted premium access'
+    )
 
     return response.json({
       success: true,
@@ -115,16 +152,23 @@ export default class AdminSubscriptionsController {
   /**
    * Revoke/cancel subscription immediately
    */
-  async revoke({ params, request, response }: HttpContext) {
+  async revoke({ params, request, response, auth }: HttpContext) {
+    const admin = auth.getUserOrFail()
     const subscription = await Subscription.findOrFail(params.id)
-    const reason = request.input('reason', 'Admin revoked')
+
+    // Validate reason
+    const rawReason = String(request.input('reason', 'Admin revoked'))
+    const reason = rawReason.substring(0, MAX_REASON_LENGTH)
 
     subscription.status = 'canceled'
     subscription.canceledAt = DateTime.utc()
     await subscription.save()
 
-    // Log the action
-    console.log(`Admin revoked subscription for user ${subscription.userId}: ${reason}`)
+    // Audit log
+    logger.info(
+      { adminId: admin.id, userId: subscription.userId, reason },
+      'Admin revoked subscription'
+    )
 
     return response.json({
       success: true,
@@ -135,9 +179,13 @@ export default class AdminSubscriptionsController {
   /**
    * Reactivate a canceled subscription (for admin-managed subs only)
    */
-  async reactivate({ params, request, response }: HttpContext) {
+  async reactivate({ params, request, response, auth }: HttpContext) {
+    const admin = auth.getUserOrFail()
     const subscription = await Subscription.findOrFail(params.id)
-    const months = request.input('months', 1)
+
+    // Validate months input
+    const rawMonths = request.input('months', 1)
+    const months = Math.min(Math.max(1, Number(rawMonths) || 1), MAX_MONTHS)
 
     // Only allow reactivation of admin-managed subscriptions (no Stripe ID)
     if (subscription.stripeSubscriptionId) {
@@ -153,6 +201,12 @@ export default class AdminSubscriptionsController {
     subscription.currentPeriodEnd = periodEnd
     subscription.canceledAt = null
     await subscription.save()
+
+    // Audit log
+    logger.info(
+      { adminId: admin.id, userId: subscription.userId, months },
+      'Admin reactivated subscription'
+    )
 
     return response.json({
       success: true,

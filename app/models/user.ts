@@ -32,6 +32,22 @@ export default class User extends compose(BaseModel, AuthFinder) {
   @column()
   declare role: UserRole
 
+  @column()
+  declare lateProfileId: string | null
+
+  /**
+   * Cached AI interpretation (text + sentiment)
+   */
+  @column({
+    prepare: (value: { text: string; sentiment: string } | null) =>
+      value ? JSON.stringify(value) : null,
+    consume: (value: string | null) => (value ? JSON.parse(value) : null),
+  })
+  declare aiInterpretation: { text: string; sentiment: 'positive' | 'neutral' | 'negative' } | null
+
+  @column.dateTime()
+  declare aiInterpretationAt: DateTime | null
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 

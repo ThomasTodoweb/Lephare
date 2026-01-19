@@ -4,6 +4,7 @@ import Subscription from '#models/subscription'
 import User from '#models/user'
 import { DateTime } from 'luxon'
 import logger from '@adonisjs/core/services/logger'
+import db from '@adonisjs/lucid/services/db'
 
 interface CreateCheckoutResult {
   sessionId: string
@@ -87,6 +88,7 @@ export default class StripeService {
 
   /**
    * Create a checkout session for subscription
+   * Uses database transaction to prevent race conditions
    */
   async createCheckoutSession(
     userId: number,
@@ -109,38 +111,60 @@ export default class StripeService {
     if (!user) return null
 
     try {
-      // Get or create Stripe customer
-      let subscription = await Subscription.query().where('user_id', userId).first()
-      let customerId = subscription?.stripeCustomerId
+      // Use transaction with row locking to prevent race conditions
+      return await db.transaction(async (trx) => {
+        // Get or create subscription with row lock (FOR UPDATE)
+        let subscription = await Subscription.query({ client: trx })
+          .where('user_id', userId)
+          .forUpdate()
+          .first()
 
-      if (!customerId) {
-        customerId = await this.createCustomer(user)
-        if (!customerId) return null
+        let customerId = subscription?.stripeCustomerId
 
-        // Store customer ID in subscription
-        if (subscription) {
-          subscription.stripeCustomerId = customerId
-          await subscription.save()
+        if (!customerId) {
+          // Create Stripe customer
+          customerId = await this.createCustomer(user)
+          if (!customerId) {
+            throw new Error('Failed to create Stripe customer')
+          }
+
+          // Store customer ID in subscription (or create new subscription record)
+          if (subscription) {
+            subscription.stripeCustomerId = customerId
+            subscription.useTransaction(trx)
+            await subscription.save()
+          } else {
+            // Create subscription record with customer ID
+            subscription = await Subscription.create(
+              {
+                userId,
+                stripeCustomerId: customerId,
+                planType: 'free_trial',
+                status: 'incomplete',
+              },
+              { client: trx }
+            )
+          }
         }
-      }
 
-      const session = await this.stripe.checkout.sessions.create({
-        customer: customerId,
-        mode: 'subscription',
-        line_items: [{ price: priceId, quantity: 1 }],
-        success_url: successUrl,
-        cancel_url: cancelUrl,
-        metadata: { userId: userId.toString(), planType },
-        subscription_data: {
+        const session = await this.stripe!.checkout.sessions.create({
+          customer: customerId,
+          mode: 'subscription',
+          line_items: [{ price: priceId, quantity: 1 }],
+          success_url: successUrl,
+          cancel_url: cancelUrl,
           metadata: { userId: userId.toString(), planType },
-        },
-      })
+          subscription_data: {
+            metadata: { userId: userId.toString(), planType },
+          },
+        })
 
-      logger.info({ userId, sessionId: session.id }, 'Stripe checkout session created')
-      return {
-        sessionId: session.id,
-        checkoutUrl: session.url || '',
-      }
+        logger.info({ userId, sessionId: session.id }, 'Stripe checkout session created')
+        return {
+          sessionId: session.id,
+          checkoutUrl: session.url || '',
+        }
+      })
     } catch (error) {
       logger.error({ error, userId }, 'Failed to create Stripe checkout session')
       return null
@@ -380,6 +404,48 @@ export default class StripeService {
     const subscription = await this.getSubscription(userId)
     if (!subscription) return false
     return subscription.isActive()
+  }
+
+  /**
+   * Get invoices history for a user
+   */
+  async getInvoices(userId: number, limit: number = 10): Promise<Array<{
+    id: string
+    number: string | null
+    amount: number
+    currency: string
+    status: string
+    date: string
+    pdfUrl: string | null
+  }>> {
+    if (!this.stripe) {
+      return []
+    }
+
+    const subscription = await this.getSubscription(userId)
+    if (!subscription?.stripeCustomerId) {
+      return []
+    }
+
+    try {
+      const invoices = await this.stripe.invoices.list({
+        customer: subscription.stripeCustomerId,
+        limit,
+      })
+
+      return invoices.data.map((invoice) => ({
+        id: invoice.id,
+        number: invoice.number,
+        amount: (invoice.amount_paid || 0) / 100,
+        currency: invoice.currency.toUpperCase(),
+        status: invoice.status || 'unknown',
+        date: new Date(invoice.created * 1000).toISOString(),
+        pdfUrl: invoice.invoice_pdf ?? null,
+      }))
+    } catch (error) {
+      logger.error({ error, userId }, 'Failed to fetch invoices')
+      return []
+    }
   }
 
   /**

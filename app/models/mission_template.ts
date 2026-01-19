@@ -6,7 +6,7 @@ import Mission from './mission.js'
 import ContentIdea from './content_idea.js'
 import Tutorial from './tutorial.js'
 
-export type MissionType = 'post' | 'story' | 'reel' | 'tuto'
+export type MissionType = 'post' | 'carousel' | 'story' | 'reel' | 'tuto' | 'engagement'
 
 export default class MissionTemplate extends BaseModel {
   @column({ isPrimary: true })

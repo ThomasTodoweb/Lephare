@@ -30,6 +30,15 @@ const bodyParserConfig = defineConfig({
   },
 
   /**
+   * Config for raw body parser.
+   * Required for Stripe webhook signature verification.
+   */
+  raw: {
+    types: ['application/json'],
+    limit: '1mb',
+  },
+
+  /**
    * Config for the "multipart/form-data" content-type parser.
    * File uploads are handled by the multipart parser.
    */

@@ -175,16 +175,17 @@ export default class StatisticsService {
     change: number
     changePercent: number
   }> {
-    const now = DateTime.utc().startOf('day')
-    const currentStart = now.minus({ days })
+    // Use end of today to include today's missions
+    const now = DateTime.utc().endOf('day')
+    const currentStart = now.minus({ days }).startOf('day')
     const previousStart = currentStart.minus({ days })
 
-    // Count missions in current period
+    // Count missions in current period (last 7 days including today)
     const currentMissions = await Mission.query()
       .where('user_id', userId)
       .where('status', 'completed')
       .where('completed_at', '>=', currentStart.toSQL())
-      .where('completed_at', '<', now.toSQL())
+      .where('completed_at', '<=', now.toSQL())
       .count('* as total')
       .first()
 

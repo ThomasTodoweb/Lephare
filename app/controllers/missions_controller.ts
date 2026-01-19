@@ -36,6 +36,7 @@ export default class MissionsController {
   async accept({ response, auth, params, session }: HttpContext) {
     const user = auth.getUserOrFail()
     const missionId = Number(params.id)
+    const missionService = new MissionService()
 
     // Verify user owns this mission before redirecting
     const mission = await Mission.query()
@@ -52,6 +53,13 @@ export default class MissionsController {
     // For tuto missions, redirect to the tutorial
     if (mission.missionTemplate.type === 'tuto' && mission.missionTemplate.tutorialId) {
       return response.redirect().toRoute('tutorials.show', { id: mission.missionTemplate.tutorialId })
+    }
+
+    // For engagement missions, mark as completed and show bravo
+    if (mission.missionTemplate.type === 'engagement') {
+      await missionService.completeMission(missionId, user.id)
+      session.flash('success', 'Mission accomplie !')
+      return response.redirect().toRoute('dashboard')
     }
 
     // For publication missions, redirect to photo capture
@@ -113,6 +121,17 @@ export default class MissionsController {
           type: m.missionTemplate.type,
           title: m.missionTemplate.title,
         },
+        publication: m.publication
+          ? {
+              id: m.publication.id,
+              contentType: m.publication.contentType,
+              imagePath: m.publication.imagePath,
+              mediaItems: m.publication.mediaItems || [],
+              status: m.publication.status,
+              instagramPostId: m.publication.instagramPostId,
+              publishedAt: m.publication.publishedAt?.toISO(),
+            }
+          : null,
       })),
     })
   }

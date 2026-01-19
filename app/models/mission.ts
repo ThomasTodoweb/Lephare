@@ -1,8 +1,9 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column, belongsTo } from '@adonisjs/lucid/orm'
-import type { BelongsTo } from '@adonisjs/lucid/types/relations'
+import { BaseModel, column, belongsTo, hasOne } from '@adonisjs/lucid/orm'
+import type { BelongsTo, HasOne } from '@adonisjs/lucid/types/relations'
 import User from './user.js'
 import MissionTemplate from './mission_template.js'
+import Publication from './publication.js'
 
 export type MissionStatus = 'pending' | 'completed' | 'skipped'
 
@@ -42,6 +43,9 @@ export default class Mission extends BaseModel {
 
   @belongsTo(() => MissionTemplate)
   declare missionTemplate: BelongsTo<typeof MissionTemplate>
+
+  @hasOne(() => Publication)
+  declare publication: HasOne<typeof Publication>
 
   /**
    * Check if the mission is for today (using UTC for consistency)

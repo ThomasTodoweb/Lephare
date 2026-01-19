@@ -1,9 +1,10 @@
 import { Head, useForm } from '@inertiajs/react'
+import { AppLayout } from '~/components/layout'
 import { Button } from '~/components/ui/Button'
 import { Card } from '~/components/ui/Card'
 
 interface MissionTemplate {
-  type: 'post' | 'story' | 'reel' | 'tuto'
+  type: 'post' | 'story' | 'reel' | 'tuto' | 'engagement'
   title: string
   contentIdea: string
 }
@@ -26,6 +27,7 @@ const TYPE_ICONS: Record<string, string> = {
   story: '📱',
   reel: '🎬',
   tuto: '🎓',
+  engagement: '💬',
 }
 
 const TYPE_LABELS: Record<string, string> = {
@@ -33,6 +35,7 @@ const TYPE_LABELS: Record<string, string> = {
   story: 'Story',
   reel: 'Réel',
   tuto: 'Tutoriel',
+  engagement: 'Engagement',
 }
 
 export default function TodayMission({ mission }: Props) {
@@ -59,21 +62,20 @@ export default function TodayMission({ mission }: Props) {
   }
 
   return (
-    <>
+    <AppLayout currentPage="home">
       <Head title="Ma mission - Le Phare" />
-      <div className="min-h-screen bg-background flex flex-col">
-        {/* Header */}
-        <div className="px-6 pt-8 pb-4">
-          <h1 className="text-2xl font-extrabold text-neutral-900 uppercase tracking-tight">
-            Mission du jour
-          </h1>
-          <p className="text-neutral-600 mt-2">
-            Votre défi créatif vous attend !
-          </p>
-        </div>
+      {/* Header */}
+      <div className="pb-4">
+        <h1 className="text-2xl font-extrabold text-neutral-900 uppercase tracking-tight">
+          Mission du jour
+        </h1>
+        <p className="text-neutral-600 mt-2">
+          Votre défi créatif vous attend !
+        </p>
+      </div>
 
-        {/* Content */}
-        <div className="flex-1 px-6 pb-32">
+      {/* Content */}
+      <div className="pb-32">
           {mission ? (
             <>
               {/* Mission Card */}
@@ -132,57 +134,56 @@ export default function TodayMission({ mission }: Props) {
           )}
         </div>
 
-        {/* Fixed bottom buttons */}
-        {mission && mission.status === 'pending' && (
-          <div className="fixed bottom-0 left-0 right-0 p-6 bg-background border-t border-neutral-200 space-y-3">
-            <Button
-              onClick={handleAccept}
-              disabled={acceptForm.processing}
-              className="w-full"
-            >
-              {acceptForm.processing ? 'Chargement...' : "C'est parti !"}
-            </Button>
+      {/* Fixed bottom buttons */}
+      {mission && mission.status === 'pending' && (
+        <div className="fixed bottom-20 left-0 right-0 p-6 bg-background border-t border-neutral-200 space-y-3">
+          <Button
+            onClick={handleAccept}
+            disabled={acceptForm.processing}
+            className="w-full"
+          >
+            {acceptForm.processing ? 'Chargement...' : "C'est parti !"}
+          </Button>
 
-            {mission.canUseAction && (
-              <div className="flex gap-3">
-                <Button
-                  variant="outlined"
-                  onClick={handleSkip}
-                  disabled={skipForm.processing}
-                  className="flex-1"
-                >
-                  {skipForm.processing ? '...' : 'Passer'}
-                </Button>
-                <Button
-                  variant="outlined"
-                  onClick={handleReload}
-                  disabled={reloadForm.processing}
-                  className="flex-1"
-                >
-                  {reloadForm.processing ? '...' : 'Autre mission'}
-                </Button>
-              </div>
-            )}
-          </div>
-        )}
-
-        {mission && mission.status === 'completed' && (
-          <div className="fixed bottom-0 left-0 right-0 p-6 bg-background border-t border-neutral-200">
-            <div className="bg-green-100 text-green-800 rounded-xl p-4 text-center">
-              <span className="text-2xl mb-2 block">🎉</span>
-              <p className="font-bold">Mission accomplie !</p>
+          {mission.canUseAction && (
+            <div className="flex gap-3">
+              <Button
+                variant="outlined"
+                onClick={handleSkip}
+                disabled={skipForm.processing}
+                className="flex-1"
+              >
+                {skipForm.processing ? '...' : 'Passer'}
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={handleReload}
+                disabled={reloadForm.processing}
+                className="flex-1"
+              >
+                {reloadForm.processing ? '...' : 'Autre mission'}
+              </Button>
             </div>
-          </div>
-        )}
+          )}
+        </div>
+      )}
 
-        {mission && mission.status === 'skipped' && (
-          <div className="fixed bottom-0 left-0 right-0 p-6 bg-background border-t border-neutral-200">
-            <div className="bg-neutral-100 text-neutral-600 rounded-xl p-4 text-center">
-              <p className="font-medium">Mission passée. À demain !</p>
-            </div>
+      {mission && mission.status === 'completed' && (
+        <div className="fixed bottom-20 left-0 right-0 p-6 bg-background border-t border-neutral-200">
+          <div className="bg-green-100 text-green-800 rounded-xl p-4 text-center">
+            <span className="text-2xl mb-2 block">🎉</span>
+            <p className="font-bold">Mission accomplie !</p>
           </div>
-        )}
-      </div>
-    </>
+        </div>
+      )}
+
+      {mission && mission.status === 'skipped' && (
+        <div className="fixed bottom-20 left-0 right-0 p-6 bg-background border-t border-neutral-200">
+          <div className="bg-neutral-100 text-neutral-600 rounded-xl p-4 text-center">
+            <p className="font-medium">Mission passée. À demain !</p>
+          </div>
+        </div>
+      )}
+    </AppLayout>
   )
 }

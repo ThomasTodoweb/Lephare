@@ -4,7 +4,27 @@ import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 import User from './user.js'
 import Mission from './mission.js'
 
-export type PublicationStatus = 'draft' | 'pending' | 'published' | 'failed'
+export type PublicationStatus = 'draft' | 'pending' | 'published' | 'failed' | 'deleted'
+
+/**
+ * Instagram content type
+ * - post: Single image post
+ * - carousel: Multiple images (up to 10)
+ * - reel: Short video
+ * - story: Ephemeral content (24h)
+ */
+export type ContentType = 'post' | 'carousel' | 'reel' | 'story'
+
+/**
+ * Media item stored as JSON
+ */
+export interface PublicationMediaItem {
+  type: 'image' | 'video'
+  path: string // Local storage path
+  url?: string // Late API URL after upload
+  thumbnail?: string // For videos
+  order: number
+}
 
 export default class Publication extends BaseModel {
   @column({ isPrimary: true })
@@ -16,8 +36,28 @@ export default class Publication extends BaseModel {
   @column()
   declare missionId: number | null
 
+  /**
+   * Content type for Instagram
+   */
+  @column()
+  declare contentType: ContentType
+
+  /**
+   * Legacy single image path (kept for backwards compatibility)
+   * For new publications, use mediaItems instead
+   */
   @column()
   declare imagePath: string
+
+  /**
+   * Multiple media items for carousel/reel
+   * Stored as JSON array
+   */
+  @column({
+    prepare: (value: PublicationMediaItem[]) => JSON.stringify(value),
+    consume: (value: string) => (value ? JSON.parse(value) : []),
+  })
+  declare mediaItems: PublicationMediaItem[]
 
   @column()
   declare caption: string
@@ -39,6 +79,18 @@ export default class Publication extends BaseModel {
 
   @column()
   declare errorMessage: string | null
+
+  /**
+   * For reels: share to feed option
+   */
+  @column()
+  declare shareToFeed: boolean
+
+  /**
+   * For reels: cover image path
+   */
+  @column()
+  declare coverImagePath: string | null
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime

@@ -1,5 +1,6 @@
 import { Head, Link, router } from '@inertiajs/react'
 import { useState, useEffect } from 'react'
+import { AppLayout } from '~/components/layout'
 import { Card } from '~/components/ui/Card'
 import { Input } from '~/components/ui/Input'
 
@@ -36,32 +37,31 @@ export default function TutorialsSearch({ query: initialQuery, tutorials }: Prop
   }, [query])
 
   return (
-    <>
+    <AppLayout currentPage="tutorials">
       <Head title="Rechercher - Tutoriels - Le Phare" />
-      <div className="min-h-screen bg-background flex flex-col">
-        {/* Header */}
-        <div className="px-6 pt-8 pb-4">
-          <Link href="/tutorials" className="text-primary text-sm mb-2 inline-block">
-            ← Retour aux tutoriels
-          </Link>
-          <h1 className="text-2xl font-extrabold text-neutral-900 uppercase tracking-tight">
-            Rechercher
-          </h1>
-        </div>
+      {/* Header */}
+      <div className="pb-4">
+        <Link href="/tutorials" className="text-primary text-sm mb-2 inline-block">
+          ← Retour aux tutoriels
+        </Link>
+        <h1 className="text-2xl font-extrabold text-neutral-900 uppercase tracking-tight">
+          Rechercher
+        </h1>
+      </div>
 
-        {/* Search input */}
-        <div className="px-6 mb-6">
-          <Input
-            type="text"
-            placeholder="Tapez votre recherche..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            autoFocus
-          />
-        </div>
+      {/* Search input */}
+      <div className="mb-6">
+        <Input
+          type="text"
+          placeholder="Tapez votre recherche..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          autoFocus
+        />
+      </div>
 
-        {/* Results */}
-        <div className="flex-1 px-6 pb-32">
+      {/* Results */}
+      <div className="pb-8">
           {isSearching && (
             <div className="text-center py-8">
               <div className="animate-spin inline-block w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
@@ -122,9 +122,8 @@ export default function TutorialsSearch({ query: initialQuery, tutorials }: Prop
                 </Link>
               ))}
             </div>
-          )}
-        </div>
+        )}
       </div>
-    </>
+    </AppLayout>
   )
 }

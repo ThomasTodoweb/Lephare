@@ -20,6 +20,13 @@ export default await Env.create(new URL('../', import.meta.url), {
 
   /*
   |----------------------------------------------------------
+  | Public app URL for OAuth callbacks (production)
+  |----------------------------------------------------------
+  */
+  APP_URL: Env.schema.string.optional(),
+
+  /*
+  |----------------------------------------------------------
   | Variables for configuring session package
   |----------------------------------------------------------
   */
@@ -38,13 +45,11 @@ export default await Env.create(new URL('../', import.meta.url), {
 
   /*
   |----------------------------------------------------------
-  | Variables for Later API (Instagram integration)
+  | Variables for Late API (Instagram integration)
+  | Get API key from https://getlate.dev
   |----------------------------------------------------------
   */
-  LATER_CLIENT_ID: Env.schema.string.optional(),
-  LATER_CLIENT_SECRET: Env.schema.string.optional(),
-  LATER_REDIRECT_URI: Env.schema.string.optional(),
-  LATER_API_URL: Env.schema.string.optional(),
+  LATE_API_KEY: Env.schema.string.optional(),
 
   /*
   |----------------------------------------------------------

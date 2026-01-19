@@ -1,7 +1,7 @@
 import { Link } from '@inertiajs/react'
-import { Home, Target, BookOpen, User } from 'lucide-react'
+import { Home, BookOpen, BarChart3, User } from 'lucide-react'
 
-type PageType = 'home' | 'missions' | 'tutorials' | 'profile'
+type PageType = 'home' | 'tutorials' | 'statistics' | 'profile'
 
 interface BottomNavProps {
   currentPage?: PageType
@@ -9,8 +9,8 @@ interface BottomNavProps {
 
 const navItems = [
   { icon: Home, label: 'Accueil', href: '/dashboard', page: 'home' as PageType },
-  { icon: Target, label: 'Missions', href: '/missions', page: 'missions' as PageType },
   { icon: BookOpen, label: 'Tutos', href: '/tutorials', page: 'tutorials' as PageType },
+  { icon: BarChart3, label: 'Stats', href: '/statistics', page: 'statistics' as PageType },
   { icon: User, label: 'Profil', href: '/profile', page: 'profile' as PageType },
 ]
 

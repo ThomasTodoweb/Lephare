@@ -51,4 +51,5 @@ export const middleware = router.named({
   admin: () => import('#middleware/admin_middleware'),
   throttle: () => import('#middleware/throttle_middleware'),
   subscription: () => import('#middleware/subscription_middleware'),
+  rawBody: () => import('#middleware/raw_body_middleware'),
 })

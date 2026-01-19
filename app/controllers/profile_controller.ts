@@ -1,11 +1,12 @@
 import type { HttpContext } from '@adonisjs/core/http'
-import LaterService from '#services/later_service'
+import LateService from '#services/late_service'
 import GamificationService from '#services/gamification_service'
 import StripeService from '#services/stripe_service'
 
 export default class ProfileController {
   private gamificationService = new GamificationService()
   private stripeService = new StripeService()
+  private lateService = new LateService()
 
   /**
    * Show user profile page
@@ -13,10 +14,14 @@ export default class ProfileController {
   async index({ inertia, auth }: HttpContext) {
     const user = auth.getUserOrFail()
     await user.load('restaurant')
-    await user.load('instagramConnection')
 
     const restaurant = user.restaurant
-    const instagramConnection = user.instagramConnection
+
+    // Get Instagram account from Late API (not local table)
+    let instagramAccount = null
+    if (this.lateService.isConfigured()) {
+      instagramAccount = await this.lateService.getInstagramAccountForUser(user.id)
+    }
 
     // Get streak info
     const streakInfo = await this.gamificationService.getStreakInfo(user.id)
@@ -36,10 +41,11 @@ export default class ProfileController {
             publicationRhythm: restaurant.publicationRhythm,
           }
         : null,
-      instagram: instagramConnection
+      instagram: instagramAccount
         ? {
-            username: instagramConnection.instagramUsername,
-            connectedAt: instagramConnection.connectedAt?.toISO(),
+            username: instagramAccount.username,
+            profilePictureUrl: instagramAccount.profilePictureUrl,
+            status: instagramAccount.status,
           }
         : null,
       streak: {
@@ -57,40 +63,32 @@ export default class ProfileController {
   }
 
   /**
-   * Disconnect Instagram account
+   * Disconnect Instagram account via Late API
    */
   async disconnectInstagram({ response, auth, session }: HttpContext) {
     const user = auth.getUserOrFail()
-    const laterService = new LaterService()
 
-    await laterService.deleteConnection(user.id)
+    const success = await this.lateService.disconnectInstagram(user.id)
 
-    session.flash('success', 'Votre compte Instagram a été déconnecté.')
+    if (success) {
+      session.flash('success', 'Votre compte Instagram a été déconnecté.')
+    } else {
+      session.flash('error', 'Erreur lors de la déconnexion Instagram.')
+    }
 
     return response.redirect().back()
   }
 
   /**
-   * Initiate Instagram reconnection (redirect to OAuth)
+   * Redirect to Late dashboard to manage Instagram connection
    */
-  async reconnectInstagram({ response, auth, session }: HttpContext) {
-    const user = auth.getUserOrFail()
-    const laterService = new LaterService()
-
-    if (!laterService.isConfigured()) {
+  async reconnectInstagram({ response, session }: HttpContext) {
+    if (!this.lateService.isConfigured()) {
       session.flash('error', 'La connexion Instagram n\'est pas encore disponible.')
       return response.redirect().back()
     }
 
-    // Delete existing connection
-    await laterService.deleteConnection(user.id)
-
-    // Store state for OAuth callback
-    const state = `${user.id}-${Date.now()}`
-    session.put('later_oauth_state', state)
-
-    // Redirect to Later OAuth
-    const authUrl = laterService.getAuthorizationUrl(state)
-    return response.redirect(authUrl)
+    // Redirect to Late dashboard for account management
+    return response.redirect('https://getlate.dev/dashboard')
   }
 }
