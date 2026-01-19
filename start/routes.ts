@@ -154,6 +154,7 @@ router.group(() => {
   router.get('/statistics/evolution', [StatisticsController, 'evolution']).as('statistics.evolution')
   router.get('/statistics/summary', [StatisticsController, 'summary']).as('statistics.summary')
   router.get('/statistics/interpretation', [StatisticsController, 'interpretation']).as('statistics.interpretation')
+  router.post('/statistics/instagram/refresh', [StatisticsController, 'refreshInstagram']).as('statistics.instagram.refresh')
 }).middleware([middleware.auth(), middleware.subscription()])
 
 // Stripe webhook (no auth, uses signature verification + rate limiting)

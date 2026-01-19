@@ -145,4 +145,30 @@ export default class StatisticsController {
 
     return response.json(summary)
   }
+
+  /**
+   * Force refresh Instagram stats from Late API
+   */
+  async refreshInstagram({ response, auth }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const instagramStatsService = new InstagramStatsService()
+
+    // Force sync from API
+    const stat = await instagramStatsService.syncStats(user.id)
+
+    if (!stat) {
+      return response.status(400).json({
+        error: 'Impossible de synchroniser les stats Instagram',
+      })
+    }
+
+    // Get fresh comparison data
+    const instagramStats = await instagramStatsService.getLatestStats(user.id)
+    const instagramComparison = await instagramStatsService.getStatsComparison(user.id, 7)
+
+    return response.json({
+      instagram: instagramStats,
+      instagramComparison,
+    })
+  }
 }

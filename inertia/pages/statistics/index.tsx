@@ -81,12 +81,42 @@ interface Props {
   instagramComparison: InstagramComparison | null
 }
 
-export default function StatisticsIndex({ keyMetrics, summary, comparison, instagram, instagramComparison }: Props) {
+function getXsrfToken(): string | null {
+  const match = document.cookie.match(/XSRF-TOKEN=([^;]+)/)
+  return match ? decodeURIComponent(match[1]) : null
+}
+
+export default function StatisticsIndex({ keyMetrics, summary, comparison, instagram: initialInstagram, instagramComparison: initialInstagramComparison }: Props) {
   const [selectedPeriod, setSelectedPeriod] = useState<'7' | '30' | '90'>('30')
   const [evolution, setEvolution] = useState<EvolutionPoint[]>([])
   const [isLoadingEvolution, setIsLoadingEvolution] = useState(false)
   const [interpretation, setInterpretation] = useState<Interpretation | null>(null)
   const [isLoadingInterpretation, setIsLoadingInterpretation] = useState(true)
+  const [instagram, setInstagram] = useState<InstagramStats | null>(initialInstagram)
+  const [instagramComparison, setInstagramComparison] = useState<InstagramComparison | null>(initialInstagramComparison)
+  const [isRefreshingInstagram, setIsRefreshingInstagram] = useState(false)
+
+  const refreshInstagramStats = async () => {
+    setIsRefreshingInstagram(true)
+    try {
+      const response = await fetch('/statistics/instagram/refresh', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-XSRF-TOKEN': getXsrfToken() || '',
+        },
+      })
+      if (response.ok) {
+        const data = await response.json()
+        setInstagram(data.instagram)
+        setInstagramComparison(data.instagramComparison)
+      }
+    } catch (error) {
+      console.error('Failed to refresh Instagram stats:', error)
+    } finally {
+      setIsRefreshingInstagram(false)
+    }
+  }
 
   // Fetch AI interpretation on mount
   useEffect(() => {
@@ -232,13 +262,35 @@ export default function StatisticsIndex({ keyMetrics, summary, comparison, insta
         {/* Instagram Stats */}
         {instagram && (
           <Card className="mb-6">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 rounded-lg flex items-center justify-center">
-                <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069z" />
-                </svg>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 rounded-lg flex items-center justify-center">
+                  <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069z" />
+                  </svg>
+                </div>
+                <h2 className="font-bold text-lg text-neutral-900">Instagram</h2>
               </div>
-              <h2 className="font-bold text-lg text-neutral-900">Instagram</h2>
+              <button
+                onClick={refreshInstagramStats}
+                disabled={isRefreshingInstagram}
+                className="p-2 rounded-lg hover:bg-neutral-100 transition-colors disabled:opacity-50"
+                title="Actualiser les stats"
+              >
+                <svg
+                  className={`w-5 h-5 text-neutral-600 ${isRefreshingInstagram ? 'animate-spin' : ''}`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                  />
+                </svg>
+              </button>
             </div>
 
             {/* Followers */}
