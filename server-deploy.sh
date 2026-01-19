@@ -108,4 +108,4 @@ echo -e "${BLUE}📊 Statut PM2:${NC}"
 pm2 status lephare
 
 echo ""
-echo -e "${GREEN}🌐 Application disponible sur: https://app.lephare-ia.fr${NC}"
+echo -e "${GREEN}🌐 Application disponible sur: https://lephare.todoweb.fr${NC}"

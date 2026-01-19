@@ -110,10 +110,10 @@ Le serveur est configuré pour se mettre à jour automatiquement depuis GitHub :
 ```bash
 # Sur le serveur, lancer la mise à jour
 cd /var/www/lephare
-./deploy.sh
+./server-deploy.sh
 ```
 
-Le script `deploy.sh` :
+Le script `server-deploy.sh` :
 1. Pull les derniers changements depuis GitHub
 2. Installe les dépendances
 3. Build le projet
