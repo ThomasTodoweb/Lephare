@@ -5,6 +5,7 @@ import { Button } from '~/components/ui/Button'
 import { Card } from '~/components/ui/Card'
 import { RHYTHM_LABELS, TYPE_LABELS } from '~/lib/constants'
 import { usePushNotifications } from '~/hooks/use_push_notifications'
+import { usePWAInstall } from '~/hooks/use_pwa_install'
 
 interface Props {
   user: {
@@ -46,6 +47,8 @@ export default function Profile({ user, restaurant, instagram, subscription, str
     unsubscribe,
     updateReminderTime,
   } = usePushNotifications()
+
+  const { isInstallable, isInstalled, isIOS, install } = usePWAInstall()
 
   const handleDisconnectInstagram = () => {
     if (confirm('Voulez-vous vraiment déconnecter votre compte Instagram ?')) {
@@ -223,6 +226,37 @@ export default function Profile({ user, restaurant, instagram, subscription, str
               </div>
             )}
           </Card>
+
+          {/* PWA Install */}
+          {(isInstallable || isIOS) && !isInstalled && (
+            <Card className="bg-gradient-to-r from-primary/10 to-accent/10 border-primary/30">
+              <div className="flex items-center gap-4">
+                <span className="text-3xl">📲</span>
+                <div className="flex-1">
+                  <p className="font-bold text-neutral-900">Installer l'application</p>
+                  <p className="text-sm text-neutral-600">
+                    {isIOS
+                      ? "Appuie sur Partager puis 'Sur l'écran d'accueil'"
+                      : "Ajoute Le Phare à ton écran d'accueil"}
+                  </p>
+                </div>
+                {!isIOS && (
+                  <Button onClick={install} size="sm">
+                    Installer
+                  </Button>
+                )}
+              </div>
+            </Card>
+          )}
+
+          {isInstalled && (
+            <Card className="bg-green-50 border-green-200">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">✅</span>
+                <p className="font-medium text-green-800">Application installée</p>
+              </div>
+            </Card>
+          )}
 
           {/* Notifications */}
           {isSupported && (

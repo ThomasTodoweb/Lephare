@@ -1,5 +1,6 @@
 import env from '#start/env'
 import PushSubscription from '#models/push_subscription'
+import webpush from 'web-push'
 
 interface PushPayload {
   title: string
@@ -12,10 +13,17 @@ interface PushPayload {
 export default class PushService {
   private vapidPublicKey: string | undefined
   private vapidPrivateKey: string | undefined
+  private vapidSubject: string | undefined
 
   constructor() {
     this.vapidPublicKey = env.get('VAPID_PUBLIC_KEY')
     this.vapidPrivateKey = env.get('VAPID_PRIVATE_KEY')
+    this.vapidSubject = env.get('VAPID_SUBJECT') || 'mailto:contact@lephare.todoweb.fr'
+
+    // Configure web-push with VAPID keys
+    if (this.isConfigured()) {
+      webpush.setVapidDetails(this.vapidSubject, this.vapidPublicKey!, this.vapidPrivateKey!)
+    }
   }
 
   /**
@@ -113,24 +121,23 @@ export default class PushService {
 
   /**
    * Send push notification to a specific subscription
-   * Note: Requires web-push library for actual implementation
    */
   private async sendPush(subscription: PushSubscription, payload: PushPayload): Promise<void> {
     if (!this.isConfigured()) {
       console.log('PushService: VAPID keys not configured')
-      return
+      throw new Error('VAPID keys not configured')
     }
 
-    // Placeholder: In production, use web-push library
-    // Example with web-push:
-    // const webpush = require('web-push')
-    // webpush.setVapidDetails(this.vapidSubject, this.vapidPublicKey, this.vapidPrivateKey)
-    // await webpush.sendNotification(
-    //   { endpoint: subscription.endpoint, keys: { p256dh: subscription.p256dhKey, auth: subscription.authKey } },
-    //   JSON.stringify(payload)
-    // )
+    const pushSubscription = {
+      endpoint: subscription.endpoint,
+      keys: {
+        p256dh: subscription.p256dhKey,
+        auth: subscription.authKey,
+      },
+    }
 
-    console.log('PushService: Would send push to', subscription.endpoint.substring(0, 50), payload)
+    await webpush.sendNotification(pushSubscription, JSON.stringify(payload))
+    console.log('PushService: Push sent to', subscription.endpoint.substring(0, 50))
   }
 
   /**
