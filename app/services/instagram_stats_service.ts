@@ -106,27 +106,26 @@ export default class InstagramStatsService {
 
   /**
    * Get latest Instagram stats for a user
-   * First tries to get from Late API directly, falls back to cached data
+   * Uses cached data, only refreshes if data is stale (older than 1 hour)
    */
-  async getLatestStats(userId: number, forceRefresh: boolean = false): Promise<InstagramStatsSnapshot | null> {
-    if (forceRefresh && this.lateService.isConfigured()) {
-      await this.syncStats(userId)
-    }
-
+  async getLatestStats(userId: number, allowRefresh: boolean = false): Promise<InstagramStatsSnapshot | null> {
     // Get the most recent local stat
     const stat = await InstagramStat.query()
       .where('user_id', userId)
       .orderBy('recorded_at', 'desc')
       .first()
 
-    if (!stat) {
-      // Try to sync if no local data exists
-      if (this.lateService.isConfigured()) {
-        const syncedStat = await this.syncStats(userId)
-        if (syncedStat) {
-          return this.statToSnapshot(syncedStat)
-        }
+    // Check if we need to refresh (no data, or data older than 1 hour)
+    const needsRefresh = !stat || (allowRefresh && stat.updatedAt && stat.updatedAt < DateTime.now().minus({ hours: 1 }))
+
+    if (needsRefresh && this.lateService.isConfigured()) {
+      const syncedStat = await this.syncStats(userId)
+      if (syncedStat) {
+        return this.statToSnapshot(syncedStat)
       }
+    }
+
+    if (!stat) {
       return null
     }
 
