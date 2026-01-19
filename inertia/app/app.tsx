@@ -5,11 +5,12 @@ import '../css/app.css';
 import { createRoot } from 'react-dom/client';
 import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from '@adonisjs/inertia/helpers'
+import { AppWrapper } from '../components/AppWrapper'
 
 const appName = import.meta.env.VITE_APP_NAME || 'AdonisJS'
 
 createInertiaApp({
-  progress: { color: '#5468FF' },
+  progress: false, // Disable default progress bar, we use our own loader
 
   title: (title) => `${title} - ${appName}`,
 
@@ -21,7 +22,11 @@ createInertiaApp({
   },
 
   setup({ el, App, props }) {
-    createRoot(el).render(<App {...props} />);
+    createRoot(el).render(
+      <AppWrapper>
+        <App {...props} />
+      </AppWrapper>
+    );
 
     // Register service worker for PWA and push notifications
     if ('serviceWorker' in navigator) {
