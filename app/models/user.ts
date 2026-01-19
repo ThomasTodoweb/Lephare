@@ -41,7 +41,12 @@ export default class User extends compose(BaseModel, AuthFinder) {
   @column({
     prepare: (value: { text: string; sentiment: string } | null) =>
       value ? JSON.stringify(value) : null,
-    consume: (value: string | null) => (value ? JSON.parse(value) : null),
+    consume: (value: string | object | null) => {
+      if (!value) return null
+      // PostgreSQL JSONB returns object directly, string needs parsing
+      if (typeof value === 'string') return JSON.parse(value)
+      return value
+    },
   })
   declare aiInterpretation: { text: string; sentiment: 'positive' | 'neutral' | 'negative' } | null
 
