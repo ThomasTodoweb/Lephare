@@ -113,6 +113,10 @@ router.group(() => {
 
   // Profile - accessible to manage account
   router.get('/profile', [ProfileController, 'index']).as('profile')
+  router.post('/profile/email', [ProfileController, 'updateEmail']).as('profile.updateEmail')
+  router.post('/profile/restaurant/name', [ProfileController, 'updateRestaurantName']).as('profile.updateRestaurantName')
+  router.post('/profile/restaurant/type', [ProfileController, 'updateRestaurantType']).as('profile.updateRestaurantType')
+  router.post('/profile/restaurant/rhythm', [ProfileController, 'updatePublicationRhythm']).as('profile.updatePublicationRhythm')
   router.post('/profile/instagram/disconnect', [ProfileController, 'disconnectInstagram']).as('profile.instagram.disconnect')
   router.post('/profile/restart-onboarding', [ProfileController, 'restartOnboarding']).as('profile.restart.onboarding')
 

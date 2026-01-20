@@ -3,6 +3,13 @@ import LateService from '#services/late_service'
 import GamificationService from '#services/gamification_service'
 import StripeService from '#services/stripe_service'
 import Strategy from '#models/strategy'
+import { RESTAURANT_TYPES, PUBLICATION_RHYTHMS } from '#models/restaurant'
+import {
+  createUpdateEmailValidator,
+  updateRestaurantNameValidator,
+  updateRestaurantTypeValidator,
+  updatePublicationRhythmValidator,
+} from '#validators/profile'
 
 export default class ProfileController {
   private gamificationService = new GamificationService()
@@ -74,7 +81,92 @@ export default class ProfileController {
             trialDaysRemaining: subscription.isTrialing() ? subscription.trialDaysRemaining() : null,
           }
         : null,
+      // Options for edit forms
+      restaurantTypes: RESTAURANT_TYPES,
+      publicationRhythms: PUBLICATION_RHYTHMS,
     })
+  }
+
+  /**
+   * Update user email
+   */
+  async updateEmail({ request, response, auth, session }: HttpContext) {
+    const user = auth.getUserOrFail()
+
+    const validator = createUpdateEmailValidator(user.id)
+    const data = await request.validateUsing(validator)
+
+    user.email = data.email
+    await user.save()
+
+    session.flash('success', 'Email mis à jour avec succès.')
+    return response.redirect().back()
+  }
+
+  /**
+   * Update restaurant name
+   */
+  async updateRestaurantName({ request, response, auth, session }: HttpContext) {
+    const user = auth.getUserOrFail()
+    await user.load('restaurant')
+
+    const restaurant = user.restaurant
+    if (!restaurant) {
+      session.flash('error', 'Aucun restaurant trouvé.')
+      return response.redirect().back()
+    }
+
+    const data = await request.validateUsing(updateRestaurantNameValidator)
+
+    restaurant.name = data.name
+    await restaurant.save()
+
+    session.flash('success', 'Nom du restaurant mis à jour.')
+    return response.redirect().back()
+  }
+
+  /**
+   * Update restaurant type
+   */
+  async updateRestaurantType({ request, response, auth, session }: HttpContext) {
+    const user = auth.getUserOrFail()
+    await user.load('restaurant')
+
+    const restaurant = user.restaurant
+    if (!restaurant) {
+      session.flash('error', 'Aucun restaurant trouvé.')
+      return response.redirect().back()
+    }
+
+    const data = await request.validateUsing(updateRestaurantTypeValidator)
+
+    restaurant.type = data.type
+    await restaurant.save()
+
+    session.flash('success', 'Type de restaurant mis à jour.')
+    return response.redirect().back()
+  }
+
+  /**
+   * Update publication rhythm
+   */
+  async updatePublicationRhythm({ request, response, auth, session }: HttpContext) {
+    const user = auth.getUserOrFail()
+    await user.load('restaurant')
+
+    const restaurant = user.restaurant
+    if (!restaurant) {
+      session.flash('error', 'Aucun restaurant trouvé.')
+      return response.redirect().back()
+    }
+
+    const data = await request.validateUsing(updatePublicationRhythmValidator)
+
+    restaurant.publicationRhythm = data.publication_rhythm
+    await restaurant.save()
+
+    session.flash('success', 'Rythme de publication mis à jour.')
+    return response.redirect().back()
   }
 
   /**
