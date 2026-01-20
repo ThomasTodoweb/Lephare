@@ -35,6 +35,16 @@ interface PageProps {
     welcomeEmailContent: string
     passwordResetEmailContent: string
     dailyMissionEmailContent: string
+
+    // Account changes email
+    accountChangesEmailEnabled: boolean
+    accountChangesEmailSubject: string
+    accountChangesEmailContent: string
+
+    // Weekly summary email
+    weeklySummaryEmailEnabled: boolean
+    weeklySummaryEmailSubject: string
+    weeklySummaryEmailContent: string
   }
   flash?: {
     success?: string
@@ -70,6 +80,12 @@ export default function AdminEmailsIndex() {
     welcome_email_content: settings.welcomeEmailContent,
     password_reset_email_content: settings.passwordResetEmailContent,
     daily_mission_email_content: settings.dailyMissionEmailContent,
+    account_changes_email_enabled: settings.accountChangesEmailEnabled,
+    account_changes_email_subject: settings.accountChangesEmailSubject,
+    account_changes_email_content: settings.accountChangesEmailContent,
+    weekly_summary_email_enabled: settings.weeklySummaryEmailEnabled,
+    weekly_summary_email_subject: settings.weeklySummaryEmailSubject,
+    weekly_summary_email_content: settings.weeklySummaryEmailContent,
   })
 
   const testForm = useForm({
@@ -384,7 +400,7 @@ export default function AdminEmailsIndex() {
                 </div>
 
                 {/* Daily Mission Email */}
-                <div>
+                <div className="pb-4 border-b border-neutral-100">
                   <div className="flex items-center gap-3 mb-3">
                     <input
                       type="checkbox"
@@ -416,6 +432,52 @@ export default function AdminEmailsIndex() {
                     </div>
                   </div>
                 </div>
+
+                {/* Account Changes Email */}
+                <div className="pb-4 border-b border-neutral-100">
+                  <div className="flex items-center gap-3 mb-3">
+                    <input
+                      type="checkbox"
+                      id="account_changes_email_enabled"
+                      checked={data.account_changes_email_enabled}
+                      onChange={(e) => setData('account_changes_email_enabled', e.target.checked)}
+                      className="w-5 h-5 rounded border-neutral-300 text-primary focus:ring-primary"
+                    />
+                    <label htmlFor="account_changes_email_enabled" className="text-sm font-medium text-neutral-700">
+                      Email de modification de compte
+                    </label>
+                  </div>
+                  <Input
+                    type="text"
+                    value={data.account_changes_email_subject}
+                    onChange={(e) => setData('account_changes_email_subject', e.target.value)}
+                    placeholder="Sujet de l'email"
+                    disabled={!data.account_changes_email_enabled}
+                  />
+                </div>
+
+                {/* Weekly Summary Email */}
+                <div>
+                  <div className="flex items-center gap-3 mb-3">
+                    <input
+                      type="checkbox"
+                      id="weekly_summary_email_enabled"
+                      checked={data.weekly_summary_email_enabled}
+                      onChange={(e) => setData('weekly_summary_email_enabled', e.target.checked)}
+                      className="w-5 h-5 rounded border-neutral-300 text-primary focus:ring-primary"
+                    />
+                    <label htmlFor="weekly_summary_email_enabled" className="text-sm font-medium text-neutral-700">
+                      Email de bilan hebdomadaire
+                    </label>
+                  </div>
+                  <Input
+                    type="text"
+                    value={data.weekly_summary_email_subject}
+                    onChange={(e) => setData('weekly_summary_email_subject', e.target.value)}
+                    placeholder="Sujet de l'email"
+                    disabled={!data.weekly_summary_email_enabled}
+                  />
+                </div>
               </div>
             </Card>
           </>
@@ -436,6 +498,12 @@ export default function AdminEmailsIndex() {
                 <div className="bg-neutral-50 p-2 rounded"><code className="text-primary">{'{titre}'}</code> - Titre de la mission</div>
                 <div className="bg-neutral-50 p-2 rounded"><code className="text-primary">{'{description}'}</code> - Description mission</div>
                 <div className="bg-neutral-50 p-2 rounded"><code className="text-primary">{'{categorie}'}</code> - Categorie mission</div>
+                <div className="bg-neutral-50 p-2 rounded"><code className="text-primary">{'{modification}'}</code> - Type de modification</div>
+                <div className="bg-neutral-50 p-2 rounded"><code className="text-primary">{'{date}'}</code> - Date de modification</div>
+                <div className="bg-neutral-50 p-2 rounded"><code className="text-primary">{'{missions_completees}'}</code> - Missions completees</div>
+                <div className="bg-neutral-50 p-2 rounded"><code className="text-primary">{'{missions_total}'}</code> - Total missions</div>
+                <div className="bg-neutral-50 p-2 rounded"><code className="text-primary">{'{streak}'}</code> - Streak actuel</div>
+                <div className="bg-neutral-50 p-2 rounded"><code className="text-primary">{'{analyse_ia}'}</code> - Analyse IA</div>
               </div>
             </Card>
 
@@ -496,6 +564,36 @@ export default function AdminEmailsIndex() {
                 value={data.daily_mission_email_content}
                 onChange={(e) => setData('daily_mission_email_content', e.target.value)}
                 rows={10}
+                className="w-full px-4 py-3 rounded-lg border border-neutral-200 focus:border-primary focus:ring-1 focus:ring-primary outline-none font-mono text-sm"
+                placeholder="Contenu de l'email..."
+              />
+            </Card>
+
+            {/* Account Changes Email Template */}
+            <Card>
+              <h2 className="text-lg font-bold text-neutral-900 mb-2">Email de modification de compte</h2>
+              <p className="text-xs text-neutral-500 mb-3">
+                Envoye quand l'utilisateur modifie ses informations de compte. Variables: {'{prenom}'}, {'{modification}'}, {'{date}'}
+              </p>
+              <textarea
+                value={data.account_changes_email_content}
+                onChange={(e) => setData('account_changes_email_content', e.target.value)}
+                rows={10}
+                className="w-full px-4 py-3 rounded-lg border border-neutral-200 focus:border-primary focus:ring-1 focus:ring-primary outline-none font-mono text-sm"
+                placeholder="Contenu de l'email..."
+              />
+            </Card>
+
+            {/* Weekly Summary Email Template */}
+            <Card>
+              <h2 className="text-lg font-bold text-neutral-900 mb-2">Email de bilan hebdomadaire</h2>
+              <p className="text-xs text-neutral-500 mb-3">
+                Envoye chaque lundi matin avec le bilan de la semaine. Variables: {'{prenom}'}, {'{restaurant}'}, {'{missions_completees}'}, {'{missions_total}'}, {'{streak}'}, {'{analyse_ia}'}
+              </p>
+              <textarea
+                value={data.weekly_summary_email_content}
+                onChange={(e) => setData('weekly_summary_email_content', e.target.value)}
+                rows={12}
                 className="w-full px-4 py-3 rounded-lg border border-neutral-200 focus:border-primary focus:ring-1 focus:ring-primary outline-none font-mono text-sm"
                 placeholder="Contenu de l'email..."
               />

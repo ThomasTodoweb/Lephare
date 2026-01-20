@@ -75,6 +75,26 @@ export default class EmailSettings extends BaseModel {
   @column()
   declare dailyMissionEmailContent: string
 
+  // Account changes email
+  @column()
+  declare accountChangesEmailEnabled: boolean
+
+  @column()
+  declare accountChangesEmailSubject: string
+
+  @column()
+  declare accountChangesEmailContent: string
+
+  // Weekly summary email
+  @column()
+  declare weeklySummaryEmailEnabled: boolean
+
+  @column()
+  declare weeklySummaryEmailSubject: string
+
+  @column()
+  declare weeklySummaryEmailContent: string
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 

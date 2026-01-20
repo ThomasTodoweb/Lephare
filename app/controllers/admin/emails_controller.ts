@@ -43,6 +43,16 @@ export default class EmailsController {
         welcomeEmailContent: settings.welcomeEmailContent,
         passwordResetEmailContent: settings.passwordResetEmailContent,
         dailyMissionEmailContent: settings.dailyMissionEmailContent,
+
+        // Account changes email
+        accountChangesEmailEnabled: settings.accountChangesEmailEnabled,
+        accountChangesEmailSubject: settings.accountChangesEmailSubject,
+        accountChangesEmailContent: settings.accountChangesEmailContent,
+
+        // Weekly summary email
+        weeklySummaryEmailEnabled: settings.weeklySummaryEmailEnabled,
+        weeklySummaryEmailSubject: settings.weeklySummaryEmailSubject,
+        weeklySummaryEmailContent: settings.weeklySummaryEmailContent,
       },
     })
   }
@@ -75,6 +85,12 @@ export default class EmailsController {
       'welcome_email_content',
       'password_reset_email_content',
       'daily_mission_email_content',
+      'account_changes_email_enabled',
+      'account_changes_email_subject',
+      'account_changes_email_content',
+      'weekly_summary_email_enabled',
+      'weekly_summary_email_subject',
+      'weekly_summary_email_content',
     ])
 
     // Update SMTP settings
@@ -107,6 +123,16 @@ export default class EmailsController {
     if (data.welcome_email_content !== undefined) settings.welcomeEmailContent = data.welcome_email_content
     if (data.password_reset_email_content !== undefined) settings.passwordResetEmailContent = data.password_reset_email_content
     if (data.daily_mission_email_content !== undefined) settings.dailyMissionEmailContent = data.daily_mission_email_content
+
+    // Update account changes email
+    if (data.account_changes_email_enabled !== undefined) settings.accountChangesEmailEnabled = data.account_changes_email_enabled === 'true' || data.account_changes_email_enabled === true
+    if (data.account_changes_email_subject !== undefined) settings.accountChangesEmailSubject = data.account_changes_email_subject
+    if (data.account_changes_email_content !== undefined) settings.accountChangesEmailContent = data.account_changes_email_content
+
+    // Update weekly summary email
+    if (data.weekly_summary_email_enabled !== undefined) settings.weeklySummaryEmailEnabled = data.weekly_summary_email_enabled === 'true' || data.weekly_summary_email_enabled === true
+    if (data.weekly_summary_email_subject !== undefined) settings.weeklySummaryEmailSubject = data.weekly_summary_email_subject
+    if (data.weekly_summary_email_content !== undefined) settings.weeklySummaryEmailContent = data.weekly_summary_email_content
 
     await settings.save()
 
