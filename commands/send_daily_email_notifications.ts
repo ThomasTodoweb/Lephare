@@ -28,9 +28,9 @@ export default class SendDailyEmailNotifications extends BaseCommand {
       return
     }
 
-    // Get current time in HH:MM format (UTC)
-    const currentTime = DateTime.utc().toFormat('HH:mm')
-    this.logger.info(`Checking for email notifications scheduled at ${currentTime} UTC`)
+    // Get current time in HH:MM format (Paris timezone - all users are in France)
+    const currentTime = DateTime.now().setZone('Europe/Paris').toFormat('HH:mm')
+    this.logger.info(`Checking for email notifications scheduled at ${currentTime} (Europe/Paris)`)
 
     // Get users who want email notifications at this time
     const users = await User.query()

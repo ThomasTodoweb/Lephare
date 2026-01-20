@@ -20,9 +20,9 @@ export default class SendDailyNotifications extends BaseCommand {
       return
     }
 
-    // Get current time in HH:MM format (UTC)
-    const currentTime = DateTime.utc().toFormat('HH:mm')
-    this.logger.info(`Checking for notifications scheduled at ${currentTime} UTC`)
+    // Get current time in HH:MM format (Paris timezone - all users are in France)
+    const currentTime = DateTime.now().setZone('Europe/Paris').toFormat('HH:mm')
+    this.logger.info(`Checking for notifications scheduled at ${currentTime} (Europe/Paris)`)
 
     // Get all subscriptions for this reminder time
     const subscriptions = await pushService.getSubscriptionsByReminderTime(currentTime)

@@ -51,6 +51,7 @@ interface Props {
   }
   restaurantTypes: RestaurantType[]
   publicationRhythms: PublicationRhythm[]
+  notificationReminderTime: string
 }
 
 type EditingField = 'email' | 'name' | 'type' | 'rhythm' | null
@@ -64,6 +65,7 @@ export default function Profile({
   streak,
   restaurantTypes,
   publicationRhythms,
+  notificationReminderTime,
 }: Props) {
   const { flash } = usePage<{ flash?: { success?: string; error?: string } }>().props
   const [editingField, setEditingField] = useState<EditingField>(null)
@@ -77,7 +79,7 @@ export default function Profile({
   const typeForm = useForm({ type: restaurant?.type || '' })
   const rhythmForm = useForm({ publication_rhythm: restaurant?.publicationRhythm || '' })
 
-  const [selectedTime, setSelectedTime] = useState('10:00')
+  const [selectedTime, setSelectedTime] = useState(notificationReminderTime || '10:00')
   const {
     isSupported,
     isSubscribed,
@@ -86,7 +88,7 @@ export default function Profile({
     subscribe,
     unsubscribe,
     updateReminderTime,
-  } = usePushNotifications()
+  } = usePushNotifications(notificationReminderTime)
 
   const { isInstallable, isInstalled, isIOS, install } = usePWAInstall()
 

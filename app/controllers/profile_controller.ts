@@ -3,6 +3,7 @@ import LateService from '#services/late_service'
 import GamificationService from '#services/gamification_service'
 import StripeService from '#services/stripe_service'
 import Strategy from '#models/strategy'
+import PushSubscription from '#models/push_subscription'
 import { RESTAURANT_TYPES, PUBLICATION_RHYTHMS } from '#models/restaurant'
 import {
   createUpdateEmailValidator,
@@ -42,6 +43,13 @@ export default class ProfileController {
     if (restaurant?.strategyId) {
       strategy = await Strategy.find(restaurant.strategyId)
     }
+
+    // Get user's notification reminder time from push subscriptions
+    const pushSubscription = await PushSubscription.query()
+      .where('user_id', user.id)
+      .where('is_active', true)
+      .first()
+    const notificationReminderTime = pushSubscription?.reminderTime || '10:00'
 
     return inertia.render('profile/index', {
       user: {
@@ -84,6 +92,8 @@ export default class ProfileController {
       // Options for edit forms
       restaurantTypes: RESTAURANT_TYPES,
       publicationRhythms: PUBLICATION_RHYTHMS,
+      // Notification settings
+      notificationReminderTime,
     })
   }
 
