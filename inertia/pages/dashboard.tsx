@@ -2,6 +2,7 @@ import { Head, Link, router, usePage } from '@inertiajs/react'
 import { AppLayout } from '~/components/layout'
 import { Button, Card } from '~/components/ui'
 import { NotificationBanner } from '~/components/NotificationBanner'
+import { MissionCalendar } from '~/components/MissionCalendar'
 
 interface Mission {
   id: number
@@ -23,6 +24,14 @@ interface Streak {
   message: string
 }
 
+interface CalendarMission {
+  id: number
+  date: string
+  status: 'pending' | 'completed' | 'skipped'
+  type: string
+  title: string
+}
+
 interface Props {
   user: { id: number; email: string; fullName?: string; notificationBannerDismissed?: boolean }
   restaurant: { name: string; type: string }
@@ -32,6 +41,7 @@ interface Props {
     hasSubscription: boolean
     isConfigured: boolean
   }
+  calendarMissions: CalendarMission[]
   flash?: {
     success?: string
   }
@@ -51,7 +61,7 @@ const MISSION_TYPE_LABELS: Record<string, string> = {
   tuto: 'Tutoriel',
 }
 
-export default function Dashboard({ user, restaurant, mission, streak, notifications }: Props) {
+export default function Dashboard({ user, restaurant, mission, streak, notifications, calendarMissions }: Props) {
   const { flash } = usePage<{ flash?: { success?: string } }>().props
 
   function handleLogout() {
@@ -203,6 +213,12 @@ export default function Dashboard({ user, restaurant, mission, streak, notificat
           </Card>
         )}
 
+        {/* Calendar */}
+        <div className="mb-6">
+          <h2 className="font-bold text-neutral-900 mb-3">Ton calendrier</h2>
+          <MissionCalendar missions={calendarMissions} />
+        </div>
+
         {/* Quick links */}
         <div className="grid grid-cols-2 gap-3 mb-6">
           <Link href="/missions/history">
@@ -217,13 +233,6 @@ export default function Dashboard({ user, restaurant, mission, streak, notificat
               <p className="text-sm font-medium text-neutral-700">Tutoriels</p>
             </Card>
           </Link>
-        </div>
-
-        {/* Restaurateur illustration */}
-        <div className="flex justify-center mb-6">
-          <div className="w-24 h-24 bg-neutral-100 rounded-full flex items-center justify-center">
-            <span className="text-5xl">👨‍🍳</span>
-          </div>
         </div>
 
         {/* Logout */}
