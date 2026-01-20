@@ -1,5 +1,5 @@
 import { Head, Link, router, usePage } from '@inertiajs/react'
-import { AdminLayout } from '~/components/layouts/AdminLayout'
+import { AdminLayout } from '~/components/layout'
 import { Card } from '~/components/ui/Card'
 import { Button } from '~/components/ui/Button'
 import { useState } from 'react'
