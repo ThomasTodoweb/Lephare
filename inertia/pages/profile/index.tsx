@@ -52,6 +52,11 @@ interface Props {
   restaurantTypes: RestaurantType[]
   publicationRhythms: PublicationRhythm[]
   notificationReminderTime: string
+  emailPreferences: {
+    dailyMission: boolean
+    weeklySummary: boolean
+    accountChanges: boolean
+  }
 }
 
 type EditingField = 'email' | 'name' | 'type' | 'rhythm' | null
@@ -66,6 +71,7 @@ export default function Profile({
   restaurantTypes,
   publicationRhythms,
   notificationReminderTime,
+  emailPreferences,
 }: Props) {
   const { flash } = usePage<{ flash?: { success?: string; error?: string } }>().props
   const [editingField, setEditingField] = useState<EditingField>(null)
@@ -91,6 +97,35 @@ export default function Profile({
   } = usePushNotifications(notificationReminderTime)
 
   const { isInstallable, isInstalled, isIOS, install } = usePWAInstall()
+
+  // Email preferences state
+  const [emailDailyMission, setEmailDailyMission] = useState(emailPreferences?.dailyMission ?? true)
+  const [emailWeeklySummary, setEmailWeeklySummary] = useState(emailPreferences?.weeklySummary ?? true)
+  const [emailAccountChanges, setEmailAccountChanges] = useState(emailPreferences?.accountChanges ?? true)
+  const [emailPrefLoading, setEmailPrefLoading] = useState(false)
+
+  const updateEmailPreference = async (key: 'dailyMission' | 'weeklySummary' | 'accountChanges', value: boolean) => {
+    setEmailPrefLoading(true)
+    try {
+      const response = await fetch('/profile/email-preferences', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-XSRF-TOKEN': document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1] ? decodeURIComponent(document.cookie.match(/XSRF-TOKEN=([^;]+)/)![1]) : '',
+        },
+        body: JSON.stringify({ [key]: value }),
+      })
+      if (response.ok) {
+        if (key === 'dailyMission') setEmailDailyMission(value)
+        if (key === 'weeklySummary') setEmailWeeklySummary(value)
+        if (key === 'accountChanges') setEmailAccountChanges(value)
+      }
+    } catch (error) {
+      console.error('Failed to update email preference', error)
+    } finally {
+      setEmailPrefLoading(false)
+    }
+  }
 
   const handleDisconnectInstagram = () => {
     if (confirm('Voulez-vous vraiment déconnecter votre compte Instagram ?')) {
@@ -580,6 +615,78 @@ export default function Profile({
             </div>
           </Card>
         )}
+
+        {/* Email Preferences */}
+        <Card>
+          <h2 className="font-bold text-lg text-neutral-900 mb-4">Emails</h2>
+          <p className="text-sm text-neutral-500 mb-4">
+            Choisissez les emails que vous souhaitez recevoir
+          </p>
+          <div className="space-y-4">
+            {/* Daily Mission Email */}
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium">Mission quotidienne</p>
+                <p className="text-sm text-neutral-500">Rappel de votre mission du jour</p>
+              </div>
+              <button
+                onClick={() => updateEmailPreference('dailyMission', !emailDailyMission)}
+                disabled={emailPrefLoading}
+                className={`relative w-12 h-6 rounded-full transition-colors ${
+                  emailDailyMission ? 'bg-primary' : 'bg-neutral-300'
+                }`}
+              >
+                <span
+                  className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${
+                    emailDailyMission ? 'translate-x-6' : ''
+                  }`}
+                />
+              </button>
+            </div>
+
+            {/* Weekly Summary Email */}
+            <div className="flex items-center justify-between pt-3 border-t border-neutral-100">
+              <div>
+                <p className="font-medium">Bilan hebdomadaire</p>
+                <p className="text-sm text-neutral-500">Analyse IA de votre semaine (lundi matin)</p>
+              </div>
+              <button
+                onClick={() => updateEmailPreference('weeklySummary', !emailWeeklySummary)}
+                disabled={emailPrefLoading}
+                className={`relative w-12 h-6 rounded-full transition-colors ${
+                  emailWeeklySummary ? 'bg-primary' : 'bg-neutral-300'
+                }`}
+              >
+                <span
+                  className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${
+                    emailWeeklySummary ? 'translate-x-6' : ''
+                  }`}
+                />
+              </button>
+            </div>
+
+            {/* Account Changes Email */}
+            <div className="flex items-center justify-between pt-3 border-t border-neutral-100">
+              <div>
+                <p className="font-medium">Modifications du compte</p>
+                <p className="text-sm text-neutral-500">Alertes de changements sur votre profil</p>
+              </div>
+              <button
+                onClick={() => updateEmailPreference('accountChanges', !emailAccountChanges)}
+                disabled={emailPrefLoading}
+                className={`relative w-12 h-6 rounded-full transition-colors ${
+                  emailAccountChanges ? 'bg-primary' : 'bg-neutral-300'
+                }`}
+              >
+                <span
+                  className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${
+                    emailAccountChanges ? 'translate-x-6' : ''
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
+        </Card>
 
         {/* Logout */}
         <Button

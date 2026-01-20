@@ -9,6 +9,9 @@ interface User {
   role: string
   createdAt: string
   updatedAt: string | null
+  emailDailyMissionEnabled?: boolean
+  emailWeeklySummaryEnabled?: boolean
+  emailAccountChangesEnabled?: boolean
   restaurant?: {
     id: number
     name: string | null
@@ -210,6 +213,43 @@ export default function AdminUserShow({ user, stats, subscription, recentMission
               </div>
             </Card>
           )}
+
+          {/* Email preferences */}
+          <Card>
+            <h3 className="font-bold text-lg text-neutral-900 mb-4">Préférences emails</h3>
+            <div className="space-y-3 text-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-neutral-600">Mission quotidienne</span>
+                <span className={`px-2 py-1 rounded-full text-xs ${
+                  user.emailDailyMissionEnabled !== false
+                    ? 'bg-green-100 text-green-700'
+                    : 'bg-neutral-100 text-neutral-500'
+                }`}>
+                  {user.emailDailyMissionEnabled !== false ? 'Activé' : 'Désactivé'}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-neutral-600">Bilan hebdomadaire</span>
+                <span className={`px-2 py-1 rounded-full text-xs ${
+                  user.emailWeeklySummaryEnabled !== false
+                    ? 'bg-green-100 text-green-700'
+                    : 'bg-neutral-100 text-neutral-500'
+                }`}>
+                  {user.emailWeeklySummaryEnabled !== false ? 'Activé' : 'Désactivé'}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-neutral-600">Changements de compte</span>
+                <span className={`px-2 py-1 rounded-full text-xs ${
+                  user.emailAccountChangesEnabled !== false
+                    ? 'bg-green-100 text-green-700'
+                    : 'bg-neutral-100 text-neutral-500'
+                }`}>
+                  {user.emailAccountChangesEnabled !== false ? 'Activé' : 'Désactivé'}
+                </span>
+              </div>
+            </div>
+          </Card>
 
           {/* Recent missions */}
           <Card>

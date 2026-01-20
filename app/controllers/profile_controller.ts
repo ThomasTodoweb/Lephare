@@ -94,6 +94,12 @@ export default class ProfileController {
       publicationRhythms: PUBLICATION_RHYTHMS,
       // Notification settings
       notificationReminderTime,
+      // Email preferences
+      emailPreferences: {
+        dailyMission: user.emailDailyMissionEnabled ?? true,
+        weeklySummary: user.emailWeeklySummaryEnabled ?? true,
+        accountChanges: user.emailAccountChangesEnabled ?? true,
+      },
     })
   }
 
@@ -207,6 +213,33 @@ export default class ProfileController {
 
     // Redirect to Late dashboard for account management
     return response.redirect('https://getlate.dev/dashboard')
+  }
+
+  /**
+   * Update email preferences
+   */
+  async updateEmailPreferences({ request, response, auth }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const { dailyMission, weeklySummary, accountChanges } = request.only([
+      'dailyMission',
+      'weeklySummary',
+      'accountChanges',
+    ])
+
+    // Update preferences (only if provided)
+    if (typeof dailyMission === 'boolean') {
+      user.emailDailyMissionEnabled = dailyMission
+    }
+    if (typeof weeklySummary === 'boolean') {
+      user.emailWeeklySummaryEnabled = weeklySummary
+    }
+    if (typeof accountChanges === 'boolean') {
+      user.emailAccountChangesEnabled = accountChanges
+    }
+
+    await user.save()
+
+    return response.json({ success: true })
   }
 
   /**

@@ -117,6 +117,7 @@ router.group(() => {
   router.post('/profile/restaurant/name', [ProfileController, 'updateRestaurantName']).as('profile.updateRestaurantName')
   router.post('/profile/restaurant/type', [ProfileController, 'updateRestaurantType']).as('profile.updateRestaurantType')
   router.post('/profile/restaurant/rhythm', [ProfileController, 'updatePublicationRhythm']).as('profile.updatePublicationRhythm')
+  router.post('/profile/email-preferences', [ProfileController, 'updateEmailPreferences']).as('profile.updateEmailPreferences')
   router.post('/profile/instagram/disconnect', [ProfileController, 'disconnectInstagram']).as('profile.instagram.disconnect')
   router.post('/profile/restart-onboarding', [ProfileController, 'restartOnboarding']).as('profile.restart.onboarding')
 

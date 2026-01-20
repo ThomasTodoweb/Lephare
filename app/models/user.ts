@@ -61,12 +61,22 @@ export default class User extends compose(BaseModel, AuthFinder) {
   @column.dateTime({ serializeAs: null })
   declare passwordResetTokenExpiresAt: DateTime | null
 
-  // Email notification preferences
+  // Email notification preferences (legacy global toggle)
   @column()
   declare emailNotificationsEnabled: boolean
 
   @column()
   declare emailNotificationTime: string
+
+  // Granular email preferences
+  @column()
+  declare emailDailyMissionEnabled: boolean
+
+  @column()
+  declare emailWeeklySummaryEnabled: boolean
+
+  @column()
+  declare emailAccountChangesEnabled: boolean
 
   // Push notification banner tracking
   @column()
