@@ -16,6 +16,12 @@ interface Props {
     name: string
     type: string
     publicationRhythm: string | null
+    onboardingCompleted: boolean
+  } | null
+  strategy: {
+    id: number
+    name: string
+    icon: string
   } | null
   instagram: {
     username: string
@@ -33,10 +39,11 @@ interface Props {
   }
 }
 
-export default function Profile({ user, restaurant, instagram, subscription, streak }: Props) {
+export default function Profile({ user, restaurant, strategy, instagram, subscription, streak }: Props) {
   const disconnectForm = useForm({})
   const reconnectForm = useForm({})
   const logoutForm = useForm({})
+  const restartOnboardingForm = useForm({})
   const [selectedTime, setSelectedTime] = useState('10:00')
   const {
     isSupported,
@@ -77,6 +84,10 @@ export default function Profile({ user, restaurant, instagram, subscription, str
     if (isSubscribed) {
       await updateReminderTime(newTime)
     }
+  }
+
+  const handleRestartOnboarding = () => {
+    restartOnboardingForm.post('/profile/restart-onboarding')
   }
 
   return (
@@ -165,6 +176,51 @@ export default function Profile({ user, restaurant, instagram, subscription, str
                   </div>
                 )}
               </div>
+            </Card>
+          )}
+
+          {/* Configuration / Onboarding */}
+          {restaurant && (
+            <Card>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-bold text-lg text-neutral-900">Configuration</h2>
+                {restaurant.onboardingCompleted && (
+                  <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
+                    Terminee
+                  </span>
+                )}
+              </div>
+              <div className="space-y-3 text-sm mb-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-neutral-600">Strategie</span>
+                  {strategy ? (
+                    <span className="font-medium flex items-center gap-1">
+                      <span>{strategy.icon}</span>
+                      {strategy.name}
+                    </span>
+                  ) : (
+                    <span className="text-neutral-400 italic">Non definie</span>
+                  )}
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-neutral-600">Rythme</span>
+                  {restaurant.publicationRhythm ? (
+                    <span className="font-medium">
+                      {RHYTHM_LABELS[restaurant.publicationRhythm] || restaurant.publicationRhythm}
+                    </span>
+                  ) : (
+                    <span className="text-neutral-400 italic">Non defini</span>
+                  )}
+                </div>
+              </div>
+              <Button
+                variant="outlined"
+                onClick={handleRestartOnboarding}
+                disabled={restartOnboardingForm.processing}
+                className="w-full"
+              >
+                {restartOnboardingForm.processing ? 'Chargement...' : 'Modifier ma configuration'}
+              </Button>
             </Card>
           )}
 

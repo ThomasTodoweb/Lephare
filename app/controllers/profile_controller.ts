@@ -2,6 +2,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 import LateService from '#services/late_service'
 import GamificationService from '#services/gamification_service'
 import StripeService from '#services/stripe_service'
+import Strategy from '#models/strategy'
 
 export default class ProfileController {
   private gamificationService = new GamificationService()
@@ -29,6 +30,12 @@ export default class ProfileController {
     // Get subscription info
     const subscription = await this.stripeService.getSubscription(user.id)
 
+    // Get strategy info if restaurant has one
+    let strategy = null
+    if (restaurant?.strategyId) {
+      strategy = await Strategy.find(restaurant.strategyId)
+    }
+
     return inertia.render('profile/index', {
       user: {
         email: user.email,
@@ -39,6 +46,14 @@ export default class ProfileController {
             name: restaurant.name,
             type: restaurant.type,
             publicationRhythm: restaurant.publicationRhythm,
+            onboardingCompleted: restaurant.onboardingCompleted,
+          }
+        : null,
+      strategy: strategy
+        ? {
+            id: strategy.id,
+            name: strategy.name,
+            icon: strategy.icon,
           }
         : null,
       instagram: instagramAccount
@@ -90,5 +105,29 @@ export default class ProfileController {
 
     // Redirect to Late dashboard for account management
     return response.redirect('https://getlate.dev/dashboard')
+  }
+
+  /**
+   * Restart onboarding - reset onboardingCompleted flag
+   * Always starts from strategy step so user can review/change everything
+   */
+  async restartOnboarding({ response, auth, session }: HttpContext) {
+    const user = auth.getUserOrFail()
+    await user.load('restaurant')
+
+    const restaurant = user.restaurant
+    if (!restaurant) {
+      session.flash('error', 'Aucun restaurant trouvé.')
+      return response.redirect().back()
+    }
+
+    // Reset onboarding flag - keep existing data
+    restaurant.onboardingCompleted = false
+    await restaurant.save()
+
+    session.flash('success', 'Vous pouvez maintenant refaire la configuration.')
+
+    // Always start from strategy step to allow reviewing all choices
+    return response.redirect().toRoute('onboarding.strategy')
   }
 }

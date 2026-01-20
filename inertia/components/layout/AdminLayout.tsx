@@ -21,6 +21,7 @@ const navItems: NavItem[] = [
   { href: '/admin/tutorials', label: 'Tutoriels', icon: '📚' },
   { href: '/admin/alerts', label: 'Alertes', icon: '🔔' },
   { href: '/admin/reports', label: 'Rapports', icon: '📈' },
+  { href: '/admin/emails', label: 'Emails', icon: '📧' },
 ]
 
 export function AdminLayout({ children, title = 'Administration' }: AdminLayoutProps) {

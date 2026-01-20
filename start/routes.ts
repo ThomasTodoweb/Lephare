@@ -31,6 +31,10 @@ const AdminTutorialsController = () => import('#controllers/admin/tutorials_cont
 const AdminAlertsController = () => import('#controllers/admin/alerts_controller')
 const AdminReportsController = () => import('#controllers/admin/reports_controller')
 const AdminSubscriptionsController = () => import('#controllers/admin/subscriptions_controller')
+const AdminEmailsController = () => import('#controllers/admin/emails_controller')
+const AdminEmailLogsController = () => import('#controllers/admin/email_logs_controller')
+const HomeController = () => import('#controllers/home_controller')
+const SocialAuthController = () => import('#controllers/social_auth_controller')
 
 // Serve storage files (uploaded images and videos)
 router.get('/storage/*', async ({ params, response }) => {
@@ -50,7 +54,7 @@ router.get('/storage/*', async ({ params, response }) => {
 })
 
 // Public landing page
-router.on('/').renderInertia('home')
+router.get('/', [HomeController, 'index']).as('home')
 
 // Auth routes (guest only - redirect to dashboard if logged in)
 // Rate limited to prevent brute force attacks (5 attempts per 15 min)
@@ -59,7 +63,26 @@ router.group(() => {
   router.post('/register', [AuthController, 'register']).middleware(middleware.throttle())
   router.get('/login', [AuthController, 'showLogin']).as('login')
   router.post('/login', [AuthController, 'login']).middleware(middleware.throttle())
+
+  // Email verification
+  router.get('/verify-email', [AuthController, 'showVerifyEmail']).as('verify.email')
+  router.post('/verify-email', [AuthController, 'verifyEmail']).middleware(middleware.throttle())
+  router.post('/resend-verification', [AuthController, 'resendVerificationCode']).middleware(middleware.throttle())
+
+  // Password reset
+  router.get('/forgot-password', [AuthController, 'showForgotPassword']).as('forgot.password')
+  router.post('/forgot-password', [AuthController, 'forgotPassword']).middleware(middleware.throttle())
+  router.get('/reset-password', [AuthController, 'showResetPassword']).as('reset.password')
+  router.post('/reset-password', [AuthController, 'resetPassword']).middleware(middleware.throttle())
 }).middleware(middleware.guest())
+
+// Social authentication routes (Google, Apple)
+router.group(() => {
+  router.get('/auth/google', [SocialAuthController, 'googleRedirect']).as('auth.google')
+  router.get('/auth/google/callback', [SocialAuthController, 'googleCallback']).as('auth.google.callback')
+  router.get('/auth/apple', [SocialAuthController, 'appleRedirect']).as('auth.apple')
+  router.post('/auth/apple/callback', [SocialAuthController, 'appleCallback']).as('auth.apple.callback')
+})
 
 // Logout route (auth required)
 router.post('/logout', [AuthController, 'logout']).as('logout').middleware(middleware.auth())
@@ -68,6 +91,7 @@ router.post('/logout', [AuthController, 'logout']).as('logout').middleware(middl
 router.group(() => {
   // Dashboard - always accessible to see subscription status
   router.get('/dashboard', [DashboardController, 'index']).as('dashboard')
+  router.post('/dashboard/dismiss-notification-banner', [DashboardController, 'dismissNotificationBanner']).as('dashboard.dismissNotificationBanner')
 
   // Restaurant setup - part of onboarding, must be free
   router.get('/restaurant/type', [RestaurantsController, 'showTypeChoice']).as('restaurant.type')
@@ -79,12 +103,18 @@ router.group(() => {
   router.get('/onboarding/rhythm', [OnboardingController, 'showRhythm']).as('onboarding.rhythm')
   router.post('/onboarding/rhythm', [OnboardingController, 'storeRhythm'])
   router.get('/onboarding/instagram', [OnboardingController, 'showInstagram']).as('onboarding.instagram')
+  router.get('/onboarding/instagram/error', [OnboardingController, 'showInstagramError']).as('onboarding.instagram.error')
   router.post('/onboarding/instagram/skip', [OnboardingController, 'skipInstagram']).as('onboarding.instagram.skip')
+  router.post('/onboarding/instagram/continue', [OnboardingController, 'continueFromInstagram']).as('onboarding.instagram.continue')
+  router.get('/onboarding/pwa', [OnboardingController, 'showPwa']).as('onboarding.pwa')
+  router.post('/onboarding/pwa/continue', [OnboardingController, 'continuePwa']).as('onboarding.pwa.continue')
   router.post('/onboarding/complete', [OnboardingController, 'complete']).as('onboarding.complete')
+  router.get('/onboarding/status', [OnboardingController, 'status']).as('onboarding.status')
 
   // Profile - accessible to manage account
   router.get('/profile', [ProfileController, 'index']).as('profile')
   router.post('/profile/instagram/disconnect', [ProfileController, 'disconnectInstagram']).as('profile.instagram.disconnect')
+  router.post('/profile/restart-onboarding', [ProfileController, 'restartOnboarding']).as('profile.restart.onboarding')
 
   // Instagram settings & connection - accessible to connect account
   router.get('/settings/instagram', [InstagramController, 'index']).as('instagram.settings')
@@ -224,4 +254,15 @@ router.group(() => {
   router.post('/subscriptions/:id/revoke', [AdminSubscriptionsController, 'revoke']).as('admin.subscriptions.revoke')
   router.post('/subscriptions/:id/reactivate', [AdminSubscriptionsController, 'reactivate']).as('admin.subscriptions.reactivate')
   router.get('/api/subscriptions/stats', [AdminSubscriptionsController, 'stats']).as('admin.api.subscriptions.stats')
+
+  // Email Configuration
+  router.get('/emails', [AdminEmailsController, 'index']).as('admin.emails.index')
+  router.post('/emails', [AdminEmailsController, 'update']).as('admin.emails.update')
+  router.post('/emails/test', [AdminEmailsController, 'sendTest']).as('admin.emails.test')
+
+  // Email Logs / History
+  router.get('/email-logs', [AdminEmailLogsController, 'index']).as('admin.email-logs.index')
+  router.get('/email-logs/:id', [AdminEmailLogsController, 'show']).as('admin.email-logs.show')
+  router.post('/email-logs/:id/status', [AdminEmailLogsController, 'updateStatus']).as('admin.email-logs.updateStatus')
+  router.post('/email-logs/cleanup', [AdminEmailLogsController, 'cleanup']).as('admin.email-logs.cleanup')
 }).prefix('/admin').middleware([middleware.auth(), middleware.admin()])

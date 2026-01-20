@@ -1,6 +1,7 @@
 import { Head, Link, router, usePage } from '@inertiajs/react'
 import { AppLayout } from '~/components/layout'
 import { Button, Card } from '~/components/ui'
+import { NotificationBanner } from '~/components/NotificationBanner'
 
 interface Mission {
   id: number
@@ -23,10 +24,14 @@ interface Streak {
 }
 
 interface Props {
-  user: { id: number; email: string; fullName?: string }
+  user: { id: number; email: string; fullName?: string; notificationBannerDismissed?: boolean }
   restaurant: { name: string; type: string }
   mission: Mission | null
   streak: Streak
+  notifications: {
+    hasSubscription: boolean
+    isConfigured: boolean
+  }
   flash?: {
     success?: string
   }
@@ -46,7 +51,7 @@ const MISSION_TYPE_LABELS: Record<string, string> = {
   tuto: 'Tutoriel',
 }
 
-export default function Dashboard({ user, restaurant, mission, streak }: Props) {
+export default function Dashboard({ user, restaurant, mission, streak, notifications }: Props) {
   const { flash } = usePage<{ flash?: { success?: string } }>().props
 
   function handleLogout() {
@@ -80,6 +85,13 @@ export default function Dashboard({ user, restaurant, mission, streak }: Props) 
           {flash.success}
         </div>
       )}
+
+      {/* Notification banner - only shows for PWA users who haven't subscribed */}
+      <NotificationBanner
+        isConfigured={notifications.isConfigured}
+        hasSubscription={notifications.hasSubscription}
+        bannerDismissed={user.notificationBannerDismissed || false}
+      />
 
       <div className="py-4">
         {/* Welcome header */}

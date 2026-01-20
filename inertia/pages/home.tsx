@@ -1,345 +1,553 @@
-import { Head } from '@inertiajs/react'
+import { Head, Link } from '@inertiajs/react'
+import { useState } from 'react'
 
-export default function Home() {
+interface Props {
+  isAuthenticated: boolean
+}
+
+export default function Home({ isAuthenticated }: Props) {
+  const [openFaq, setOpenFaq] = useState<number | null>(null)
+
+  const toggleFaq = (index: number) => {
+    setOpenFaq(openFaq === index ? null : index)
+  }
+
+  const faqs = [
+    {
+      question: "Je n'ai vraiment pas le temps, même 5 minutes...",
+      answer:
+        "On a conçu Le Phare pour les restaurateurs débordés. La mission du jour s'affiche instantanément. Vous prenez une photo, l'IA écrit le texte, vous postez. Nos utilisateurs y passent en moyenne 4 minutes. C'est moins qu'un café.",
+    },
+    {
+      question: 'Je ne suis pas doué avec la technologie',
+      answer:
+        "Pas de problème. L'app est aussi simple que WhatsApp. Si vous savez prendre une photo et appuyer sur un bouton, vous savez utiliser Le Phare. Et on a des tutos vidéo pour tout vous expliquer.",
+    },
+    {
+      question: 'Est-ce que ça marche vraiment ?',
+      answer:
+        "Notre méthode est basée sur 7 ans d'accompagnement de restaurateurs. Les mêmes conseils qu'une agence facture 500€/mois, dans une app à 29€. Nos utilisateurs voient en moyenne +47% d'engagement après 30 jours.",
+    },
+    {
+      question: 'Je peux poster sans Le Phare, pourquoi payer ?',
+      answer:
+        "Vous pouvez. Mais vous le faites ? Le problème n'est pas technique, c'est la régularité et les idées. Le Phare vous donne la structure, les idées et la motivation pour poster chaque jour. C'est un coach, pas un outil.",
+    },
+    {
+      question: 'Et si ça ne me plaît pas ?',
+      answer:
+        "Essai gratuit de 14 jours, sans carte bancaire. Et garantie satisfait ou remboursé 30 jours après l'abonnement. Vous ne risquez rien.",
+    },
+    {
+      question: "C'est compatible avec mon type de restaurant ?",
+      answer:
+        "Brasserie, gastro, fast-food, bar, food truck... Le Phare s'adapte. À l'inscription, vous indiquez votre type d'établissement et vos objectifs. Les missions sont personnalisées.",
+    },
+  ]
+
   return (
     <>
-      <Head title="Homepage" />
+      <Head title="Le Phare - Instagram facile pour restaurateurs" />
 
-      <div className="fixed xl:absolute left-8 right-8 top-0 bottom-0 xl:inset-0 max-w-screen-xl mx-auto before:content-[''] before:[background:repeating-linear-gradient(0deg,var(--sand-5)_0_4px,transparent_0_8px)] before:absolute before:top-0 before:left-0 before:h-full before:w-px after:content-[''] after:[background:repeating-linear-gradient(0deg,var(--sand-5)_0_4px,transparent_0_8px)] after:absolute after:top-0 after:right-0 after:h-full after:w-px"></div>
+      <div className="min-h-screen bg-background font-sans">
+        {/* Navbar */}
+        <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm">
+          <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+            <Link href="/" className="flex items-center">
+              <img src="/logo-rectangle.png" alt="Le Phare" className="h-8" />
+            </Link>
 
-      <div className="pt-4 h-full flex flex-col">
-        {/* Header */}
-        <div className="grow pb-4 bg-gradient-to-b from-sand-1 to-sand-2 flex justify-center items-center">
-          <a href="https://adonisjs.com" target="_blank" className="isolate">
-            <svg className="w-16 h-16 fill-primary" viewBox="0 0 33 33">
-              <path
-                fillRule="evenodd"
-                d="M0 16.333c0 13.173 3.16 16.333 16.333 16.333 13.173 0 16.333-3.16 16.333-16.333C32.666 3.16 29.506 0 16.333 0 3.16 0 0 3.16 0 16.333Zm6.586 3.393L11.71 8.083c.865-1.962 2.528-3.027 4.624-3.027 2.096 0 3.759 1.065 4.624 3.027l5.123 11.643c.233.566.432 1.297.432 1.93 0 2.893-2.029 4.923-4.923 4.923-.986 0-1.769-.252-2.561-.506-.812-.261-1.634-.526-2.695-.526-1.048 0-1.89.267-2.718.529-.801.253-1.59.503-2.538.503-2.894 0-4.923-2.03-4.923-4.924 0-.632.2-1.363.432-1.929Zm9.747-9.613-5.056 11.443c1.497-.699 3.227-1.032 5.056-1.032 1.763 0 3.56.333 4.99 1.032l-4.99-11.444Z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </a>
-        </div>
-
-        {/* Bento with documentation, Adocasts, packages and Discord */}
-        <div className="isolate mt-10 max-w-screen-xl mx-auto px-16 xl:px-8 grid grid-cols-1 xl:grid-cols-2 xl:grid-rows-3 gap-8">
-          <article className="row-span-3 relative p-6 shadow-sm hover:shadow border border-sand-7 hover:border-sand-8 rounded-2xl transition ease-in-out duration-700 group flex flex-col gap-8">
-            <div className="relative opacity-80">
-              <svg fill="none" viewBox="0 0 240 105">
-                <path fill="#F9F9F8" d="M0 4a4 4 0 0 1 4-4h232a4 4 0 0 1 4 4v101H0V4Z" />
-                <g fill="#000" fillRule="evenodd" clipPath="url(#a)" clipRule="evenodd">
-                  <path d="M24 11.444c0 4.391 1.053 5.445 5.444 5.445s5.445-1.054 5.445-5.445c0-4.39-1.054-5.444-5.445-5.444C25.054 6 24 7.053 24 11.444Zm2.195 1.131 1.708-3.88c.288-.655.843-1.01 1.541-1.01.699 0 1.253.355 1.542 1.01l1.707 3.88c.078.189.144.433.144.644 0 .964-.676 1.64-1.64 1.64-.33 0-.59-.083-.854-.168-.271-.087-.545-.175-.899-.175-.35 0-.63.089-.906.176-.267.085-.53.168-.846.168-.964 0-1.64-.677-1.64-1.641 0-.211.066-.455.143-.644Zm3.25-3.204-1.686 3.814c.499-.233 1.075-.344 1.685-.344.588 0 1.187.111 1.664.344l-1.664-3.814Zm26.473-.678c-.378 0-.65.268-.65.64 0 .374.272.641.65.641s.651-.267.651-.64-.273-.64-.65-.64Zm-11.907 5.502c-1.009 0-1.738-.745-1.738-1.91 0-1.187.73-1.933 1.737-1.933.468 0 .814.158 1.019.468V8.86h1.05v5.25h-1.05v-.372c-.2.304-.546.456-1.019.456Zm-.667-1.91c0-.652.352-1.077.887-1.077.54 0 .887.42.887 1.071 0 .64-.346 1.056-.887 1.056-.535 0-.887-.415-.887-1.05Zm4.384-.011c0-.646.351-1.06.877-1.06.53 0 .882.414.882 1.06 0 .646-.352 1.06-.883 1.06-.525 0-.876-.414-.876-1.06Zm11.571.835c0 .194-.147.31-.52.31-.42 0-.682-.221-.682-.489h-1.05c.026.725.714 1.265 1.711 1.265.946 0 1.55-.42 1.55-1.165 0-.557-.358-.945-1.066-1.087l-.762-.152c-.23-.047-.367-.163-.367-.315 0-.226.23-.347.525-.347.42 0 .583.195.583.426h.997c-.026-.683-.562-1.203-1.56-1.203-.929 0-1.559.468-1.559 1.176 0 .64.415.93 1.035 1.06l.756.164c.247.052.41.157.41.357Zm-2.85 1.002h-1.05v-3.675h1.05v3.675Zm-4.264-3.675v.384c.268-.31.625-.468 1.066-.468.824 0 1.36.536 1.36 1.365v2.394h-1.05v-2.173c0-.446-.252-.714-.688-.714-.436 0-.688.268-.688.714v2.173h-1.05v-3.675h1.05Zm-3.58-.084c-1.119 0-1.948.809-1.948 1.922s.83 1.921 1.948 1.921c1.123 0 1.953-.808 1.953-1.921s-.83-1.922-1.953-1.922Zm-8.758.856c-.535 0-.887.425-.887 1.076 0 .636.352 1.05.887 1.05.54 0 .887-.414.887-1.055 0-.65-.346-1.07-.887-1.07Zm-1.958 1.076c0 1.166.73 1.911 1.732 1.911.478 0 .82-.152 1.024-.456v.372h1.05v-3.675h-1.05v.384c-.21-.31-.556-.468-1.024-.468-1.003 0-1.732.746-1.732 1.932Z" />
-                </g>
-                <rect width="8" height="3" x="162" y="9.944" fill="#DAD9D6" rx="1" />
-                <rect width="14" height="3" x="174" y="9.944" fill="#DAD9D6" rx="1" />
-                <rect width="10" height="3" x="192" y="9.944" fill="#DAD9D6" rx="1" />
-                <rect width="10" height="3" x="206" y="9.944" fill="#DAD9D6" rx="1" />
-                <rect width="81" height="6" x="24" y="32" fill="#DAD9D6" rx="2" />
-                <rect width="95" height="6" x="24" y="44" fill="#DAD9D6" rx="2" />
-                <rect width="16" height="5" x="24" y="60" fill="#21201C" rx="1" />
-                <path fill="#DAD9D6" d="M24 85a4 4 0 0 1 4-4h184a4 4 0 0 1 4 4v20H24V85Z" />
-                <path
-                  fill="url(#b)"
-                  fillOpacity=".2"
-                  d="M24 85a4 4 0 0 1 4-4h184a4 4 0 0 1 4 4v20H24V85Z"
-                />
-                <defs>
-                  <linearGradient
-                    id="b"
-                    x1="120"
-                    x2="120"
-                    y1="81"
-                    y2="105"
-                    gradientUnits="userSpaceOnUse"
+            <div className="flex items-center gap-4">
+              {isAuthenticated ? (
+                <Link
+                  href="/dashboard"
+                  className="px-6 py-2 bg-primary text-white font-bold uppercase tracking-wide rounded-full hover:bg-primary-dark transition-colors text-sm"
+                >
+                  Accès app
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    className="text-text hover:text-primary transition-colors font-medium text-sm"
                   >
-                    <stop stopOpacity="0" />
-                    <stop offset="1" stopColor="#82827C" />
-                  </linearGradient>
-                  <clipPath id="a">
-                    <path fill="#fff" d="M24 6h36.307v10.889H24z" />
-                  </clipPath>
-                </defs>
-              </svg>
-
-              <div className="absolute left-0 right-0 bottom-0 h-16 bg-gradient-to-b from-white/0 to-white"></div>
+                    Connexion
+                  </Link>
+                  <Link
+                    href="/register"
+                    className="px-6 py-2 bg-primary text-white font-bold uppercase tracking-wide rounded-full hover:bg-primary-dark transition-colors text-sm"
+                  >
+                    Essai gratuit
+                  </Link>
+                </>
+              )}
             </div>
+          </div>
+        </nav>
 
-            <div className="flex flex-row gap-4">
-              <div className="shrink-0 w-10 h-10 bg-primary/20 rounded-md flex justify-center items-center">
-                <svg className="h-6 w-6 fill-primary" viewBox="0 0 256 256">
-                  <path
-                    fill="currentColor"
-                    d="M208 24H72a32 32 0 0 0-32 32v168a8 8 0 0 0 8 8h144a8 8 0 0 0 0-16H56a16 16 0 0 1 16-16h136a8 8 0 0 0 8-8V32a8 8 0 0 0-8-8m-88 16h48v72l-19.21-14.4a8 8 0 0 0-9.6 0L120 112Zm80 144H72a31.8 31.8 0 0 0-16 4.29V56a16 16 0 0 1 16-16h32v88a8 8 0 0 0 12.8 6.4L144 114l27.21 20.4A8 8 0 0 0 176 136a8 8 0 0 0 8-8V40h16Z"
-                  />
-                </svg>
-              </div>
+        {/* Hero Section */}
+        <section className="pt-28 pb-16 px-6">
+          <div className="max-w-5xl mx-auto">
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              <div>
+                <p className="text-primary font-bold uppercase tracking-wide text-sm mb-4">
+                  Pour les restaurateurs qui n'ont pas le temps
+                </p>
+                <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-text leading-tight mb-6">
+                  Instagram pourrait remplir votre salle.
+                  <br />
+                  <span className="text-primary">En 5 min par jour.</span>
+                </h1>
+                <p className="text-lg text-neutral-600 mb-8">
+                  Le Phare vous dit quoi poster. Chaque jour. Sans prise de tête.
+                  Comme un community manager dans votre poche.
+                </p>
 
-              <div className="space-y-1">
-                <h2 className="text-lg font-semibold">
-                  <a href="https://docs.adonisjs.com" target="_blank">
-                    <span>Documentation</span>
-                    <span className="absolute inset-0"></span>
-                  </a>
-                </h2>
-
-                <p className="text-sm text-sand-11 group-hover:text-sand-12 transition ease-in-out duration-700">
-                  Dive into the official documentation to learn AdonisJS. Read carefully to discover
-                  an unmatched set of features, best practices and developer experience. Through
-                  examples, guides and API references, you'll find everything you need to build your
-                  next project. From installation to deployment, we've got you covered.
+                <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                  <Link
+                    href="/register"
+                    className="px-8 py-4 bg-primary text-white font-bold uppercase tracking-wide rounded-full hover:bg-primary-dark transition-all text-center"
+                  >
+                    Essayer 14 jours gratuit
+                  </Link>
+                </div>
+                <p className="text-sm text-neutral-500">
+                  Sans carte bancaire • Annulable à tout moment
                 </p>
               </div>
-            </div>
-          </article>
 
-          <article className="relative p-6 shadow-sm hover:shadow border border-sand-7 hover:border-sand-8 rounded-2xl transition ease-in-out duration-700 group flex flex-row gap-4">
-            <div className="shrink-0 w-10 h-10 bg-primary/20 rounded-md flex justify-center items-center">
-              <svg className="h-6 w-6 fill-primary" viewBox="0 0 256 256">
-                <path
-                  fill="currentColor"
-                  d="m164.44 105.34-48-32A8 8 0 0 0 104 80v64a8 8 0 0 0 12.44 6.66l48-32a8 8 0 0 0 0-13.32M120 129.05V95l25.58 17ZM216 40H40a16 16 0 0 0-16 16v112a16 16 0 0 0 16 16h176a16 16 0 0 0 16-16V56a16 16 0 0 0-16-16m0 128H40V56h176zm16 40a8 8 0 0 1-8 8H32a8 8 0 0 1 0-16h192a8 8 0 0 1 8 8"
-                />
-              </svg>
-            </div>
+              <div className="flex justify-center">
+                <div className="relative">
+                  {/* Phone mockup */}
+                  <div className="w-64 h-[500px] bg-white rounded-[2.5rem] shadow-2xl border-4 border-neutral-200 overflow-hidden relative">
+                    {/* Notch */}
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-6 bg-neutral-200 rounded-b-2xl"></div>
 
-            <div className="space-y-1">
-              <h2 className="text-lg font-semibold">
-                <a href="https://adocasts.com" target="_blank">
-                  <span>Adocasts</span>
-                  <span className="absolute inset-0"></span>
-                </a>
-              </h2>
+                    {/* Screen content */}
+                    <div className="pt-10 px-4 pb-4 h-full bg-background">
+                      {/* Mini header */}
+                      <div className="flex items-center justify-center mb-4">
+                        <img src="/logo-rectangle.png" alt="Le Phare" className="h-5" />
+                      </div>
 
-              <p className="text-sm text-sand-11 group-hover:text-sand-12 transition ease-in-out duration-700">
-                Level up your development and Adonis skills with hours of video content, from
-                beginner to advanced, through databases, testing, and more.
-              </p>
-            </div>
-          </article>
+                      {/* Streak */}
+                      <div className="bg-white rounded-2xl p-3 mb-4 shadow-sm">
+                        <div className="flex items-center gap-2">
+                          <span className="text-2xl">🔥</span>
+                          <div>
+                            <p className="font-bold text-sm">12 jours</p>
+                            <p className="text-xs text-neutral-500">Ta série continue !</p>
+                          </div>
+                        </div>
+                      </div>
 
-          <article className="relative p-6 shadow-sm hover:shadow border border-sand-7 hover:border-sand-8 rounded-2xl transition ease-in-out duration-700 group flex flex-row gap-4">
-            <div className="shrink-0 w-10 h-10 bg-primary/20 rounded-md flex justify-center items-center">
-              <svg className="h-6 w-6 fill-primary" viewBox="0 0 256 256">
-                <path
-                  fill="currentColor"
-                  d="M208 96a16 16 0 0 0 16-16V48a16 16 0 0 0-16-16h-32a16 16 0 0 0-16 16v8H96v-8a16 16 0 0 0-16-16H48a16 16 0 0 0-16 16v32a16 16 0 0 0 16 16h8v64h-8a16 16 0 0 0-16 16v32a16 16 0 0 0 16 16h32a16 16 0 0 0 16-16v-8h64v8a16 16 0 0 0 16 16h32a16 16 0 0 0 16-16v-32a16 16 0 0 0-16-16h-8V96Zm-32-48h32v32h-32ZM48 48h32v15.9a.5.5 0 0 0 0 .2V80H48Zm32 160H48v-32h32v15.9a.5.5 0 0 0 0 .2zm128 0h-32v-32h32Zm-24-48h-8a16 16 0 0 0-16 16v8H96v-8a16 16 0 0 0-16-16h-8V96h8a16 16 0 0 0 16-16v-8h64v8a16 16 0 0 0 16 16h8Z"
-                />
-              </svg>
-            </div>
+                      {/* Mission card */}
+                      <div className="bg-white rounded-2xl p-4 shadow-sm">
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="text-xl">📸</span>
+                          <span className="text-xs font-bold text-primary uppercase">Post</span>
+                        </div>
+                        <h3 className="font-bold text-sm mb-2">Poste ton plat du jour</h3>
+                        <p className="text-xs text-neutral-600 mb-4">
+                          Montre ce qui sort de tes cuisines aujourd'hui !
+                        </p>
+                        <button className="w-full py-2.5 bg-primary text-white font-bold uppercase text-xs rounded-full">
+                          C'est parti !
+                        </button>
+                      </div>
 
-            <div className="space-y-1">
-              <h2 className="text-lg font-semibold">
-                <a href="https://packages.adonisjs.com" target="_blank">
-                  <span>Packages</span>
-                  <span className="absolute inset-0"></span>
-                </a>
-              </h2>
-
-              <p className="text-sm text-sand-11 group-hover:text-sand-12 transition ease-in-out duration-700">
-                Supercharge your AdonisJS application with packages built and maintained by both the
-                core team and the community.
-              </p>
-            </div>
-          </article>
-
-          <article className="relative p-6 shadow-sm hover:shadow border border-sand-7 hover:border-sand-8 rounded-2xl transition ease-in-out duration-700 group flex flex-row gap-4">
-            <div className="shrink-0 w-10 h-10 bg-primary/20 rounded-md flex justify-center items-center">
-              <svg className="h-6 w-6 fill-primary" viewBox="0 0 256 256">
-                <path
-                  fill="currentColor"
-                  d="M128 24a104 104 0 1 0 104 104A104.11 104.11 0 0 0 128 24m0 192a88 88 0 1 1 88-88 88.1 88.1 0 0 1-88 88m44.42-143.16-64 32a8.05 8.05 0 0 0-3.58 3.58l-32 64A8 8 0 0 0 80 184a8.1 8.1 0 0 0 3.58-.84l64-32a8.05 8.05 0 0 0 3.58-3.58l32-64a8 8 0 0 0-10.74-10.74M138 138l-40.11 20.11L118 118l40.15-20.07Z"
-                />
-              </svg>
+                      {/* Bottom illustration */}
+                      <div className="flex justify-center mt-6">
+                        <span className="text-5xl">👨‍🍳</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <div className="space-y-1">
-              <h2 className="text-lg font-semibold">
-                <a href="https://discord.gg/vDcEjq6" target="_blank">
-                  <span>Discord</span>
-                  <span className="absolute inset-0"></span>
-                </a>
-              </h2>
-
-              <p className="text-sm text-sand-11 group-hover:text-sand-12 transition ease-in-out duration-700">
-                Never get lost again, ask questions, and share your knowledge or projects with a
-                growing and supportive community. Join us.
-              </p>
+            {/* Social proof */}
+            <div className="flex flex-wrap justify-center gap-8 mt-12 text-sm text-neutral-600">
+              <span className="flex items-center gap-2">
+                <span className="text-primary font-bold">✓</span> +100 restaurateurs
+              </span>
+              <span className="flex items-center gap-2">
+                <span className="text-primary font-bold">✓</span> 7 ans d'expertise
+              </span>
+              <span className="flex items-center gap-2">
+                <span className="text-primary font-bold">✓</span> Made in France
+              </span>
             </div>
-          </article>
-        </div>
+          </div>
+        </section>
+
+        {/* Pain Points */}
+        <section className="py-16 px-6 bg-white">
+          <div className="max-w-3xl mx-auto">
+            <h2 className="text-2xl md:text-3xl font-extrabold text-text text-center mb-12 uppercase">
+              Vous aussi, vous avez déjà pensé...
+            </h2>
+
+            <div className="space-y-4">
+              {[
+                { emoji: '🕐', text: '"J\'ai pas le temps pour les réseaux"' },
+                { emoji: '🤷', text: '"Je sais jamais quoi poster"' },
+                { emoji: '💸', text: '"Une agence, c\'est trop cher"' },
+                { emoji: '😤', text: '"J\'ai essayé, ça sert à rien"' },
+              ].map((pain, i) => (
+                <div
+                  key={i}
+                  className="bg-background rounded-2xl p-5 flex items-center gap-4"
+                >
+                  <span className="text-3xl">{pain.emoji}</span>
+                  <p className="text-lg font-medium text-text">{pain.text}</p>
+                </div>
+              ))}
+            </div>
+
+            <p className="text-center text-neutral-500 italic mt-8">
+              Pendant ce temps, le resto d'à côté cartonne sur Instagram...
+            </p>
+          </div>
+        </section>
+
+        {/* Solution - 3 piliers */}
+        <section className="py-16 px-6">
+          <div className="max-w-5xl mx-auto">
+            <h2 className="text-2xl md:text-3xl font-extrabold text-text text-center mb-4 uppercase">
+              La solution ? Le Phare.
+            </h2>
+            <p className="text-center text-neutral-600 mb-12 text-lg">
+              1 mission par jour. 5 minutes. Zéro prise de tête.
+            </p>
+
+            <div className="grid md:grid-cols-3 gap-6">
+              {[
+                {
+                  emoji: '📋',
+                  title: 'On vous dit quoi poster',
+                  desc: 'Chaque matin, une mission adaptée à votre resto. Vous exécutez, on réfléchit pour vous.',
+                },
+                {
+                  emoji: '✨',
+                  title: "L'IA écrit le texte",
+                  desc: 'Plus besoin de chercher vos mots. Description parfaite en 3 secondes.',
+                },
+                {
+                  emoji: '🔥',
+                  title: 'Vous progressez',
+                  desc: 'Streaks, badges, stats. Vous voyez que ça marche. Et ça motive.',
+                },
+              ].map((pillar, i) => (
+                <div key={i} className="bg-white rounded-2xl p-6 text-center">
+                  <span className="text-4xl mb-4 block">{pillar.emoji}</span>
+                  <h3 className="font-bold text-lg text-text mb-2">{pillar.title}</h3>
+                  <p className="text-neutral-600 text-sm">{pillar.desc}</p>
+                </div>
+              ))}
+            </div>
+
+            <p className="text-center text-primary font-bold text-lg mt-10">
+              Comme un CM dans la poche. Pour le prix d'un plat du jour.
+            </p>
+          </div>
+        </section>
+
+        {/* Comment ça marche */}
+        <section className="py-16 px-6 bg-white">
+          <div className="max-w-3xl mx-auto">
+            <h2 className="text-2xl md:text-3xl font-extrabold text-text text-center mb-12 uppercase">
+              Simple comme bonjour
+            </h2>
+
+            <div className="space-y-6">
+              {[
+                { num: '1', text: 'Vous ouvrez l\'app', sub: 'Votre mission du jour vous attend' },
+                { num: '2', text: 'Vous prenez la photo', sub: 'De votre plat, votre équipe, vos coulisses' },
+                { num: '3', text: 'L\'IA écrit le texte', sub: 'Vous ajustez si vous voulez' },
+                { num: '4', text: 'Vous publiez', sub: 'Direct sur Instagram, en un tap' },
+                { num: '5', text: 'Bravo !', sub: '+1 dans votre série 🔥' },
+              ].map((step) => (
+                <div key={step.num} className="flex items-start gap-4">
+                  <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-bold shrink-0">
+                    {step.num}
+                  </div>
+                  <div>
+                    <p className="font-bold text-text">{step.text}</p>
+                    <p className="text-neutral-600 text-sm">{step.sub}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <p className="text-center text-neutral-500 mt-8">
+              ⏱️ Temps total : ~4 minutes
+            </p>
+          </div>
+        </section>
 
         {/* Features */}
-        <div className="grow mt-10 mb-8 px-16 xl:px-8 max-w-screen-xl mx-auto">
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-            <article className="relative py-4 px-5 bg-white border border-transparent rounded-lg hover:border-sand-8 hover:shadow-sm transition duration-100 ease-in-out group">
-              <h2 className="font-semibold text-sand-12">
-                <a
-                  href="https://lucid.adonisjs.com"
-                  target="_blank"
-                  className="flex flex-row gap-2"
-                >
-                  <span className="bg-[#D5EAE7] h-6 w-6 flex justify-center items-center rounded">
-                    <svg className="h-4 w-4 fill-[#0E766E]" viewBox="0 0 24 24">
-                      <g
-                        fill="none"
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                      >
-                        <path d="M4 6a8 3 0 1 0 16 0A8 3 0 1 0 4 6" />
-                        <path d="M4 6v6a8 3 0 0 0 16 0V6" />
-                        <path d="M4 12v6a8 3 0 0 0 16 0v-6" />
-                      </g>
-                    </svg>
-                  </span>
-                  <span>Lucid</span>
-                  <span className="absolute inset-0"></span>
-                </a>
-              </h2>
+        <section className="py-16 px-6">
+          <div className="max-w-5xl mx-auto">
+            <h2 className="text-2xl md:text-3xl font-extrabold text-text text-center mb-12 uppercase">
+              Tout ce qu'il vous faut
+            </h2>
 
-              <p className="mt-4 text-sm text-sand-11 group-hover:text-sand-12 transition ease-in-out duration-100">
-                A SQL ORM with a powerful query builder, active record, migrations, and model
-                factories. Everything you need to work with databases.
-              </p>
-
-              <svg
-                className="absolute top-4 right-5 opacity-0 group-hover:opacity-100 text-sand-9 w-4 h-4 transition ease-in-out duration-100"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  fill="none"
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M12 6H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6m-7 1 9-9m-5 0h5v5"
-                />
-              </svg>
-            </article>
-
-            <article className="relative py-4 px-5 bg-white border border-transparent rounded-lg hover:border-sand-8 hover:shadow-sm transition duration-100 ease-in-out group">
-              <h2 className="font-semibold text-sand-12">
-                <a href="https://vinejs.dev/" target="_blank" className="flex flex-row gap-2">
-                  <span className="bg-[#F3DBFC] h-6 w-6 flex justify-center items-center rounded">
-                    <svg className="h-4 w-4 fill-[#CA5AF2]" viewBox="0 0 24 24">
-                      <path
-                        fill="none"
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M12 3a12 12 0 0 0 8.5 3A12 12 0 0 1 12 21 12 12 0 0 1 3.5 6 12 12 0 0 0 12 3"
-                      />
-                    </svg>
-                  </span>
-                  <span>Vine</span>
-                  <span className="absolute inset-0"></span>
-                </a>
-              </h2>
-
-              <p className="mt-4 text-sm text-sand-11 group-hover:text-sand-12 transition ease-in-out duration-100">
-                A yet simple but feature rich and type-safe form data validation. It comes with 50+
-                built-in rules and an expressive API to define custom rules.
-              </p>
-
-              <svg
-                className="absolute top-4 right-5 opacity-0 group-hover:opacity-100 text-sand-9 w-4 h-4 transition ease-in-out duration-100"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  fill="none"
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M12 6H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6m-7 1 9-9m-5 0h5v5"
-                />
-              </svg>
-            </article>
-
-            <article className="relative py-4 px-5 bg-white border border-transparent rounded-lg hover:border-sand-8 hover:shadow-sm transition duration-100 ease-in-out group">
-              <h2 className="font-semibold text-sand-12">
-                <a href="https://inertiajs.com/" target="_blank" className="flex flex-row gap-2">
-                  <span className="bg-[#B8EAE0] h-6 w-6 flex justify-center items-center rounded">
-                    <svg className="h-4 w-4 fill-[#4BBBA5]" viewBox="0 0 24 24">
-                      <path
-                        fill="none"
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="m12.5 8l4 4l-4 4H17l4-4l-4-4zm-9 0l4 4l-4 4H8l4-4l-4-4z"
-                      />
-                    </svg>
-                  </span>
-                  <span>InertiaJS</span>
-                  <span className="absolute inset-0"></span>
-                </a>
-              </h2>
-
-              <p className="mt-4 text-sm text-sand-11 group-hover:text-sand-12 transition ease-in-out duration-100">
-                The modern monolithic application architecture. It allows you to build single-page
-                applications without building an API.
-              </p>
-
-              <svg
-                className="absolute top-4 right-5 opacity-0 group-hover:opacity-100 text-sand-9 w-4 h-4 transition ease-in-out duration-100"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  fill="none"
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M12 6H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6m-7 1 9-9m-5 0h5v5"
-                />
-              </svg>
-            </article>
-
-            <article className="relative py-4 px-5 bg-white border border-transparent rounded-lg hover:border-sand-8 hover:shadow-sm transition duration-100 ease-in-out group">
-              <h2 className="font-semibold text-sand-12">
-                <a href="https://japa.dev" target="_blank" className="flex flex-row gap-2">
-                  <span className="bg-[#FACDDC] h-6 w-6 flex justify-center items-center rounded">
-                    <svg className="h-4 w-4 fill-[#DD3074]" viewBox="0 0 256 256">
-                      <path
-                        fill="currentColor"
-                        d="m240.49 83.51-60-60a12 12 0 0 0-17 0L34.28 152.75a48.77 48.77 0 0 0 69 69l111.2-111.26 21.31-7.11a12 12 0 0 0 4.7-19.87M86.28 204.75a24.77 24.77 0 0 1-35-35l28.13-28.13c7.73-2.41 19.58-3 35.06 5a84 84 0 0 0 21.95 8ZM204.2 88.62a12.15 12.15 0 0 0-4.69 2.89l-38.89 38.9c-7.73 2.41-19.58 3-35.06-5a84 84 0 0 0-21.94-8L172 49l37.79 37.79Z"
-                      />
-                    </svg>
-                  </span>
-                  <span>Japa</span>
-                  <span className="absolute inset-0"></span>
-                </a>
-              </h2>
-
-              <p className="mt-4 text-sm text-sand-11 group-hover:text-sand-12 transition ease-in-out duration-100">
-                From JSON API tests using Open API schema to browser tests with Playwrighht, it
-                comes with everything you need to test your application.
-              </p>
-
-              <svg
-                className="absolute top-4 right-5 opacity-0 group-hover:opacity-100 text-sand-9 w-4 h-4 transition ease-in-out duration-100"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  fill="none"
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M12 6H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6m-7 1 9-9m-5 0h5v5"
-                />
-              </svg>
-            </article>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[
+                { emoji: '📸', title: 'Missions quotidiennes', desc: 'Adaptées à votre type de resto' },
+                { emoji: '💡', title: '100+ idées de contenu', desc: 'Testées sur de vrais restaurants' },
+                { emoji: '✍️', title: 'Textes générés par IA', desc: 'Engageants et personnalisés' },
+                { emoji: '🎮', title: 'Gamification', desc: 'Streaks, badges, niveaux' },
+                { emoji: '📚', title: 'Tutos vidéo', desc: 'Formations courtes et pratiques' },
+                { emoji: '📊', title: 'Bilan hebdo', desc: 'Votre progression en un coup d\'œil' },
+              ].map((feature, i) => (
+                <div key={i} className="bg-white rounded-2xl p-5 flex items-start gap-3">
+                  <span className="text-2xl">{feature.emoji}</span>
+                  <div>
+                    <h3 className="font-bold text-text text-sm">{feature.title}</h3>
+                    <p className="text-neutral-600 text-xs">{feature.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        </section>
 
-        <div className="text-sm text-center [&>code]:font-medium [&>code]:text-[#a599ff] bg-sand-12 text-sand-1 fixed bottom-0 left-0 right-0 py-2">
-          Route for this page is registered in <code>start/routes.ts</code> file, rendering{' '}
-          <code>inertia/pages/home.tsx</code> template
-        </div>
+        {/* Testimonials */}
+        <section className="py-16 px-6 bg-white">
+          <div className="max-w-5xl mx-auto">
+            <h2 className="text-2xl md:text-3xl font-extrabold text-text text-center mb-12 uppercase">
+              Ils adorent
+            </h2>
+
+            <div className="grid md:grid-cols-3 gap-6 mb-10">
+              {[
+                {
+                  quote: 'En 3 semaines, j\'ai plus posté qu\'en 6 mois.',
+                  name: 'Marc D.',
+                  place: 'Brasserie, Meaux',
+                },
+                {
+                  quote: 'Enfin une app qui comprend notre quotidien.',
+                  name: 'Sophie L.',
+                  place: 'Bistrot, Fontainebleau',
+                },
+                {
+                  quote: '500 abonnés avant l\'ouverture de mon resto !',
+                  name: 'Léa M.',
+                  place: 'Restaurant, Melun',
+                },
+              ].map((testimonial, i) => (
+                <div key={i} className="bg-background rounded-2xl p-5">
+                  <p className="text-text mb-4 italic">"{testimonial.quote}"</p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-bold text-sm">
+                      {testimonial.name.split(' ').map(n => n[0]).join('')}
+                    </div>
+                    <div>
+                      <p className="font-bold text-sm text-text">{testimonial.name}</p>
+                      <p className="text-xs text-neutral-500">{testimonial.place}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex flex-wrap justify-center gap-8 text-center">
+              <div>
+                <p className="text-2xl font-extrabold text-primary">+47%</p>
+                <p className="text-sm text-neutral-600">engagement</p>
+              </div>
+              <div>
+                <p className="text-2xl font-extrabold text-primary">12 jours</p>
+                <p className="text-sm text-neutral-600">streak moyen</p>
+              </div>
+              <div>
+                <p className="text-2xl font-extrabold text-primary">4.8/5</p>
+                <p className="text-sm text-neutral-600">satisfaction</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Pricing */}
+        <section className="py-16 px-6">
+          <div className="max-w-3xl mx-auto">
+            <h2 className="text-2xl md:text-3xl font-extrabold text-text text-center mb-4 uppercase">
+              Moins cher qu'un plat du jour
+            </h2>
+            <p className="text-center text-neutral-600 mb-10">Par jour.</p>
+
+            {/* Comparison */}
+            <div className="grid sm:grid-cols-2 gap-4 mb-8">
+              <div className="bg-white rounded-2xl p-5 opacity-60">
+                <p className="font-bold text-neutral-500 mb-2">Agence / CM</p>
+                <p className="text-2xl font-extrabold text-text mb-4">500-2000€<span className="text-sm font-normal">/mois</span></p>
+                <ul className="text-sm text-neutral-500 space-y-1">
+                  <li>❌ Jamais dispo</li>
+                  <li>❌ Résultats flous</li>
+                  <li>❌ Vous êtes passif</li>
+                </ul>
+              </div>
+              <div className="bg-white rounded-2xl p-5 border-4 border-primary relative">
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-white text-xs font-bold px-3 py-1 rounded-full uppercase">
+                  Recommandé
+                </span>
+                <p className="font-bold text-primary mb-2">Le Phare</p>
+                <p className="text-2xl font-extrabold text-text mb-4">29€<span className="text-sm font-normal">/mois</span></p>
+                <ul className="text-sm text-text space-y-1">
+                  <li>✓ Dispo 24h/24</li>
+                  <li>✓ Stats temps réel</li>
+                  <li>✓ Vous progressez</li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Pricing card */}
+            <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-auto">
+              <p className="text-4xl font-extrabold text-text mb-1">29€<span className="text-lg font-normal text-neutral-500">/mois</span></p>
+              <p className="text-sm text-neutral-500 mb-6">Soit moins d'1€ par jour</p>
+
+              <ul className="text-left text-sm space-y-2 mb-6">
+                {[
+                  'Missions quotidiennes personnalisées',
+                  '100+ idées de contenu',
+                  'Textes générés par IA',
+                  'Streak & badges gamification',
+                  'Tutos vidéo exclusifs',
+                  'Bilan IA hebdomadaire',
+                  'Support prioritaire',
+                ].map((feature, i) => (
+                  <li key={i} className="flex items-center gap-2">
+                    <span className="text-primary">✓</span> {feature}
+                  </li>
+                ))}
+              </ul>
+
+              <Link
+                href="/register"
+                className="block w-full py-4 bg-primary text-white font-bold uppercase tracking-wide rounded-full hover:bg-primary-dark transition-colors"
+              >
+                Essayer 14 jours gratuit
+              </Link>
+              <p className="text-xs text-neutral-500 mt-3">Sans engagement • Annulable en 1 clic</p>
+            </div>
+
+            <div className="flex items-center justify-center gap-3 mt-8 text-neutral-600 text-sm">
+              <span className="text-xl">🛡️</span>
+              <p>Garantie 30 jours satisfait ou remboursé</p>
+            </div>
+          </div>
+        </section>
+
+        {/* FAQ */}
+        <section className="py-16 px-6 bg-white">
+          <div className="max-w-3xl mx-auto">
+            <h2 className="text-2xl md:text-3xl font-extrabold text-text text-center mb-12 uppercase">
+              Questions fréquentes
+            </h2>
+
+            <div className="space-y-3">
+              {faqs.map((faq, index) => (
+                <div key={index} className="bg-background rounded-2xl overflow-hidden">
+                  <button
+                    onClick={() => toggleFaq(index)}
+                    className="w-full p-5 text-left flex items-center justify-between font-bold text-text"
+                  >
+                    <span>{faq.question}</span>
+                    <svg
+                      className={`w-5 h-5 transition-transform text-primary ${openFaq === index ? 'rotate-180' : ''}`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  {openFaq === index && (
+                    <div className="px-5 pb-5 text-neutral-600 text-sm">{faq.answer}</div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Final CTA */}
+        <section className="py-16 px-6">
+          <div className="max-w-3xl mx-auto text-center">
+            <div className="bg-white rounded-3xl p-10">
+              <span className="text-5xl mb-4 block">👨‍🍳</span>
+              <h2 className="text-2xl md:text-3xl font-extrabold text-text mb-4 uppercase">
+                Prêt à remplir votre salle ?
+              </h2>
+              <p className="text-neutral-600 mb-8">
+                Rejoignez les restaurateurs qui ont repris le contrôle d'Instagram.
+              </p>
+
+              <Link
+                href="/register"
+                className="inline-block px-10 py-4 bg-primary text-white font-bold uppercase tracking-wide rounded-full hover:bg-primary-dark transition-all"
+              >
+                Démarrer mon essai gratuit
+              </Link>
+
+              <p className="text-xs text-neutral-500 mt-4">
+                14 jours gratuits • Sans carte bancaire • Setup en 2 min
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Footer */}
+        <footer className="py-10 px-6 bg-white">
+          <div className="max-w-5xl mx-auto">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
+              <img src="/logo-rectangle.png" alt="Le Phare" className="h-8" />
+              <p className="text-sm text-neutral-500">
+                La com' Instagram pour les restaurateurs.
+              </p>
+            </div>
+
+            <div className="grid sm:grid-cols-3 gap-8 text-sm mb-8">
+              <div>
+                <p className="font-bold text-text mb-3">Produit</p>
+                <ul className="space-y-2 text-neutral-600">
+                  <li><a href="#" className="hover:text-primary">Fonctionnalités</a></li>
+                  <li><a href="#" className="hover:text-primary">Tarifs</a></li>
+                  <li><a href="#" className="hover:text-primary">Témoignages</a></li>
+                </ul>
+              </div>
+              <div>
+                <p className="font-bold text-text mb-3">Ressources</p>
+                <ul className="space-y-2 text-neutral-600">
+                  <li><a href="#" className="hover:text-primary">Blog</a></li>
+                  <li><a href="#" className="hover:text-primary">Contact</a></li>
+                </ul>
+              </div>
+              <div>
+                <p className="font-bold text-text mb-3">Légal</p>
+                <ul className="space-y-2 text-neutral-600">
+                  <li><a href="#" className="hover:text-primary">Mentions légales</a></li>
+                  <li><a href="#" className="hover:text-primary">Confidentialité</a></li>
+                  <li><a href="#" className="hover:text-primary">CGV</a></li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="border-t border-neutral-200 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-neutral-500">
+              <p>© 2026 Le Phare — Fait avec ❤️ en France</p>
+              <div className="flex items-center gap-4">
+                <a href="#" className="hover:text-primary">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+                  </svg>
+                </a>
+              </div>
+            </div>
+          </div>
+        </footer>
       </div>
     </>
   )

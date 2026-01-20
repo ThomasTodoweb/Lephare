@@ -1,6 +1,8 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import MissionService from '#services/mission_service'
 import GamificationService from '#services/gamification_service'
+import PushService from '#services/push_service'
+import PushSubscription from '#models/push_subscription'
 
 export default class DashboardController {
   async index({ inertia, auth, response }: HttpContext) {
@@ -23,8 +25,21 @@ export default class DashboardController {
       streakInfo.isAtRisk
     )
 
+    // Check if user has push notifications enabled
+    const hasActiveSubscription = await PushSubscription.query()
+      .where('user_id', user.id)
+      .where('is_active', true)
+      .first()
+
+    // Push notifications configuration
+    const pushService = new PushService()
+    const notificationsConfigured = pushService.isConfigured()
+
     return inertia.render('dashboard', {
-      user: user.serialize(),
+      user: {
+        ...user.serialize(),
+        notificationBannerDismissed: user.notificationBannerDismissed,
+      },
       restaurant: restaurant.serialize(),
       mission: mission
         ? {
@@ -46,6 +61,20 @@ export default class DashboardController {
         isAtRisk: streakInfo.isAtRisk,
         message: streakMessage,
       },
+      notifications: {
+        hasSubscription: !!hasActiveSubscription,
+        isConfigured: notificationsConfigured,
+      },
     })
+  }
+
+  /**
+   * Dismiss the notification banner
+   */
+  async dismissNotificationBanner({ auth, response }: HttpContext) {
+    const user = auth.getUserOrFail()
+    user.notificationBannerDismissed = true
+    await user.save()
+    return response.json({ success: true })
   }
 }

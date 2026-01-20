@@ -90,10 +90,15 @@ export default class InstagramController {
     const user = auth.getUserOrFail()
     logger.info({ userId: user.id, email: user.email }, 'User authenticated for Instagram connect')
 
+    // Check if user is in onboarding
+    const restaurant = await user.related('restaurant').query().first()
+    const isInOnboarding = restaurant && !restaurant.onboardingCompleted
+    const errorRedirect = isInOnboarding ? '/onboarding/instagram/error' : '/settings/instagram'
+
     if (!this.lateService.isConfigured()) {
       logger.warn('Late API not configured')
       session.flash('error', 'Late API non configuree')
-      return response.redirect('/settings/instagram')
+      return response.redirect(errorRedirect)
     }
     logger.info('Late API is configured')
 
@@ -108,7 +113,7 @@ export default class InstagramController {
     if (!connectUrl) {
       logger.error({ userId: user.id }, 'Failed to get connect URL from Late')
       session.flash('error', 'Impossible de se connecter a Late. Veuillez reessayer.')
-      return response.redirect('/settings/instagram')
+      return response.redirect(errorRedirect)
     }
 
     logger.info({ userId: user.id, connectUrl }, 'Redirecting to Late OAuth')

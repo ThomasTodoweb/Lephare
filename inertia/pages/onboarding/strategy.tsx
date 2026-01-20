@@ -1,6 +1,7 @@
 import { Head, useForm } from '@inertiajs/react'
 import { Button } from '~/components/ui/Button'
 import { Card } from '~/components/ui/Card'
+import { OnboardingProgress } from '~/components/OnboardingProgress'
 
 interface Strategy {
   id: number
@@ -13,9 +14,11 @@ interface Strategy {
 interface Props {
   strategies: Strategy[]
   currentStrategyId: number | null
+  step: number
+  totalSteps: number
 }
 
-export default function Strategy({ strategies, currentStrategyId }: Props) {
+export default function Strategy({ strategies, currentStrategyId, step, totalSteps }: Props) {
   const { data, setData, post, processing, errors } = useForm({
     strategy_id: currentStrategyId || ('' as number | ''),
   })
@@ -35,9 +38,7 @@ export default function Strategy({ strategies, currentStrategyId }: Props) {
       <div className="min-h-screen bg-background flex flex-col">
         {/* Header */}
         <div className="px-6 pt-8 pb-4">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-sm text-neutral-600">Étape 2/4</span>
-          </div>
+          <OnboardingProgress currentStep={step} totalSteps={totalSteps} />
           <h1 className="text-2xl font-extrabold text-neutral-900 uppercase tracking-tight">
             Votre objectif ?
           </h1>

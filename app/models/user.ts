@@ -27,13 +27,50 @@ export default class User extends compose(BaseModel, AuthFinder) {
   declare email: string
 
   @column({ serializeAs: null })
-  declare password: string
+  declare password: string | null
 
   @column()
   declare role: UserRole
 
   @column()
+  declare googleId: string | null
+
+  @column()
+  declare appleId: string | null
+
+  @column()
+  declare avatarUrl: string | null
+
+  @column()
   declare lateProfileId: string | null
+
+  // Email verification
+  @column()
+  declare emailVerified: boolean
+
+  @column({ serializeAs: null })
+  declare emailVerificationCode: string | null
+
+  @column.dateTime({ serializeAs: null })
+  declare emailVerificationCodeExpiresAt: DateTime | null
+
+  // Password reset
+  @column({ serializeAs: null })
+  declare passwordResetToken: string | null
+
+  @column.dateTime({ serializeAs: null })
+  declare passwordResetTokenExpiresAt: DateTime | null
+
+  // Email notification preferences
+  @column()
+  declare emailNotificationsEnabled: boolean
+
+  @column()
+  declare emailNotificationTime: string
+
+  // Push notification banner tracking
+  @column()
+  declare notificationBannerDismissed: boolean
 
   /**
    * Cached AI interpretation (text + sentiment)

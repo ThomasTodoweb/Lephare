@@ -64,13 +64,22 @@ export function usePWAInstall() {
     }
   }
 
-  // Check if iOS for manual instructions
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream
+  // Detect browser and platform
+  const userAgent = navigator.userAgent
+  const isIOS = /iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream
+  const isSafari = /Safari/.test(userAgent) && !/Chrome|CriOS|FxiOS/.test(userAgent)
+  const isChrome = /CriOS/.test(userAgent) || (/Chrome/.test(userAgent) && !/Edge|Edg/.test(userAgent))
+  const isIOSChrome = isIOS && /CriOS/.test(userAgent)
+  const isIOSSafari = isIOS && isSafari
 
   return {
     isInstallable,
     isInstalled,
     isIOS,
+    isIOSChrome,
+    isIOSSafari,
+    isChrome,
+    isSafari,
     install,
   }
 }

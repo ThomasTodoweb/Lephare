@@ -77,4 +77,18 @@ export default await Env.create(new URL('../', import.meta.url), {
   VAPID_PUBLIC_KEY: Env.schema.string.optional(),
   VAPID_PRIVATE_KEY: Env.schema.string.optional(),
   VAPID_SUBJECT: Env.schema.string.optional(),
+
+  /*
+  |----------------------------------------------------------
+  | Variables for Social Authentication (OAuth)
+  |----------------------------------------------------------
+  */
+  GOOGLE_CLIENT_ID: Env.schema.string.optional(),
+  GOOGLE_CLIENT_SECRET: Env.schema.string.optional(),
+  GOOGLE_CALLBACK_URL: Env.schema.string.optional(),
+  APPLE_CLIENT_ID: Env.schema.string.optional(),
+  APPLE_TEAM_ID: Env.schema.string.optional(),
+  APPLE_KEY_ID: Env.schema.string.optional(),
+  APPLE_PRIVATE_KEY: Env.schema.string.optional(),
+  APPLE_CALLBACK_URL: Env.schema.string.optional(),
 })

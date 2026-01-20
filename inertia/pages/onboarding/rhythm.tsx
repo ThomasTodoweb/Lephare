@@ -1,6 +1,7 @@
 import { Head, useForm } from '@inertiajs/react'
 import { Button } from '~/components/ui/Button'
 import { Card } from '~/components/ui/Card'
+import { OnboardingProgress } from '~/components/OnboardingProgress'
 
 interface Rhythm {
   value: string
@@ -11,6 +12,8 @@ interface Rhythm {
 interface Props {
   rhythms: Rhythm[]
   currentRhythm: string | null
+  step: number
+  totalSteps: number
 }
 
 const RHYTHM_ICONS: Record<string, string> = {
@@ -20,7 +23,7 @@ const RHYTHM_ICONS: Record<string, string> = {
   daily: '🔥',
 }
 
-export default function Rhythm({ rhythms, currentRhythm }: Props) {
+export default function Rhythm({ rhythms, currentRhythm, step, totalSteps }: Props) {
   const { data, setData, post, processing, errors } = useForm({
     publication_rhythm: currentRhythm || ('' as string),
   })
@@ -40,9 +43,7 @@ export default function Rhythm({ rhythms, currentRhythm }: Props) {
       <div className="min-h-screen bg-background flex flex-col">
         {/* Header */}
         <div className="px-6 pt-8 pb-4">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-sm text-neutral-600">Étape 3/4</span>
-          </div>
+          <OnboardingProgress currentStep={step} totalSteps={totalSteps} />
           <h1 className="text-2xl font-extrabold text-neutral-900 uppercase tracking-tight">
             Votre rythme ?
           </h1>
