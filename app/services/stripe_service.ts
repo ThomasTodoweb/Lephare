@@ -257,6 +257,8 @@ export default class StripeService {
   }
 
   private async handleCheckoutComplete(session: Stripe.Checkout.Session): Promise<void> {
+    logger.info({ sessionId: session.id, metadata: session.metadata }, 'Processing checkout.session.completed webhook')
+
     const userId = Number(session.metadata?.userId)
     if (!userId) {
       logger.error({ sessionId: session.id }, 'No userId in checkout session metadata')
@@ -265,7 +267,7 @@ export default class StripeService {
 
     const planType = session.metadata?.planType as 'monthly' | 'yearly' || 'monthly'
 
-    await this.createOrUpdateSubscription(userId, {
+    const subscription = await this.createOrUpdateSubscription(userId, {
       stripeCustomerId: session.customer as string,
       stripeSubscriptionId: session.subscription as string,
       status: 'active',
@@ -274,7 +276,7 @@ export default class StripeService {
       currentPeriodEnd: DateTime.utc().plus({ months: planType === 'yearly' ? 12 : 1 }),
     })
 
-    logger.info({ userId, planType }, 'Subscription activated from checkout')
+    logger.info({ userId, planType, subscriptionId: subscription.id, status: subscription.status }, 'Subscription activated from checkout webhook')
   }
 
   private async handleSubscriptionUpdated(stripeSubscription: Stripe.Subscription): Promise<void> {

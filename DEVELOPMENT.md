@@ -10,6 +10,36 @@
 
 ---
 
+## 🔐 Configuration SSH (Accès Serveur)
+
+### Informations de connexion
+
+- **Serveur**: `lephare.todoweb.fr`
+- **Utilisateur**: `root`
+- **Port**: `22` (par défaut)
+
+### Configurer sa clé SSH
+
+```bash
+# 1. Générer une nouvelle clé SSH (si pas déjà fait)
+ssh-keygen -t ed25519 -C "votre-email@exemple.com"
+
+# 2. Afficher votre clé publique
+cat ~/.ssh/id_ed25519.pub
+
+# 3. Envoyer la clé à Thomas pour qu'il l'ajoute au serveur
+# Ou si vous avez déjà accès, l'ajouter vous-même :
+ssh-copy-id root@lephare.todoweb.fr
+```
+
+### Tester la connexion
+
+```bash
+ssh root@lephare.todoweb.fr
+```
+
+---
+
 ## 🚀 Setup Initial (Nouveau Développeur)
 
 ### 1. Cloner le repository

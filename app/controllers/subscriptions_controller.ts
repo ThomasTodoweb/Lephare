@@ -92,10 +92,20 @@ export default class SubscriptionsController {
     const sessionId = request.input('session_id')
     const user = auth.getUserOrFail()
 
+    logger.info({ userId: user.id, sessionId: sessionId || 'missing' }, 'Subscription success page accessed')
+
     // Sync subscription from Stripe checkout session
     // This ensures the subscription is activated even if webhook hasn't processed yet
     if (sessionId) {
-      await this.stripeService.syncFromCheckoutSession(sessionId, user.id)
+      logger.info({ userId: user.id, sessionId }, 'Attempting to sync subscription from checkout session')
+      const subscription = await this.stripeService.syncFromCheckoutSession(sessionId, user.id)
+      if (subscription) {
+        logger.info({ userId: user.id, status: subscription.status, planType: subscription.planType }, 'Subscription synced successfully')
+      } else {
+        logger.warn({ userId: user.id, sessionId }, 'Failed to sync subscription from checkout session')
+      }
+    } else {
+      logger.warn({ userId: user.id, url: request.url() }, 'No session_id in success URL - subscription may not be synced')
     }
 
     return inertia.render('subscription/success', {
