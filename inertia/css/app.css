@@ -3,6 +3,15 @@
 /* LE PHARE - Direction Artistique */
 /* Design System Variables & Couleurs */
 
+/* Font Bolota - Typographie titres */
+@font-face {
+  font-family: 'Bolota';
+  src: url('../assets/fonts/bolota-bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 @theme {
   /* Couleurs Principales DA */
   --color-primary: #dd2c0c;
@@ -16,6 +25,12 @@
   --font-sans: 'Montserrat', 'Poppins', sans-serif;
   --font-title: 'Montserrat', sans-serif;
   --font-body: 'Poppins', 'Montserrat', sans-serif;
+  --font-bolota: 'Bolota', 'Montserrat', sans-serif;
+
+  /* Typography Sizes - Heading Hierarchy */
+  --text-h1: 2rem; /* 32px */
+  --text-h2: 1.5rem; /* 24px */
+  --text-h3: 1.125rem; /* 18px */
 }
 
 /* CSS Variables for additional theming support */
@@ -39,6 +54,17 @@ body {
   padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
+.safe-area-inset-top {
+  padding-top: env(safe-area-inset-top, 0);
+}
+
+/* PWA-only safe area (standalone mode) - doesn't affect web browser */
+@media all and (display-mode: standalone) {
+  .pwa-safe-area-top {
+    padding-top: env(safe-area-inset-top, 0);
+  }
+}
+
 /* Animation for notification banner */
 @keyframes slide-down {
   from {
@@ -53,4 +79,20 @@ body {
 
 .animate-slide-down {
   animation: slide-down 0.3s ease-out forwards;
+}
+
+/* Navigation Label Animation */
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-fadeSlideIn {
+  animation: fadeSlideIn 250ms ease-out forwards;
 }

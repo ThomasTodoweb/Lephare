@@ -181,7 +181,7 @@ export default function SubscriptionIndex({ subscription, trialInfo, pricing, is
   }
 
   return (
-    <AppLayout currentPage="profile">
+    <AppLayout>
       <Head title="Mon Abonnement - Le Phare" />
 
       <div className="py-4">

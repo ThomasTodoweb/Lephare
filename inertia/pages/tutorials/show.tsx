@@ -79,7 +79,7 @@ export default function TutorialShow({ tutorial, isCompleted, feedback }: Props)
   }
 
   return (
-    <AppLayout currentPage="tutorials">
+    <AppLayout>
       <Head title={`${tutorial.title} - Le Phare`} />
       {/* Header */}
       <div className="pb-4">

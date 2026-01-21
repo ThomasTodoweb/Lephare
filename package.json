@@ -75,6 +75,7 @@
     "@types/nodemailer": "^7.0.5",
     "@vinejs/vine": "^3.0.1",
     "edge.js": "^6.2.1",
+    "embla-carousel-react": "^8.6.0",
     "jsonwebtoken": "^9.0.3",
     "lucide-react": "^0.562.0",
     "luxon": "^3.7.2",

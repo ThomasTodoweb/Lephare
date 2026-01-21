@@ -1,8 +1,9 @@
 import { Head, Link, router, usePage } from '@inertiajs/react'
 import { AppLayout } from '~/components/layout'
-import { Button, Card } from '~/components/ui'
+import { Button, Card, Heading } from '~/components/ui'
 import { NotificationBanner } from '~/components/NotificationBanner'
 import { MissionCalendar } from '~/components/MissionCalendar'
+import { WelcomeMessage, StreakRestaurantBar, DailyObjective, MissionCarousel, type Mission as CarouselMission } from '~/components/features/home'
 
 interface Mission {
   id: number
@@ -62,6 +63,31 @@ const MISSION_TYPE_LABELS: Record<string, string> = {
   tuto: 'Tutoriel',
 }
 
+// Missions mockées temporaires pour le carousel (Story 9.6)
+const MOCK_CAROUSEL_MISSIONS: CarouselMission[] = [
+  {
+    id: 'mock-1',
+    title: 'Plat du jour',
+    description: 'Photographiez votre spécialité du jour avec une belle lumière naturelle',
+    coverImageUrl: 'https://picsum.photos/seed/plat/400/500',
+    type: 'post',
+  },
+  {
+    id: 'mock-2',
+    title: 'Coulisses',
+    description: 'Montrez les coulisses de votre cuisine en action',
+    coverImageUrl: 'https://picsum.photos/seed/cuisine/400/500',
+    type: 'story',
+  },
+  {
+    id: 'mock-3',
+    title: 'Équipe',
+    description: 'Présentez un membre de votre équipe en vidéo courte',
+    coverImageUrl: 'https://picsum.photos/seed/equipe/400/500',
+    type: 'reel',
+  },
+]
+
 export default function Dashboard({ user, restaurant, mission, streak, notifications, calendarMissions, plannedFutureDays }: Props) {
   const { flash } = usePage<{ flash?: { success?: string } }>().props
 
@@ -69,26 +95,8 @@ export default function Dashboard({ user, restaurant, mission, streak, notificat
     router.post('/logout')
   }
 
-  function handleAcceptMission() {
-    if (mission) {
-      router.post(`/missions/${mission.id}/accept`)
-    }
-  }
-
-  function handleSkipMission() {
-    if (mission) {
-      router.post(`/missions/${mission.id}/skip`)
-    }
-  }
-
-  function handleReloadMission() {
-    if (mission) {
-      router.post(`/missions/${mission.id}/reload`)
-    }
-  }
-
   return (
-    <AppLayout currentPage="home">
+    <AppLayout >
       <Head title="Accueil" />
 
       {flash?.success && (
@@ -106,117 +114,62 @@ export default function Dashboard({ user, restaurant, mission, streak, notificat
 
       <div className="py-4">
         {/* Welcome header */}
-        <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold uppercase mb-1">
-            Bienvenue {user.fullName || 'Chef'} !
-          </h1>
-          <p className="text-gray-600">{restaurant.name}</p>
+        <div className="mb-6">
+          <WelcomeMessage firstName={user.fullName?.split(' ')[0] || 'Chef'} />
         </div>
 
-        {/* Streak card */}
-        <Card className={`mb-6 ${streak.isAtRisk ? 'bg-orange-50 border-orange-300' : 'bg-white'}`}>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <span className="text-3xl">🔥</span>
-              <div>
-                <p className="font-bold text-neutral-900">{streak.current} jours</p>
-                <p className="text-xs text-neutral-500">Record : {streak.longest} jours</p>
-              </div>
-            </div>
-          </div>
-          <p className={`mt-3 text-sm ${streak.isAtRisk ? 'text-orange-600 font-medium' : 'text-neutral-600'}`}>
-            {streak.message}
-          </p>
-        </Card>
+        {/* Streak & Restaurant Bar */}
+        <div className="mb-6">
+          <StreakRestaurantBar
+            restaurantName={restaurant.name}
+            restaurantType={restaurant.type}
+            currentStreak={streak.current}
+            longestStreak={streak.longest}
+          />
+          {streak.isAtRisk && (
+            <p className="mt-2 text-sm text-orange-600 font-medium text-center">
+              {streak.message}
+            </p>
+          )}
+        </div>
 
-        {/* Mission du jour */}
-        {mission ? (
-          <Card className="mb-6">
-            <div className="text-center">
-              <div className="flex items-center justify-center gap-2 mb-3">
-                <span className="text-3xl">{MISSION_TYPE_ICONS[mission.template.type] || '📋'}</span>
-                <span className="text-xs font-bold text-primary uppercase">
-                  {MISSION_TYPE_LABELS[mission.template.type] || 'Mission'}
-                </span>
-              </div>
-
-              <h2 className="text-lg font-bold text-neutral-900 mb-2">
-                {mission.template.title}
-              </h2>
-
-              <p className="text-neutral-600 text-sm mb-4">
-                {mission.template.contentIdea}
-              </p>
-
-              <Link
-                href="/missions"
-                className="text-primary text-sm font-medium hover:underline mb-4 inline-block"
-              >
-                En savoir plus
-              </Link>
-
-              {mission.status === 'pending' ? (
-                <>
-                  <Button onClick={handleAcceptMission} className="w-full mb-3">
-                    C'est parti !
+        {/* Daily Objective & Mission Carousel (Story 9.6) */}
+        <div className="mb-6">
+          <DailyObjective
+            objectiveType={MOCK_CAROUSEL_MISSIONS[0]?.type || 'post'}
+            count={1}
+          />
+          {MOCK_CAROUSEL_MISSIONS.length > 0 ? (
+            <MissionCarousel
+              missions={MOCK_CAROUSEL_MISSIONS}
+              onMissionStart={(missionId) => {
+                // TODO: Story 9.8 - Navigation vers le flow de mission avec missionId
+                router.visit(`/missions/${missionId}/start`)
+              }}
+            />
+          ) : (
+            <Card>
+              <div className="text-center py-4">
+                <span className="text-5xl mb-4 block">😴</span>
+                <Heading level={3} className="mb-2">
+                  Pas de mission aujourd'hui
+                </Heading>
+                <p className="text-neutral-600 text-sm">
+                  Repose-toi ou explore les tutoriels !
+                </p>
+                <Link href="/tutorials" className="block mt-4">
+                  <Button variant="outlined" className="w-full">
+                    Voir les tutoriels
                   </Button>
-
-                  {mission.canUseAction && (
-                    <div className="flex gap-3">
-                      <button
-                        type="button"
-                        onClick={handleSkipMission}
-                        className="flex-1 py-2 text-sm text-neutral-500 hover:text-neutral-700"
-                      >
-                        Passer
-                      </button>
-                      <button
-                        type="button"
-                        onClick={handleReloadMission}
-                        className="flex-1 py-2 text-sm text-neutral-500 hover:text-neutral-700"
-                      >
-                        Autre mission
-                      </button>
-                    </div>
-                  )}
-
-                  {!mission.canUseAction && (
-                    <p className="text-xs text-neutral-400 mt-2">
-                      {mission.usedPass && '✓ Pass utilisé aujourd\'hui'}
-                      {mission.usedReload && '✓ Reload utilisé aujourd\'hui'}
-                    </p>
-                  )}
-                </>
-              ) : (
-                <div className="text-center">
-                  <span className="text-4xl mb-2 block">✓</span>
-                  <p className="text-green-600 font-medium">Mission terminée !</p>
-                </div>
-              )}
-            </div>
-          </Card>
-        ) : (
-          <Card className="mb-6">
-            <div className="text-center py-4">
-              <span className="text-5xl mb-4 block">😴</span>
-              <h2 className="text-lg font-bold text-neutral-900 mb-2">
-                Pas de mission aujourd'hui
-              </h2>
-              <p className="text-neutral-600 text-sm">
-                Repose-toi ou explore les tutoriels !
-              </p>
-              <Link href="/tutorials" className="block mt-4">
-                <Button variant="outlined" className="w-full">
-                  Voir les tutoriels
-                </Button>
-              </Link>
-            </div>
-          </Card>
-        )}
+                </Link>
+              </div>
+            </Card>
+          )}
+        </div>
 
         {/* Calendar */}
         <div className="mb-6">
-          <h2 className="font-bold text-neutral-900 mb-3">Ton calendrier</h2>
+          <Heading level={3} className="mb-3">Ton calendrier</Heading>
           <MissionCalendar missions={calendarMissions} plannedFutureDays={plannedFutureDays} />
         </div>
 

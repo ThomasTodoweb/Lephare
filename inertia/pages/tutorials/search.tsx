@@ -37,7 +37,7 @@ export default function TutorialsSearch({ query: initialQuery, tutorials }: Prop
   }, [query])
 
   return (
-    <AppLayout currentPage="tutorials">
+    <AppLayout>
       <Head title="Rechercher - Tutoriels - Le Phare" />
       {/* Header */}
       <div className="pb-4">

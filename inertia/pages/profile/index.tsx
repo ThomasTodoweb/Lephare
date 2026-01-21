@@ -193,7 +193,7 @@ export default function Profile({
   }
 
   return (
-    <AppLayout currentPage="profile">
+    <AppLayout>
       <Head title="Mon profil - Le Phare" />
       {/* Header */}
       <div className="pt-4 pb-4">

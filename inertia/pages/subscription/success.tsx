@@ -4,7 +4,7 @@ import { Button, Card } from '~/components/ui'
 
 export default function SubscriptionSuccess() {
   return (
-    <AppLayout currentPage="profile">
+    <AppLayout>
       <Head title="Abonnement activé - Le Phare" />
 
       <div className="py-4">

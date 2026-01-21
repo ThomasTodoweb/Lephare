@@ -62,7 +62,7 @@ export default function TodayMission({ mission }: Props) {
   }
 
   return (
-    <AppLayout currentPage="home">
+    <AppLayout>
       <Head title="Ma mission - Le Phare" />
       {/* Header */}
       <div className="pb-4">

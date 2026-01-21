@@ -29,7 +29,7 @@ export default function ReportsIndex({ reports, hasUnread }: Props) {
   }
 
   return (
-    <AppLayout currentPage="profile">
+    <AppLayout>
       <Head title="Bilans Hebdo - Le Phare" />
 
       <div className="py-4">

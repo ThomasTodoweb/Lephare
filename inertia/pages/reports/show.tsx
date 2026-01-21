@@ -28,7 +28,7 @@ export default function ReportShow({ report }: Props) {
   }
 
   return (
-    <AppLayout currentPage="profile">
+    <AppLayout>
       <Head title="Bilan Hebdo - Le Phare" />
 
       <div className="py-4">

@@ -41,7 +41,7 @@ export default function TutorialsIndex({ categories }: Props) {
   )
 
   return (
-    <AppLayout currentPage="tutorials">
+    <AppLayout>
       <Head title="Tutoriels - Le Phare" />
       {/* Header */}
       <div className="pt-4 pb-4">

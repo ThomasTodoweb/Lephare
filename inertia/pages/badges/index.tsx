@@ -42,7 +42,7 @@ export default function BadgesIndex({ badges, stats }: Props) {
   }
 
   return (
-    <AppLayout currentPage="profile">
+    <AppLayout>
       <Head title="Mes Badges - Le Phare" />
 
       <div className="py-4">

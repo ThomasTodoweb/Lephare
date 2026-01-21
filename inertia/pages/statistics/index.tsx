@@ -158,7 +158,7 @@ export default function StatisticsIndex({ keyMetrics, summary, comparison, insta
   }, [selectedPeriod])
 
   return (
-    <AppLayout currentPage="statistics">
+    <AppLayout>
       <Head title="Mes Statistiques - Le Phare" />
 
       <div className="py-4">
