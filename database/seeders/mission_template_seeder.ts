@@ -146,6 +146,57 @@ export default class extends BaseSeeder {
       },
     ])
 
+    // Engagement missions (apply to ALL strategies)
+    // These are social missions that complement publication missions
+    const engagementTemplates = [
+      {
+        type: 'engagement' as const,
+        title: 'Session commentaires',
+        contentIdea: 'Prenez 10 minutes pour répondre à tous les commentaires de vos 5 derniers posts. Montrez à votre communauté que vous les écoutez !',
+        order: 100,
+        isActive: true,
+      },
+      {
+        type: 'engagement' as const,
+        title: 'Engagement local',
+        contentIdea: 'Likez et commentez 5 publications de restaurants ou commerces de votre quartier. Créez des liens avec la communauté locale !',
+        order: 101,
+        isActive: true,
+      },
+      {
+        type: 'engagement' as const,
+        title: 'Story reshare',
+        contentIdea: 'Partagez en story le post d\'un client qui vous a tagué. Remerciez-le publiquement !',
+        order: 102,
+        isActive: true,
+      },
+      {
+        type: 'engagement' as const,
+        title: 'DM de bienvenue',
+        contentIdea: 'Envoyez un message de bienvenue à vos 3 derniers nouveaux abonnés. Un petit mot personnel fait toute la différence !',
+        order: 103,
+        isActive: true,
+      },
+      {
+        type: 'engagement' as const,
+        title: 'Sondage story',
+        contentIdea: 'Créez un sondage en story pour impliquer votre communauté : nouveau plat, horaires, ou simple question fun !',
+        order: 104,
+        isActive: true,
+      },
+    ]
+
+    // Add engagement templates for each strategy
+    // Use strategy-specific titles to avoid overwrite issues with updateOrCreateMany
+    for (const strategy of [ouverture, notoriete, debutant]) {
+      for (const template of engagementTemplates) {
+        await MissionTemplate.updateOrCreate(
+          { strategyId: strategy.id, title: template.title },
+          { ...template, strategyId: strategy.id }
+        )
+      }
+    }
+
     console.log('Mission templates seeded successfully!')
   }
 }
