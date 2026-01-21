@@ -33,10 +33,6 @@ export default function Bravo({ publication }: Props) {
           />
         </div>
 
-        {/* Chef illustration placeholder */}
-        <div className="w-32 h-32 bg-neutral-100 rounded-full flex items-center justify-center mb-8">
-          <span className="text-6xl">👨‍🍳</span>
-        </div>
 
         {/* Message */}
         <p className="text-neutral-600 text-center mb-8 max-w-xs">

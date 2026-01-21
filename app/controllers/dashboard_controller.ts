@@ -42,6 +42,9 @@ export default class DashboardController {
       .preload('missionTemplate')
       .orderBy('assigned_at', 'asc')
 
+    // Get planned future mission days based on rhythm
+    const plannedFutureDays = missionService.getPlannedMissionDays(restaurant.publicationRhythm, 60)
+
     return inertia.render('dashboard', {
       user: {
         ...user.serialize(),
@@ -79,6 +82,7 @@ export default class DashboardController {
         type: m.missionTemplate?.type || 'post',
         title: m.missionTemplate?.title || 'Mission',
       })),
+      plannedFutureDays: plannedFutureDays.map((d) => d.setZone('Europe/Paris').toISODate()),
     })
   }
 

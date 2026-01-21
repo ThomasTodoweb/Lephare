@@ -42,6 +42,7 @@ interface Props {
     isConfigured: boolean
   }
   calendarMissions: CalendarMission[]
+  plannedFutureDays: string[]
   flash?: {
     success?: string
   }
@@ -61,7 +62,7 @@ const MISSION_TYPE_LABELS: Record<string, string> = {
   tuto: 'Tutoriel',
 }
 
-export default function Dashboard({ user, restaurant, mission, streak, notifications, calendarMissions }: Props) {
+export default function Dashboard({ user, restaurant, mission, streak, notifications, calendarMissions, plannedFutureDays }: Props) {
   const { flash } = usePage<{ flash?: { success?: string } }>().props
 
   function handleLogout() {
@@ -216,7 +217,7 @@ export default function Dashboard({ user, restaurant, mission, streak, notificat
         {/* Calendar */}
         <div className="mb-6">
           <h2 className="font-bold text-neutral-900 mb-3">Ton calendrier</h2>
-          <MissionCalendar missions={calendarMissions} />
+          <MissionCalendar missions={calendarMissions} plannedFutureDays={plannedFutureDays} />
         </div>
 
         {/* Quick links */}

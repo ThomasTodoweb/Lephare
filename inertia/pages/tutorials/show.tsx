@@ -157,12 +157,6 @@ export default function TutorialShow({ tutorial, isCompleted, feedback }: Props)
             </Card>
           )}
 
-          {/* Chef illustration */}
-          <div className="flex justify-center mt-8">
-            <div className="w-32 h-32 bg-neutral-100 rounded-full flex items-center justify-center">
-              <span className="text-6xl">👨‍🍳</span>
-            </div>
-          </div>
         </div>
 
       {/* Fixed bottom button */}

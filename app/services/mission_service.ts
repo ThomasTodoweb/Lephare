@@ -275,6 +275,49 @@ export default class MissionService {
   }
 
   /**
+   * Get planned future publication days based on rhythm
+   * Returns dates for the next N days where missions would be assigned
+   */
+  getPlannedMissionDays(rhythm: string | null, daysAhead: number = 30): DateTime[] {
+    const plannedDays: DateTime[] = []
+    const today = DateTime.utc().startOf('day')
+
+    for (let i = 1; i <= daysAhead; i++) {
+      const futureDay = today.plus({ days: i })
+      if (this.wouldHaveMissionOn(rhythm, futureDay)) {
+        plannedDays.push(futureDay)
+      }
+    }
+
+    return plannedDays
+  }
+
+  /**
+   * Check if a specific date would have a mission based on rhythm
+   */
+  private wouldHaveMissionOn(rhythm: string | null, date: DateTime): boolean {
+    if (!rhythm) return true
+
+    const dayOfWeek = date.weekday // 1 = Monday, 7 = Sunday
+
+    switch (rhythm) {
+      case 'daily':
+        return true
+      case 'five_week':
+        // Monday to Friday
+        return dayOfWeek <= 5
+      case 'three_week':
+        // Monday, Wednesday, Friday
+        return [1, 3, 5].includes(dayOfWeek)
+      case 'once_week':
+        // Monday only
+        return dayOfWeek === 1
+      default:
+        return true
+    }
+  }
+
+  /**
    * Complete a tuto mission when a tutorial is completed
    * Called from TutorialsController when a tutorial is marked as complete
    */

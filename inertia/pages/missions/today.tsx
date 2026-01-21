@@ -103,13 +103,6 @@ export default function TodayMission({ mission }: Props) {
                 <p className="text-neutral-700">{mission.template.contentIdea}</p>
               </Card>
 
-              {/* Illustration placeholder */}
-              <div className="flex justify-center mb-6">
-                <div className="w-48 h-48 bg-neutral-100 rounded-full flex items-center justify-center">
-                  <span className="text-6xl">👨‍🍳</span>
-                </div>
-              </div>
-
               {/* Status indicator for used actions */}
               {(mission.usedPass || mission.usedReload) && (
                 <div className="text-center text-sm text-neutral-500 mb-4">

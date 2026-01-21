@@ -11,6 +11,7 @@ interface CalendarMission {
 
 interface MissionCalendarProps {
   missions: CalendarMission[]
+  plannedFutureDays?: string[]
   currentMonth?: Date
 }
 
@@ -27,7 +28,7 @@ const MISSION_TYPE_ICONS: Record<string, string> = {
   tuto: '📚',
 }
 
-export function MissionCalendar({ missions, currentMonth }: MissionCalendarProps) {
+export function MissionCalendar({ missions, plannedFutureDays = [], currentMonth }: MissionCalendarProps) {
   const [viewDate, setViewDate] = useState(() => currentMonth || new Date())
   const [selectedDay, setSelectedDay] = useState<string | null>(null)
 
@@ -39,6 +40,9 @@ export function MissionCalendar({ missions, currentMonth }: MissionCalendarProps
     })
     return map
   }, [missions])
+
+  // Convert planned future days to a Set for quick lookup
+  const plannedDaysSet = useMemo(() => new Set(plannedFutureDays), [plannedFutureDays])
 
   // Calculate calendar grid
   const calendarData = useMemo(() => {
@@ -113,13 +117,16 @@ export function MissionCalendar({ missions, currentMonth }: MissionCalendarProps
   const handleDayClick = (date: Date) => {
     const dateKey = formatDateKey(date)
     const mission = missionsByDate.get(dateKey)
+    const isPlanned = plannedDaysSet.has(dateKey)
 
-    if (mission) {
+    // Allow clicking if there's a mission or if it's a planned future day
+    if (mission || isPlanned) {
       setSelectedDay(selectedDay === dateKey ? null : dateKey)
     }
   }
 
   const selectedMission = selectedDay ? missionsByDate.get(selectedDay) : null
+  const selectedIsPlannedFuture = selectedDay && !selectedMission && plannedDaysSet.has(selectedDay)
 
   return (
     <div className="bg-white rounded-2xl p-4">
@@ -165,6 +172,7 @@ export function MissionCalendar({ missions, currentMonth }: MissionCalendarProps
           const today = isToday(day.date)
           const past = isPast(day.date)
           const future = isFuture(day.date)
+          const isPlanned = plannedDaysSet.has(dateKey)
           const isSelected = selectedDay === dateKey
 
           // Determine cell state
@@ -184,6 +192,9 @@ export function MissionCalendar({ missions, currentMonth }: MissionCalendarProps
             } else {
               cellClass += 'bg-primary/10 text-primary '
             }
+          } else if (future && isPlanned) {
+            // Planned future day - show with distinct styling
+            cellClass += 'bg-blue-50 text-blue-500 '
           } else if (future) {
             cellClass += 'text-neutral-300 '
           } else {
@@ -200,7 +211,7 @@ export function MissionCalendar({ missions, currentMonth }: MissionCalendarProps
               type="button"
               onClick={() => handleDayClick(day.date!)}
               className={cellClass}
-              disabled={!mission}
+              disabled={!mission && !isPlanned}
             >
               <span className={`text-sm ${today ? 'font-bold' : ''}`}>
                 {day.dayNumber}
@@ -210,13 +221,16 @@ export function MissionCalendar({ missions, currentMonth }: MissionCalendarProps
                   {mission.status === 'completed' ? '✓' : mission.status === 'skipped' ? '−' : MISSION_TYPE_ICONS[mission.type] || '•'}
                 </span>
               )}
+              {!mission && isPlanned && (
+                <span className="text-[10px] leading-none mt-0.5">📅</span>
+              )}
             </button>
           )
         })}
       </div>
 
       {/* Legend */}
-      <div className="flex items-center justify-center gap-4 mt-4 pt-4 border-t border-neutral-100">
+      <div className="flex flex-wrap items-center justify-center gap-3 mt-4 pt-4 border-t border-neutral-100">
         <div className="flex items-center gap-1.5 text-xs text-neutral-500">
           <span className="w-3 h-3 rounded bg-green-100 flex items-center justify-center text-green-700 text-[8px]">✓</span>
           <span>Faite</span>
@@ -224,6 +238,10 @@ export function MissionCalendar({ missions, currentMonth }: MissionCalendarProps
         <div className="flex items-center gap-1.5 text-xs text-neutral-500">
           <span className="w-3 h-3 rounded bg-primary/10" />
           <span>À faire</span>
+        </div>
+        <div className="flex items-center gap-1.5 text-xs text-neutral-500">
+          <span className="w-3 h-3 rounded bg-blue-50" />
+          <span>Prévue</span>
         </div>
         <div className="flex items-center gap-1.5 text-xs text-neutral-500">
           <span className="w-3 h-3 rounded bg-neutral-100" />
@@ -272,6 +290,30 @@ export function MissionCalendar({ missions, currentMonth }: MissionCalendarProps
                   Historique
                 </Link>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Selected planned future day details */}
+      {selectedIsPlannedFuture && selectedDay && (
+        <div className="mt-4 pt-4 border-t border-neutral-100">
+          <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-xl">
+            <span className="text-2xl">📅</span>
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-neutral-900 text-sm">
+                Mission prévue
+              </p>
+              <p className="text-xs text-neutral-500">
+                {new Date(selectedDay + 'T12:00:00').toLocaleDateString('fr-FR', {
+                  weekday: 'long',
+                  day: 'numeric',
+                  month: 'long'
+                })}
+              </p>
+            </div>
+            <div className="text-xs text-blue-600">
+              Sera disponible ce jour-là
             </div>
           </div>
         </div>

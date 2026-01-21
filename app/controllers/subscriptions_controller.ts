@@ -86,9 +86,17 @@ export default class SubscriptionsController {
 
   /**
    * Handle successful checkout
+   * Syncs the subscription from Stripe to ensure it's active before showing success
    */
-  async success({ inertia, request }: HttpContext) {
+  async success({ inertia, request, auth }: HttpContext) {
     const sessionId = request.input('session_id')
+    const user = auth.getUserOrFail()
+
+    // Sync subscription from Stripe checkout session
+    // This ensures the subscription is activated even if webhook hasn't processed yet
+    if (sessionId) {
+      await this.stripeService.syncFromCheckoutSession(sessionId, user.id)
+    }
 
     return inertia.render('subscription/success', {
       sessionId,

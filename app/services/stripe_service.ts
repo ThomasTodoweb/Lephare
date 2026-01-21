@@ -449,6 +449,61 @@ export default class StripeService {
   }
 
   /**
+   * Sync subscription from Stripe checkout session
+   * This is called on the success page to ensure the subscription is activated
+   * even if the webhook hasn't processed yet
+   */
+  async syncFromCheckoutSession(sessionId: string, userId: number): Promise<Subscription | null> {
+    if (!this.stripe) {
+      logger.warn('StripeService: Not configured')
+      return null
+    }
+
+    try {
+      const session = await this.stripe.checkout.sessions.retrieve(sessionId, {
+        expand: ['subscription'],
+      })
+
+      // Verify this session belongs to the user
+      const sessionUserId = Number(session.metadata?.userId)
+      if (sessionUserId !== userId) {
+        logger.warn({ sessionId, userId, sessionUserId }, 'User ID mismatch in checkout session')
+        return null
+      }
+
+      // If session is not completed, nothing to do
+      if (session.status !== 'complete') {
+        logger.info({ sessionId, status: session.status }, 'Checkout session not complete')
+        return null
+      }
+
+      const stripeSubscription = session.subscription as Stripe.Subscription | null
+      if (!stripeSubscription) {
+        logger.warn({ sessionId }, 'No subscription in checkout session')
+        return null
+      }
+
+      const planType = session.metadata?.planType as 'monthly' | 'yearly' || 'monthly'
+
+      // Update or create subscription record
+      const subscription = await this.createOrUpdateSubscription(userId, {
+        stripeCustomerId: session.customer as string,
+        stripeSubscriptionId: typeof stripeSubscription === 'string' ? stripeSubscription : stripeSubscription.id,
+        status: 'active',
+        planType,
+        currentPeriodStart: DateTime.utc(),
+        currentPeriodEnd: DateTime.utc().plus({ months: planType === 'yearly' ? 12 : 1 }),
+      })
+
+      logger.info({ userId, planType, sessionId }, 'Subscription synced from checkout session')
+      return subscription
+    } catch (error) {
+      logger.error({ error, sessionId, userId }, 'Failed to sync subscription from checkout session')
+      return null
+    }
+  }
+
+  /**
    * Create Stripe billing portal session for self-service management
    */
   async createBillingPortalSession(userId: number, returnUrl: string): Promise<string | null> {

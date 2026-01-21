@@ -435,12 +435,6 @@ export default function SubscriptionIndex({ subscription, trialInfo, pricing, is
           </div>
         </Card>
 
-        {/* Chef illustration */}
-        <div className="flex justify-center mt-8">
-          <div className="w-24 h-24 bg-neutral-100 rounded-full flex items-center justify-center">
-            <span className="text-5xl">👨‍🍳</span>
-          </div>
-        </div>
       </div>
     </AppLayout>
   )

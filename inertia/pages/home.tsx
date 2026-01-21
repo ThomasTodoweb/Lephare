@@ -156,10 +156,6 @@ export default function Home({ isAuthenticated }: Props) {
                         </button>
                       </div>
 
-                      {/* Bottom illustration */}
-                      <div className="flex justify-center mt-6">
-                        <span className="text-5xl">👨‍🍳</span>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -478,7 +474,6 @@ export default function Home({ isAuthenticated }: Props) {
         <section className="py-16 px-6">
           <div className="max-w-3xl mx-auto text-center">
             <div className="bg-white rounded-3xl p-10">
-              <span className="text-5xl mb-4 block">👨‍🍳</span>
               <h2 className="text-2xl md:text-3xl font-extrabold text-text mb-4 uppercase">
                 Prêt à remplir votre salle ?
               </h2>
