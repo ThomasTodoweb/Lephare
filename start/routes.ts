@@ -129,7 +129,8 @@ router.group(() => {
   router.get('/instagram/accounts', [InstagramController, 'accounts']).as('instagram.accounts')
   router.get('/instagram/status', [InstagramController, 'status']).as('instagram.status')
 
-  // Notifications API - accessible to manage notifications
+  // Notifications page & API - accessible to manage notifications
+  router.get('/notifications', [NotificationsController, 'index']).as('notifications.index')
   router.get('/notifications/public-key', [NotificationsController, 'publicKey']).as('notifications.publicKey')
   router.post('/notifications/subscribe', [NotificationsController, 'subscribe']).as('notifications.subscribe')
   router.post('/notifications/unsubscribe', [NotificationsController, 'unsubscribe']).as('notifications.unsubscribe')
@@ -155,10 +156,11 @@ router.group(() => {
 
   // Missions - core premium feature
   router.get('/missions', [MissionsController, 'today']).as('missions.today')
+  router.get('/missions/history', [MissionsController, 'history']).as('missions.history')
+  router.get('/missions/:id', [MissionsController, 'show']).as('missions.show')
   router.post('/missions/:id/accept', [MissionsController, 'accept']).as('missions.accept')
   router.post('/missions/:id/skip', [MissionsController, 'skip']).as('missions.skip')
   router.post('/missions/:id/reload', [MissionsController, 'reload']).as('missions.reload')
-  router.get('/missions/history', [MissionsController, 'history']).as('missions.history')
 
   // Publication flow - premium feature
   router.get('/missions/:id/photo', [PublicationsController, 'photo']).as('missions.photo')

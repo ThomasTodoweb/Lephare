@@ -1,4 +1,4 @@
-import { Head, useForm, Link } from '@inertiajs/react'
+import { Head, useForm, Link, usePage } from '@inertiajs/react'
 import { useRef, useState } from 'react'
 import { Button } from '~/components/ui/Button'
 import { Card } from '~/components/ui/Card'
@@ -24,6 +24,7 @@ interface MediaFile {
 }
 
 export default function MediaCapture({ mission, contentType, maxImages, acceptVideo }: Props) {
+  const { flash } = usePage<{ flash?: { error?: string; success?: string } }>().props
   const galleryInputRef = useRef<HTMLInputElement>(null)
   const cameraInputRef = useRef<HTMLInputElement>(null)
   const videoInputRef = useRef<HTMLInputElement>(null)
@@ -33,6 +34,8 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
   const [coverImage, setCoverImage] = useState<{ file: File; preview: string } | null>(null)
   const [shareToFeed, setShareToFeed] = useState(true)
   const [isCompressing, setIsCompressing] = useState(false)
+  const [videoError, setVideoError] = useState<string | null>(null)
+  const [videoLoading, setVideoLoading] = useState(false)
 
   const form = useForm<{
     photo: File | null
@@ -138,9 +141,27 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
     const file = e.target.files?.[0]
     if (!file) return
 
+    setVideoError(null)
+    setVideoLoading(true)
+
+    // Verify it's a valid video file
+    if (!file.type.startsWith('video/')) {
+      setVideoError('Ce fichier n\'est pas une vidéo valide')
+      setVideoLoading(false)
+      return
+    }
+
+    // Check file size (max 100MB)
+    if (file.size > 100 * 1024 * 1024) {
+      setVideoError('La vidéo est trop volumineuse (max 100 Mo)')
+      setVideoLoading(false)
+      return
+    }
+
     const preview = URL.createObjectURL(file)
     setMediaFiles([{ file, preview, type: 'video' }])
     form.setData('video', file)
+    setVideoLoading(false)
   }
 
   const handleCoverChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -243,6 +264,13 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
 
         {/* Content */}
         <div className="flex-1 px-6 pb-32">
+          {/* Error message */}
+          {flash?.error && (
+            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700">
+              {flash.error}
+            </div>
+          )}
+
           {/* Tip Card */}
           <Card className="mb-6 bg-neutral-50">
             <h3 className="font-bold text-neutral-900 mb-2">💡 Conseil</h3>
@@ -257,7 +285,17 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
           )}
           {isReel && (
             <div className="mb-4 p-3 bg-purple-50 rounded-xl text-purple-800 text-sm">
-              🎬 Sélectionnez une vidéo pour votre reel (max 90s)
+              🎬 Sélectionnez une vidéo pour votre reel (max 90s, format MP4 recommandé)
+            </div>
+          )}
+          {videoError && (
+            <div className="mb-4 p-3 bg-red-50 rounded-xl text-red-700 text-sm">
+              ⚠️ {videoError}
+            </div>
+          )}
+          {videoLoading && (
+            <div className="mb-4 p-3 bg-blue-50 rounded-xl text-blue-700 text-sm">
+              ⏳ Chargement de la vidéo...
             </div>
           )}
           {isStory && (
@@ -275,8 +313,12 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
                     {media.type === 'video' ? (
                       <video
                         src={media.preview}
-                        className="w-full max-h-[50vh] object-contain rounded-2xl border-4 border-primary bg-neutral-100"
+                        className="w-full max-h-[50vh] object-contain rounded-2xl border-4 border-primary bg-neutral-900"
                         controls
+                        playsInline
+                        preload="metadata"
+                        onError={() => setVideoError('Impossible de lire cette vidéo. Essayez un autre format (MP4 recommandé).')}
+                        onLoadedData={() => setVideoLoading(false)}
                       />
                     ) : (
                       <img

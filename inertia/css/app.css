@@ -61,7 +61,7 @@ body {
 /* PWA-only safe area (standalone mode) - doesn't affect web browser */
 @media all and (display-mode: standalone) {
   .pwa-safe-area-top {
-    padding-top: env(safe-area-inset-top, 0);
+    padding-top: calc(env(safe-area-inset-top, 0) + 12px);
   }
 }
 
@@ -95,4 +95,30 @@ body {
 
 .animate-fadeSlideIn {
   animation: fadeSlideIn 250ms ease-out forwards;
+}
+
+/* Hide scrollbar for carousel */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Modal scale animation */
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-scale-in {
+  animation: scale-in 0.2s ease-out forwards;
 }

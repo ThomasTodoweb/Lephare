@@ -32,6 +32,12 @@ export default class Mission extends BaseModel {
   @column()
   declare usedReload: boolean
 
+  @column()
+  declare slotNumber: number
+
+  @column()
+  declare isRecommended: boolean
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 

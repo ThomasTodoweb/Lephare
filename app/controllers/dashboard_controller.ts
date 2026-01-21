@@ -6,6 +6,21 @@ import PushSubscription from '#models/push_subscription'
 import Mission from '#models/mission'
 
 export default class DashboardController {
+  /**
+   * Get a cover image URL based on mission type
+   */
+  private getCoverImage(type: string): string {
+    const images: Record<string, string> = {
+      post: 'https://picsum.photos/seed/post/400/500',
+      story: 'https://picsum.photos/seed/story/400/500',
+      reel: 'https://picsum.photos/seed/reel/400/500',
+      tuto: 'https://picsum.photos/seed/tuto/400/500',
+      engagement: 'https://picsum.photos/seed/engagement/400/500',
+      carousel: 'https://picsum.photos/seed/carousel/400/500',
+    }
+    return images[type] || images.post
+  }
+
   async index({ inertia, auth, response }: HttpContext) {
     const user = auth.getUserOrFail()
     const restaurant = await user.related('restaurant').query().first()
@@ -14,9 +29,9 @@ export default class DashboardController {
       return response.redirect().toRoute('restaurant.type')
     }
 
-    // Get today's mission
+    // Get today's missions (3 missions per day)
     const missionService = new MissionService()
-    const mission = await missionService.getTodayMission(user.id)
+    const todayMissions = await missionService.getTodayMissions(user.id)
 
     // Get streak info
     const gamificationService = new GamificationService()
@@ -45,26 +60,41 @@ export default class DashboardController {
     // Get planned future mission days based on rhythm
     const plannedFutureDays = missionService.getPlannedMissionDays(restaurant.publicationRhythm, 60)
 
+    // Format today's missions for the carousel
+    const formattedTodayMissions = todayMissions.map((m) => ({
+      id: m.id,
+      title: m.missionTemplate.title,
+      description: m.missionTemplate.contentIdea,
+      coverImageUrl: this.getCoverImage(m.missionTemplate.type),
+      type: m.missionTemplate.type,
+      status: m.status,
+      isRecommended: m.isRecommended,
+    }))
+
+    // Legacy mission prop (for backward compatibility with today.tsx page)
+    const recommendedMission = todayMissions.find((m) => m.isRecommended) || todayMissions[0]
+
     return inertia.render('dashboard', {
       user: {
         ...user.serialize(),
         notificationBannerDismissed: user.notificationBannerDismissed,
       },
       restaurant: restaurant.serialize(),
-      mission: mission
+      mission: recommendedMission
         ? {
-            id: mission.id,
-            status: mission.status,
-            canUseAction: mission.canUsePassOrReload(),
-            usedPass: mission.usedPass,
-            usedReload: mission.usedReload,
+            id: recommendedMission.id,
+            status: recommendedMission.status,
+            canUseAction: recommendedMission.canUsePassOrReload(),
+            usedPass: recommendedMission.usedPass,
+            usedReload: recommendedMission.usedReload,
             template: {
-              type: mission.missionTemplate.type,
-              title: mission.missionTemplate.title,
-              contentIdea: mission.missionTemplate.contentIdea,
+              type: recommendedMission.missionTemplate.type,
+              title: recommendedMission.missionTemplate.title,
+              contentIdea: recommendedMission.missionTemplate.contentIdea,
             },
           }
         : null,
+      todayMissions: formattedTodayMissions,
       streak: {
         current: streakInfo.currentStreak,
         longest: streakInfo.longestStreak,

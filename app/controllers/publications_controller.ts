@@ -79,23 +79,27 @@ export default class PublicationsController {
 
     // Determine content type from mission template
     const contentType = MISSION_TYPE_TO_CONTENT_TYPE[mission.missionTemplate.type] || 'post'
-    const isVideo = contentType === 'reel'
+    const isReel = contentType === 'reel'
+    const isStory = contentType === 'story'
     const isCarousel = contentType === 'carousel'
 
-    // Handle video upload for reels
-    if (isVideo) {
-      const video = request.file('video', {
-        size: '100mb',
-        extnames: ['mp4', 'mov', 'webm'],
-      })
+    // Check if a video was uploaded (for reels and stories)
+    const videoFile = request.file('video', {
+      size: '100mb',
+      extnames: ['mp4', 'mov', 'webm'],
+    })
+    const hasVideo = videoFile && videoFile.isValid
 
-      if (!video || !video.isValid) {
-        session.flash('error', video?.errors?.[0]?.message || 'Vidéo invalide')
+    // Handle video upload for reels and stories with video
+    if (isReel || (isStory && hasVideo)) {
+      // Use the already validated video file
+      if (!videoFile || !videoFile.isValid) {
+        session.flash('error', videoFile?.errors?.[0]?.message || 'Vidéo invalide')
         return response.redirect().back()
       }
 
-      const fileName = `${user.id}_${cuid()}.${video.extname}`
-      await video.move(app.makePath('storage/uploads'), { name: fileName })
+      const fileName = `${user.id}_${cuid()}.${videoFile.extname}`
+      await videoFile.move(app.makePath('storage/uploads'), { name: fileName })
 
       // Handle optional cover image
       let coverImagePath: string | null = null
@@ -119,10 +123,10 @@ export default class PublicationsController {
         userId: user.id,
         missionId: mission.id,
         imagePath: `storage/uploads/${fileName}`, // Keep for backward compatibility
-        contentType: 'reel',
+        contentType: isStory ? 'story' : 'reel',
         mediaItems,
-        shareToFeed,
-        coverImagePath,
+        shareToFeed: isReel ? shareToFeed : false, // Only reels can share to feed
+        coverImagePath: isReel ? coverImagePath : null, // Only reels have cover images
         caption: '',
         status: 'draft',
       })

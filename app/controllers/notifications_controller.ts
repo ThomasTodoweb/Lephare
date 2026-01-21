@@ -3,6 +3,13 @@ import PushService from '#services/push_service'
 
 export default class NotificationsController {
   /**
+   * Notifications page
+   */
+  async index({ inertia }: HttpContext) {
+    return inertia.render('notifications/index')
+  }
+
+  /**
    * Get VAPID public key for client
    */
   async publicKey({ response }: HttpContext) {

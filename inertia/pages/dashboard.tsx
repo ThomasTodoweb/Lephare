@@ -2,7 +2,6 @@ import { Head, Link, router, usePage } from '@inertiajs/react'
 import { AppLayout } from '~/components/layout'
 import { Button, Card, Heading } from '~/components/ui'
 import { NotificationBanner } from '~/components/NotificationBanner'
-import { MissionCalendar } from '~/components/MissionCalendar'
 import { WelcomeMessage, StreakRestaurantBar, DailyObjective, MissionCarousel, type Mission as CarouselMission } from '~/components/features/home'
 
 interface Mission {
@@ -16,6 +15,16 @@ interface Mission {
     title: string
     contentIdea: string
   }
+}
+
+interface TodayMission {
+  id: number
+  title: string
+  description: string
+  coverImageUrl: string
+  type: 'post' | 'story' | 'reel' | 'tuto' | 'engagement' | 'carousel'
+  status: 'pending' | 'completed' | 'skipped'
+  isRecommended: boolean
 }
 
 interface Streak {
@@ -37,6 +46,7 @@ interface Props {
   user: { id: number; email: string; fullName?: string; notificationBannerDismissed?: boolean }
   restaurant: { name: string; type: string }
   mission: Mission | null
+  todayMissions: TodayMission[]
   streak: Streak
   notifications: {
     hasSubscription: boolean
@@ -54,6 +64,7 @@ const MISSION_TYPE_ICONS: Record<string, string> = {
   story: '📱',
   reel: '🎬',
   tuto: '📚',
+  engagement: '💬',
 }
 
 const MISSION_TYPE_LABELS: Record<string, string> = {
@@ -61,39 +72,26 @@ const MISSION_TYPE_LABELS: Record<string, string> = {
   story: 'Story',
   reel: 'Réel',
   tuto: 'Tutoriel',
+  engagement: 'Engagement',
 }
 
-// Missions mockées temporaires pour le carousel (Story 9.6)
-const MOCK_CAROUSEL_MISSIONS: CarouselMission[] = [
-  {
-    id: 'mock-1',
-    title: 'Plat du jour',
-    description: 'Photographiez votre spécialité du jour avec une belle lumière naturelle',
-    coverImageUrl: 'https://picsum.photos/seed/plat/400/500',
-    type: 'post',
-  },
-  {
-    id: 'mock-2',
-    title: 'Coulisses',
-    description: 'Montrez les coulisses de votre cuisine en action',
-    coverImageUrl: 'https://picsum.photos/seed/cuisine/400/500',
-    type: 'story',
-  },
-  {
-    id: 'mock-3',
-    title: 'Équipe',
-    description: 'Présentez un membre de votre équipe en vidéo courte',
-    coverImageUrl: 'https://picsum.photos/seed/equipe/400/500',
-    type: 'reel',
-  },
-]
-
-export default function Dashboard({ user, restaurant, mission, streak, notifications, calendarMissions, plannedFutureDays }: Props) {
+export default function Dashboard({ user, restaurant, mission, todayMissions, streak, notifications, calendarMissions, plannedFutureDays }: Props) {
   const { flash } = usePage<{ flash?: { success?: string } }>().props
 
   function handleLogout() {
     router.post('/logout')
   }
+
+  // Navigate to specific mission when clicking on carousel
+  function handleMissionStart(missionId: number) {
+    router.visit(`/missions/${missionId}`)
+  }
+
+  // Count completed missions
+  const completedCount = todayMissions.filter(m => m.status === 'completed').length
+
+  // Get the first mission type for DailyObjective
+  const firstMissionType = todayMissions[0]?.type || 'post'
 
   return (
     <AppLayout >
@@ -133,19 +131,17 @@ export default function Dashboard({ user, restaurant, mission, streak, notificat
           )}
         </div>
 
-        {/* Daily Objective & Mission Carousel (Story 9.6) */}
+        {/* Daily Objective & Mission Carousel */}
         <div className="mb-6">
           <DailyObjective
-            objectiveType={MOCK_CAROUSEL_MISSIONS[0]?.type || 'post'}
-            count={1}
+            objectiveType={firstMissionType}
+            count={todayMissions.length}
+            completedCount={completedCount}
           />
-          {MOCK_CAROUSEL_MISSIONS.length > 0 ? (
+          {todayMissions.length > 0 ? (
             <MissionCarousel
-              missions={MOCK_CAROUSEL_MISSIONS}
-              onMissionStart={(missionId) => {
-                // TODO: Story 9.8 - Navigation vers le flow de mission avec missionId
-                router.visit(`/missions/${missionId}/start`)
-              }}
+              missions={todayMissions}
+              onMissionStart={handleMissionStart}
             />
           ) : (
             <Card>
@@ -167,24 +163,18 @@ export default function Dashboard({ user, restaurant, mission, streak, notificat
           )}
         </div>
 
-        {/* Calendar */}
-        <div className="mb-6">
-          <Heading level={3} className="mb-3">Ton calendrier</Heading>
-          <MissionCalendar missions={calendarMissions} plannedFutureDays={plannedFutureDays} />
-        </div>
-
         {/* Quick links */}
-        <div className="grid grid-cols-2 gap-3 mb-6">
+        <div className="grid grid-cols-2 gap-2 mb-4">
           <Link href="/missions/history">
-            <Card className="text-center py-4">
-              <span className="text-2xl mb-1 block">📋</span>
-              <p className="text-sm font-medium text-neutral-700">Historique</p>
+            <Card className="text-center py-2">
+              <span className="text-lg mb-0.5 block">📋</span>
+              <p className="text-xs font-medium text-neutral-700">Historique</p>
             </Card>
           </Link>
           <Link href="/tutorials">
-            <Card className="text-center py-4">
-              <span className="text-2xl mb-1 block">📚</span>
-              <p className="text-sm font-medium text-neutral-700">Tutoriels</p>
+            <Card className="text-center py-2">
+              <span className="text-lg mb-0.5 block">📚</span>
+              <p className="text-xs font-medium text-neutral-700">Tutoriels</p>
             </Card>
           </Link>
         </div>

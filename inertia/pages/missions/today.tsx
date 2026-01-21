@@ -1,4 +1,5 @@
-import { Head, useForm } from '@inertiajs/react'
+import { Head, Link, useForm } from '@inertiajs/react'
+import { ChevronLeft, ChevronRight, Star } from 'lucide-react'
 import { AppLayout } from '~/components/layout'
 import { Button } from '~/components/ui/Button'
 import { Card } from '~/components/ui/Card'
@@ -15,11 +16,14 @@ interface Mission {
   canUseAction: boolean
   usedPass: boolean
   usedReload: boolean
+  slotNumber: number
+  isRecommended: boolean
   template: MissionTemplate
 }
 
 interface Props {
   mission: Mission | null
+  todayMissions?: Mission[]
 }
 
 const TYPE_ICONS: Record<string, string> = {
@@ -38,7 +42,7 @@ const TYPE_LABELS: Record<string, string> = {
   engagement: 'Engagement',
 }
 
-export default function TodayMission({ mission }: Props) {
+export default function TodayMission({ mission, todayMissions = [] }: Props) {
   const acceptForm = useForm({})
   const skipForm = useForm({})
   const reloadForm = useForm({})
@@ -61,18 +65,59 @@ export default function TodayMission({ mission }: Props) {
     }
   }
 
+  // Find current mission index and prev/next missions
+  const currentIndex = mission ? todayMissions.findIndex(m => m.id === mission.id) : -1
+  const prevMission = currentIndex > 0 ? todayMissions[currentIndex - 1] : null
+  const nextMission = currentIndex < todayMissions.length - 1 ? todayMissions[currentIndex + 1] : null
+
   return (
     <AppLayout>
       <Head title="Ma mission - Le Phare" />
-      {/* Header */}
+      {/* Header with navigation */}
       <div className="pb-4">
-        <h1 className="text-2xl font-extrabold text-neutral-900 uppercase tracking-tight">
-          Mission du jour
-        </h1>
-        <p className="text-neutral-600 mt-2">
+        <div className="flex items-center justify-between mb-2">
+          <h1 className="text-2xl font-extrabold text-neutral-900 uppercase tracking-tight">
+            Mission du jour
+          </h1>
+          {/* Navigation counter */}
+          {todayMissions.length > 1 && mission && (
+            <span className="text-sm font-medium text-neutral-500">
+              {currentIndex + 1} / {todayMissions.length}
+            </span>
+          )}
+        </div>
+        <p className="text-neutral-600">
           Votre défi créatif vous attend !
         </p>
       </div>
+
+      {/* Mission navigation arrows */}
+      {todayMissions.length > 1 && (
+        <div className="flex justify-between items-center mb-4">
+          {prevMission ? (
+            <Link
+              href={`/missions/${prevMission.id}`}
+              className="flex items-center gap-1 text-primary font-medium text-sm"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              Précédent
+            </Link>
+          ) : (
+            <div />
+          )}
+          {nextMission ? (
+            <Link
+              href={`/missions/${nextMission.id}`}
+              className="flex items-center gap-1 text-primary font-medium text-sm"
+            >
+              Suivant
+              <ChevronRight className="w-4 h-4" />
+            </Link>
+          ) : (
+            <div />
+          )}
+        </div>
+      )}
 
       {/* Content */}
       <div className="pb-32">
@@ -89,6 +134,12 @@ export default function TodayMission({ mission }: Props) {
                       <span className="text-xs font-bold text-primary uppercase">
                         {TYPE_LABELS[mission.template.type]}
                       </span>
+                      {mission.isRecommended && (
+                        <span className="inline-flex items-center gap-1 bg-primary/10 text-primary text-xs px-2 py-0.5 rounded-full font-medium">
+                          <Star className="w-3 h-3 fill-current" />
+                          Recommandé
+                        </span>
+                      )}
                     </div>
                     <h2 className="text-lg font-bold text-neutral-900">
                       {mission.template.title}
@@ -108,6 +159,39 @@ export default function TodayMission({ mission }: Props) {
                 <div className="text-center text-sm text-neutral-500 mb-4">
                   {mission.usedPass && '✓ Pass utilisé aujourd\'hui'}
                   {mission.usedReload && '✓ Rechargement utilisé aujourd\'hui'}
+                </div>
+              )}
+
+              {/* Other missions preview */}
+              {todayMissions.length > 1 && (
+                <div className="mb-6">
+                  <h3 className="text-sm font-medium text-neutral-500 mb-3">Autres missions du jour</h3>
+                  <div className="flex gap-2 overflow-x-auto pb-2">
+                    {todayMissions.filter(m => m.id !== mission.id).map(m => (
+                      <Link
+                        key={m.id}
+                        href={`/missions/${m.id}`}
+                        className={`
+                          flex-shrink-0 px-4 py-3 rounded-xl border-2 transition-colors
+                          ${m.status === 'completed'
+                            ? 'border-green-500 bg-green-50'
+                            : 'border-neutral-200 bg-white hover:border-primary/50'
+                          }
+                        `}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="text-xl">{TYPE_ICONS[m.template.type]}</span>
+                          <div>
+                            <p className="text-xs font-medium text-neutral-500">{TYPE_LABELS[m.template.type]}</p>
+                            <p className="text-sm font-bold text-neutral-900 truncate max-w-[120px]">{m.template.title}</p>
+                          </div>
+                          {m.status === 'completed' && (
+                            <span className="text-green-600 ml-1">✓</span>
+                          )}
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
                 </div>
               )}
             </>

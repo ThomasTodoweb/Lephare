@@ -6,134 +6,204 @@ import GamificationService from '#services/gamification_service'
 
 export default class MissionService {
   /**
-   * Get or create today's mission for a user
+   * Get or create today's missions for a user (3 missions per day)
    * Uses UTC for consistent date handling across timezones
    */
-  async getTodayMission(userId: number): Promise<Mission | null> {
+  async getTodayMissions(userId: number): Promise<Mission[]> {
     const today = DateTime.utc().startOf('day')
     const tomorrow = today.plus({ days: 1 })
 
-    // Check if user already has a mission for today
-    let mission = await Mission.query()
+    // Check if user already has missions for today
+    let missions = await Mission.query()
       .where('user_id', userId)
       .where('assigned_at', '>=', today.toSQL())
       .where('assigned_at', '<', tomorrow.toSQL())
       .preload('missionTemplate')
-      .first()
+      .orderBy('slot_number', 'asc')
 
-    if (mission) {
-      return mission
+    if (missions.length > 0) {
+      return missions
     }
 
-    // No mission for today, prescribe one (with race condition protection via try/catch)
+    // No missions for today, prescribe 3 (with race condition protection)
     try {
-      return await this.prescribeDailyMission(userId)
-    } catch (error) {
-      // If duplicate mission created due to race condition, fetch existing one
+      return await this.prescribeDailyMissions(userId)
+    } catch {
+      // If duplicate missions created due to race condition, fetch existing ones
       return Mission.query()
         .where('user_id', userId)
         .where('assigned_at', '>=', today.toSQL())
         .where('assigned_at', '<', tomorrow.toSQL())
         .preload('missionTemplate')
-        .first()
+        .orderBy('slot_number', 'asc')
     }
   }
 
   /**
-   * Prescribe a daily mission based on user's strategy and progress
-   * Always creates a mission - publication missions on rhythm days, engagement/tuto missions otherwise
+   * Legacy method for backward compatibility - returns the recommended mission
    */
-  async prescribeDailyMission(userId: number): Promise<Mission | null> {
+  async getTodayMission(userId: number): Promise<Mission | null> {
+    const missions = await this.getTodayMissions(userId)
+    // Return the recommended mission, or the first one
+    return missions.find((m) => m.isRecommended) || missions[0] || null
+  }
+
+  /**
+   * Prescribe 3 daily missions of different types
+   * Slot 1: Publication mission (post/story/reel) - recommended on publication days
+   * Slot 2: Engagement mission - recommended on non-publication days
+   * Slot 3: Tuto or different publication type
+   */
+  async prescribeDailyMissions(userId: number): Promise<Mission[]> {
     const user = await User.query()
       .where('id', userId)
       .preload('restaurant')
       .first()
 
     if (!user?.restaurant?.strategyId) {
-      return null
+      return []
     }
 
     const strategyId = user.restaurant.strategyId
     const publicationRhythm = user.restaurant.publicationRhythm
-
-    // Check if today is a publication day based on rhythm
     const isPublicationDay = this.isPublicationDay(publicationRhythm)
 
-    // Get completed mission template IDs for this user
+    // Get completed mission template IDs
     const completedMissions = await Mission.query()
       .where('user_id', userId)
       .where('status', 'completed')
       .select('mission_template_id')
 
     const completedTemplateIds = completedMissions.map((m) => m.missionTemplateId)
+    const usedTemplateIds: number[] = []
+    const usedTypes: string[] = []
+    const missions: Mission[] = []
+    const now = DateTime.utc()
 
-    let template: MissionTemplate | null = null
-
-    if (isPublicationDay) {
-      // On publication days: get post/story/reel missions
-      template = await MissionTemplate.query()
-        .where('strategy_id', strategyId)
-        .where('is_active', true)
-        .whereIn('type', ['post', 'story', 'reel'])
-        .whereNotIn('id', completedTemplateIds.length > 0 ? completedTemplateIds : [0])
-        .orderBy('order', 'asc')
-        .first()
-
-      // If all publication missions completed, cycle back
-      if (!template) {
-        template = await MissionTemplate.query()
-          .where('strategy_id', strategyId)
-          .where('is_active', true)
-          .whereIn('type', ['post', 'story', 'reel'])
-          .orderBy('order', 'asc')
-          .first()
-      }
-    } else {
-      // On non-publication days: get engagement or tuto missions
-      template = await MissionTemplate.query()
-        .where('strategy_id', strategyId)
-        .where('is_active', true)
-        .whereIn('type', ['engagement', 'tuto'])
-        .whereNotIn('id', completedTemplateIds.length > 0 ? completedTemplateIds : [0])
-        .orderByRaw('RANDOM()')
-        .first()
-
-      // If none found, try any engagement/tuto mission
-      if (!template) {
-        template = await MissionTemplate.query()
-          .where('strategy_id', strategyId)
-          .where('is_active', true)
-          .whereIn('type', ['engagement', 'tuto'])
-          .orderByRaw('RANDOM()')
-          .first()
-      }
-
-      // Fallback: if no engagement missions exist, get a regular mission
-      if (!template) {
-        template = await MissionTemplate.query()
-          .where('strategy_id', strategyId)
-          .where('is_active', true)
-          .orderByRaw('RANDOM()')
-          .first()
-      }
+    // Slot 1: Publication mission (post/story/reel)
+    const publicationTemplate = await this.selectTemplate(
+      strategyId,
+      ['post', 'story', 'reel'],
+      completedTemplateIds,
+      usedTemplateIds,
+      usedTypes
+    )
+    if (publicationTemplate) {
+      const mission = await Mission.create({
+        userId,
+        missionTemplateId: publicationTemplate.id,
+        status: 'pending',
+        assignedAt: now,
+        usedPass: false,
+        usedReload: false,
+        slotNumber: 1,
+        isRecommended: isPublicationDay, // Recommended on publication days
+      })
+      await mission.load('missionTemplate')
+      missions.push(mission)
+      usedTemplateIds.push(publicationTemplate.id)
+      usedTypes.push(publicationTemplate.type)
     }
 
-    if (!template) {
+    // Slot 2: Engagement mission
+    const engagementTemplate = await this.selectTemplate(
+      strategyId,
+      ['engagement'],
+      completedTemplateIds,
+      usedTemplateIds,
+      usedTypes
+    )
+    if (engagementTemplate) {
+      const mission = await Mission.create({
+        userId,
+        missionTemplateId: engagementTemplate.id,
+        status: 'pending',
+        assignedAt: now,
+        usedPass: false,
+        usedReload: false,
+        slotNumber: 2,
+        isRecommended: !isPublicationDay, // Recommended on non-publication days
+      })
+      await mission.load('missionTemplate')
+      missions.push(mission)
+      usedTemplateIds.push(engagementTemplate.id)
+      usedTypes.push(engagementTemplate.type)
+    }
+
+    // Slot 3: Tuto or different publication type
+    const thirdTemplate = await this.selectTemplate(
+      strategyId,
+      ['tuto', 'post', 'story', 'reel'], // Tuto preferred, fallback to other publication types
+      completedTemplateIds,
+      usedTemplateIds,
+      usedTypes
+    )
+    if (thirdTemplate) {
+      const mission = await Mission.create({
+        userId,
+        missionTemplateId: thirdTemplate.id,
+        status: 'pending',
+        assignedAt: now,
+        usedPass: false,
+        usedReload: false,
+        slotNumber: 3,
+        isRecommended: false, // Never recommended
+      })
+      await mission.load('missionTemplate')
+      missions.push(mission)
+    }
+
+    return missions
+  }
+
+  /**
+   * Select a template from preferred types, avoiding already used templates and types
+   */
+  private async selectTemplate(
+    strategyId: number,
+    preferredTypes: string[],
+    completedTemplateIds: number[],
+    usedTemplateIds: number[],
+    usedTypes: string[]
+  ): Promise<MissionTemplate | null> {
+    // Filter out types already used today
+    const availableTypes = preferredTypes.filter((t) => !usedTypes.includes(t))
+
+    if (availableTypes.length === 0) {
       return null
     }
 
-    // Create the mission (use UTC for consistent date handling)
-    const mission = await Mission.create({
-      userId,
-      missionTemplateId: template.id,
-      status: 'pending',
-      assignedAt: DateTime.utc(),
-      usedPass: false,
-      usedReload: false,
-    })
+    // First try: get a template of available types that hasn't been completed or used today
+    const excludeIds = [...completedTemplateIds, ...usedTemplateIds].filter((id) => id > 0)
 
-    await mission.load('missionTemplate')
-    return mission
+    let template = await MissionTemplate.query()
+      .where('strategy_id', strategyId)
+      .where('is_active', true)
+      .whereIn('type', availableTypes)
+      .if(excludeIds.length > 0, (query) => query.whereNotIn('id', excludeIds))
+      .orderByRaw('RANDOM()')
+      .first()
+
+    // Fallback: if all templates completed, allow cycling back (but avoid today's used)
+    if (!template) {
+      template = await MissionTemplate.query()
+        .where('strategy_id', strategyId)
+        .where('is_active', true)
+        .whereIn('type', availableTypes)
+        .if(usedTemplateIds.length > 0, (query) => query.whereNotIn('id', usedTemplateIds))
+        .orderByRaw('RANDOM()')
+        .first()
+    }
+
+    return template
+  }
+
+  /**
+   * Legacy method - create a single mission (for backward compatibility)
+   */
+  async prescribeDailyMission(userId: number): Promise<Mission | null> {
+    const missions = await this.prescribeDailyMissions(userId)
+    return missions[0] || null
   }
 
   /**

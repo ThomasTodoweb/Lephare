@@ -1,10 +1,10 @@
 import { usePage } from '@inertiajs/react'
-import { Home, ClipboardList, BarChart3, User } from 'lucide-react'
+import { Home, BookOpen, BarChart3, User } from 'lucide-react'
 import { NavItem } from './NavItem'
 
 const NAV_ITEMS = [
   { label: 'Accueil', href: '/dashboard', icon: Home },
-  { label: 'Missions', href: '/missions', icon: ClipboardList },
+  { label: 'Tutos', href: '/tutorials', icon: BookOpen },
   { label: 'Stats', href: '/statistics', icon: BarChart3 },
   { label: 'Profil', href: '/profile', icon: User },
 ]

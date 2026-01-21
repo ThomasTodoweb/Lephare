@@ -4,29 +4,69 @@ import MissionService from '#services/mission_service'
 
 export default class MissionsController {
   /**
-   * Show today's mission page
+   * Helper to format a mission for the frontend
    */
-  async today({ inertia, auth }: HttpContext) {
+  private formatMission(mission: Mission) {
+    return {
+      id: mission.id,
+      status: mission.status,
+      canUseAction: mission.canUsePassOrReload(),
+      usedPass: mission.usedPass,
+      usedReload: mission.usedReload,
+      slotNumber: mission.slotNumber,
+      isRecommended: mission.isRecommended,
+      template: {
+        type: mission.missionTemplate.type,
+        title: mission.missionTemplate.title,
+        contentIdea: mission.missionTemplate.contentIdea,
+      },
+    }
+  }
+
+  /**
+   * Show today's missions page (redirects to recommended mission)
+   */
+  async today({ response, auth }: HttpContext) {
     const user = auth.getUserOrFail()
     const missionService = new MissionService()
 
-    const mission = await missionService.getTodayMission(user.id)
+    const missions = await missionService.getTodayMissions(user.id)
+
+    // Redirect to the recommended mission, or first one
+    const recommended = missions.find((m) => m.isRecommended) || missions[0]
+    if (recommended) {
+      return response.redirect().toRoute('missions.show', { id: recommended.id })
+    }
+
+    // No missions available - this shouldn't happen normally
+    return response.redirect().toRoute('dashboard')
+  }
+
+  /**
+   * Show a specific mission
+   */
+  async show({ inertia, auth, params }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const missionId = Number(params.id)
+    const missionService = new MissionService()
+
+    // Get the specific mission
+    const mission = await Mission.query()
+      .where('id', missionId)
+      .where('user_id', user.id)
+      .preload('missionTemplate')
+      .first()
+
+    if (!mission) {
+      return inertia.render('missions/today', { mission: null, todayMissions: [] })
+    }
+
+    // Get all today's missions for navigation
+    const todayMissions = await missionService.getTodayMissions(user.id)
 
     return inertia.render('missions/today', {
-      mission: mission
-        ? {
-            id: mission.id,
-            status: mission.status,
-            canUseAction: mission.canUsePassOrReload(),
-            usedPass: mission.usedPass,
-            usedReload: mission.usedReload,
-            template: {
-              type: mission.missionTemplate.type,
-              title: mission.missionTemplate.title,
-              contentIdea: mission.missionTemplate.contentIdea,
-            },
-          }
-        : null,
+      mission: this.formatMission(mission),
+      todayMissions: todayMissions.map((m) => this.formatMission(m)),
     })
   }
 
