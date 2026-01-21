@@ -1,7 +1,8 @@
-import { Head, useForm, Link, usePage } from '@inertiajs/react'
-import { useRef, useState } from 'react'
+import { Head, useForm, Link, usePage, router } from '@inertiajs/react'
+import { useRef, useState, useCallback } from 'react'
 import { Button } from '~/components/ui/Button'
 import { Card } from '~/components/ui/Card'
+import axios from 'axios'
 
 interface Props {
   mission: {
@@ -36,6 +37,9 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
   const [isCompressing, setIsCompressing] = useState(false)
   const [videoError, setVideoError] = useState<string | null>(null)
   const [videoLoading, setVideoLoading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
+  const [isUploading, setIsUploading] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
 
   const form = useForm<{
     photo: File | null
@@ -207,16 +211,79 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
     cameraInputRef.current?.click()
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    form.transform((data) => ({
-      ...data,
-      shareToFeed: shareToFeed ? 'true' : 'false',
-    }))
-    form.post(`/missions/${mission.id}/photo`, {
-      forceFormData: true,
-    })
+  // Format file size for display
+  const formatFileSize = (bytes: number): string => {
+    if (bytes < 1024 * 1024) {
+      return `${(bytes / 1024).toFixed(1)} Ko`
+    }
+    return `${(bytes / (1024 * 1024)).toFixed(1)} Mo`
   }
+
+  // Get current file size
+  const currentFileSize = mediaFiles[0]?.file?.size || 0
+
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsUploading(true)
+    setUploadProgress(0)
+    setUploadError(null)
+
+    const formData = new FormData()
+
+    // Add video or photo
+    if (mediaFiles[0]?.type === 'video') {
+      formData.append('video', mediaFiles[0].file)
+    } else if (isCarousel) {
+      mediaFiles.forEach((m) => formData.append('photos', m.file))
+    } else if (mediaFiles[0]) {
+      formData.append('photo', mediaFiles[0].file)
+    }
+
+    // Add cover image if present
+    if (coverImage) {
+      formData.append('cover', coverImage.file)
+    }
+
+    // Add share to feed option
+    formData.append('shareToFeed', shareToFeed ? 'true' : 'false')
+
+    try {
+      const response = await axios.post(`/missions/${mission.id}/photo`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        onUploadProgress: (progressEvent) => {
+          if (progressEvent.total) {
+            const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total)
+            setUploadProgress(percent)
+          }
+        },
+        // Timeout of 5 minutes for large videos
+        timeout: 300000,
+      })
+
+      // Handle redirect from Inertia response
+      if (response.data?.url) {
+        router.visit(response.data.url)
+      } else if (response.request?.responseURL) {
+        router.visit(response.request.responseURL)
+      }
+    } catch (error: unknown) {
+      console.error('Upload error:', error)
+      if (axios.isAxiosError(error)) {
+        if (error.code === 'ECONNABORTED') {
+          setUploadError('La connexion a expiré. Vérifiez votre connexion internet et réessayez.')
+        } else if (error.response?.status === 413) {
+          setUploadError('Le fichier est trop volumineux. Essayez une vidéo plus courte.')
+        } else {
+          setUploadError(error.response?.data?.error || 'Erreur lors de l\'envoi. Veuillez réessayer.')
+        }
+      } else {
+        setUploadError('Erreur lors de l\'envoi. Veuillez réessayer.')
+      }
+      setIsUploading(false)
+    }
+  }, [mediaFiles, coverImage, shareToFeed, mission.id, isCarousel])
 
   const getContentTypeLabel = () => {
     switch (contentType) {
@@ -288,14 +355,23 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
               🎬 Sélectionnez une vidéo pour votre reel (max 90s, format MP4 recommandé)
             </div>
           )}
-          {videoError && (
+          {(videoError || uploadError) && (
             <div className="mb-4 p-3 bg-red-50 rounded-xl text-red-700 text-sm">
-              ⚠️ {videoError}
+              ⚠️ {videoError || uploadError}
             </div>
           )}
           {videoLoading && (
             <div className="mb-4 p-3 bg-blue-50 rounded-xl text-blue-700 text-sm">
               ⏳ Chargement de la vidéo...
+            </div>
+          )}
+          {/* File size indicator for videos */}
+          {mediaFiles[0]?.type === 'video' && currentFileSize > 0 && !isUploading && (
+            <div className="mb-4 p-3 bg-neutral-50 rounded-xl text-neutral-600 text-sm">
+              📁 Taille : {formatFileSize(currentFileSize)}
+              {currentFileSize > 50 * 1024 * 1024 && (
+                <span className="text-orange-600 ml-2">(fichier volumineux, l'envoi peut prendre du temps)</span>
+              )}
             </div>
           )}
           {isStory && (
@@ -462,9 +538,26 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
             <div className="text-center py-4">
               <p className="text-neutral-600">Optimisation des images...</p>
             </div>
+          ) : isUploading ? (
+            <div className="space-y-3">
+              <div className="text-center">
+                <p className="text-neutral-700 font-medium mb-2">
+                  Envoi en cours... {uploadProgress}%
+                </p>
+                <div className="w-full bg-neutral-200 rounded-full h-3 overflow-hidden">
+                  <div
+                    className="bg-primary h-full rounded-full transition-all duration-300 ease-out"
+                    style={{ width: `${uploadProgress}%` }}
+                  />
+                </div>
+                <p className="text-neutral-500 text-sm mt-2">
+                  {uploadProgress < 100 ? 'Ne fermez pas cette page' : 'Traitement en cours...'}
+                </p>
+              </div>
+            </div>
           ) : mediaFiles.length > 0 ? (
-            <Button onClick={handleSubmit} disabled={form.processing} className="w-full">
-              {form.processing ? 'Chargement...' : 'Continuer'}
+            <Button onClick={handleSubmit} disabled={form.processing || isUploading} className="w-full">
+              Continuer
             </Button>
           ) : (
             <>
