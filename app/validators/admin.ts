@@ -133,13 +133,25 @@ sendBulkAlertsValidator.messagesProvider = messages
 
 /**
  * Content Idea validation
+ * Restaurant tags: array of restaurant type slugs (brasserie, gastronomique, etc.)
+ * If empty/null, idea applies to all restaurant types
  */
+const restaurantTypeEnum = vine.enum([
+  'brasserie',
+  'gastronomique',
+  'fast_food',
+  'pizzeria',
+  'cafe_bar',
+  'autre',
+] as const)
+
 export const createContentIdeaValidator = vine.compile(
   vine.object({
     missionTemplateId: vine.number().positive(),
     suggestionText: vine.string().minLength(3).maxLength(500).trim(),
     photoTips: vine.string().maxLength(500).trim().optional().nullable(),
     isActive: vine.boolean().optional(),
+    restaurantTags: vine.array(restaurantTypeEnum).optional().nullable(),
   })
 )
 createContentIdeaValidator.messagesProvider = messages
@@ -149,6 +161,7 @@ export const updateContentIdeaValidator = vine.compile(
     suggestionText: vine.string().minLength(3).maxLength(500).trim(),
     photoTips: vine.string().maxLength(500).trim().optional().nullable(),
     isActive: vine.boolean().optional(),
+    restaurantTags: vine.array(restaurantTypeEnum).optional().nullable(),
   })
 )
 updateContentIdeaValidator.messagesProvider = messages

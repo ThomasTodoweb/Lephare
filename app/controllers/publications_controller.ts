@@ -45,6 +45,19 @@ export default class PublicationsController {
       return inertia.render('errors/not_found')
     }
 
+    // Get user's restaurant type for filtering ideas
+    const restaurant = await Restaurant.query().where('user_id', user.id).first()
+    const userRestaurantType = restaurant?.type || null
+
+    // Filter ideas by restaurant type
+    // Show ideas that either: have no tags (universal) OR include the user's restaurant type
+    const filteredIdeas = mission.missionTemplate.contentIdeas.filter((idea) => {
+      if (!idea.restaurantTags || idea.restaurantTags.length === 0) {
+        return true // No tags = visible to all
+      }
+      return userRestaurantType && idea.restaurantTags.includes(userRestaurantType)
+    })
+
     // Determine content type from mission template
     const contentType = MISSION_TYPE_TO_CONTENT_TYPE[mission.missionTemplate.type] || 'post'
 
@@ -55,7 +68,7 @@ export default class PublicationsController {
           type: mission.missionTemplate.type,
           title: mission.missionTemplate.title,
           contentIdea: mission.missionTemplate.contentIdea,
-          ideas: mission.missionTemplate.contentIdeas.map((idea) => ({
+          ideas: filteredIdeas.map((idea) => ({
             id: idea.id,
             suggestionText: idea.suggestionText,
             photoTips: idea.photoTips,

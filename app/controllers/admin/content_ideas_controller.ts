@@ -24,6 +24,7 @@ export default class ContentIdeasController {
         suggestionText: idea.suggestionText,
         photoTips: idea.photoTips,
         isActive: idea.isActive,
+        restaurantTags: idea.restaurantTags,
       })),
     })
   }
@@ -45,6 +46,7 @@ export default class ContentIdeasController {
       suggestionText: data.suggestionText,
       photoTips: data.photoTips || null,
       isActive: data.isActive ?? true,
+      restaurantTags: data.restaurantTags || null,
     })
 
     return response.json({
@@ -55,6 +57,7 @@ export default class ContentIdeasController {
         suggestionText: idea.suggestionText,
         photoTips: idea.photoTips,
         isActive: idea.isActive,
+        restaurantTags: idea.restaurantTags,
       },
     })
   }
@@ -79,6 +82,7 @@ export default class ContentIdeasController {
       suggestionText: data.suggestionText,
       photoTips: data.photoTips ?? null,
       isActive: data.isActive ?? idea.isActive,
+      restaurantTags: data.restaurantTags !== undefined ? (data.restaurantTags || null) : idea.restaurantTags,
     })
 
     await idea.save()
@@ -91,6 +95,7 @@ export default class ContentIdeasController {
         suggestionText: idea.suggestionText,
         photoTips: idea.photoTips,
         isActive: idea.isActive,
+        restaurantTags: idea.restaurantTags,
       },
     })
   }

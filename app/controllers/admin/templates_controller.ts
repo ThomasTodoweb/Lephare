@@ -127,6 +127,7 @@ export default class TemplatesController {
           suggestionText: idea.suggestionText,
           photoTips: idea.photoTips,
           isActive: idea.isActive,
+          restaurantTags: idea.restaurantTags,
         })),
       },
       strategies: strategies.map((s) => ({ id: s.id, name: s.name })),

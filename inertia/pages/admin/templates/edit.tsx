@@ -2,13 +2,25 @@ import { Head, Link, useForm } from '@inertiajs/react'
 import { useState } from 'react'
 import { AdminLayout } from '~/components/layout'
 import { Card, Button, Input } from '~/components/ui'
-import { Plus, Trash2, Edit2, Check, X, Lightbulb } from 'lucide-react'
+import { Plus, Trash2, Edit2, Check, X, Lightbulb, Tag } from 'lucide-react'
+
+type RestaurantType = 'brasserie' | 'gastronomique' | 'fast_food' | 'pizzeria' | 'cafe_bar' | 'autre'
+
+const RESTAURANT_TYPES: { value: RestaurantType; label: string }[] = [
+  { value: 'brasserie', label: 'Brasserie' },
+  { value: 'gastronomique', label: 'Gastronomique' },
+  { value: 'fast_food', label: 'Fast-food' },
+  { value: 'pizzeria', label: 'Pizzeria' },
+  { value: 'cafe_bar', label: 'Cafe / Bar' },
+  { value: 'autre', label: 'Autre' },
+]
 
 interface ContentIdea {
   id: number
   suggestionText: string
   photoTips: string | null
   isActive: boolean
+  restaurantTags: RestaurantType[] | null
 }
 
 interface Template {
@@ -56,8 +68,8 @@ export default function AdminTemplatesEdit({ template, strategies, tutorials }: 
   const [ideas, setIdeas] = useState<ContentIdea[]>(template.ideas || [])
   const [isAddingIdea, setIsAddingIdea] = useState(false)
   const [editingIdeaId, setEditingIdeaId] = useState<number | null>(null)
-  const [newIdea, setNewIdea] = useState({ suggestionText: '', photoTips: '' })
-  const [editIdea, setEditIdea] = useState({ suggestionText: '', photoTips: '' })
+  const [newIdea, setNewIdea] = useState({ suggestionText: '', photoTips: '', restaurantTags: [] as RestaurantType[] })
+  const [editIdea, setEditIdea] = useState({ suggestionText: '', photoTips: '', restaurantTags: [] as RestaurantType[] })
   const [ideaLoading, setIdeaLoading] = useState(false)
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -91,13 +103,14 @@ export default function AdminTemplatesEdit({ template, strategies, tutorials }: 
           suggestionText: newIdea.suggestionText.trim(),
           photoTips: newIdea.photoTips.trim() || null,
           isActive: true,
+          restaurantTags: newIdea.restaurantTags.length > 0 ? newIdea.restaurantTags : null,
         }),
       })
 
       if (response.ok) {
         const result = await response.json()
         setIdeas([...ideas, result.idea])
-        setNewIdea({ suggestionText: '', photoTips: '' })
+        setNewIdea({ suggestionText: '', photoTips: '', restaurantTags: [] })
         setIsAddingIdea(false)
       }
     } catch (err) {
@@ -122,6 +135,7 @@ export default function AdminTemplatesEdit({ template, strategies, tutorials }: 
         body: JSON.stringify({
           suggestionText: editIdea.suggestionText.trim(),
           photoTips: editIdea.photoTips.trim() || null,
+          restaurantTags: editIdea.restaurantTags.length > 0 ? editIdea.restaurantTags : null,
         }),
       })
 
@@ -182,7 +196,21 @@ export default function AdminTemplatesEdit({ template, strategies, tutorials }: 
     setEditIdea({
       suggestionText: idea.suggestionText,
       photoTips: idea.photoTips || '',
+      restaurantTags: idea.restaurantTags || [],
     })
+  }
+
+  // Toggle tag in array
+  const toggleTag = (tags: RestaurantType[], tag: RestaurantType): RestaurantType[] => {
+    if (tags.includes(tag)) {
+      return tags.filter((t) => t !== tag)
+    }
+    return [...tags, tag]
+  }
+
+  // Get label for restaurant type
+  const getTagLabel = (tag: RestaurantType): string => {
+    return RESTAURANT_TYPES.find((t) => t.value === tag)?.label || tag
   }
 
   const typeOptions = [
@@ -401,13 +429,38 @@ export default function AdminTemplatesEdit({ template, strategies, tutorials }: 
                   className="w-full px-3 py-2 rounded-lg border border-neutral-200 focus:border-primary focus:ring-1 focus:ring-primary outline-none text-sm"
                 />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  <Tag className="w-4 h-4 inline mr-1" />
+                  Types de restaurant (laisser vide = tous)
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {RESTAURANT_TYPES.map((type) => (
+                    <button
+                      key={type.value}
+                      type="button"
+                      onClick={() => setNewIdea({ ...newIdea, restaurantTags: toggleTag(newIdea.restaurantTags, type.value) })}
+                      className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                        newIdea.restaurantTags.includes(type.value)
+                          ? 'bg-primary text-white'
+                          : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
+                      }`}
+                    >
+                      {type.label}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs text-neutral-400 mt-1">
+                  {newIdea.restaurantTags.length === 0 ? 'Cette idee sera visible pour tous les types' : `Visible pour: ${newIdea.restaurantTags.map(getTagLabel).join(', ')}`}
+                </p>
+              </div>
               <div className="flex gap-2 justify-end">
                 <Button
                   type="button"
                   variant="outlined"
                   onClick={() => {
                     setIsAddingIdea(false)
-                    setNewIdea({ suggestionText: '', photoTips: '' })
+                    setNewIdea({ suggestionText: '', photoTips: '', restaurantTags: [] })
                   }}
                   className="text-sm"
                 >
@@ -453,6 +506,27 @@ export default function AdminTemplatesEdit({ template, strategies, tutorials }: 
                       rows={2}
                       className="w-full px-3 py-2 rounded-lg border border-neutral-200 focus:border-primary focus:ring-1 focus:ring-primary outline-none text-sm"
                     />
+                    <div>
+                      <label className="block text-xs font-medium text-neutral-600 mb-1">
+                        Types de restaurant
+                      </label>
+                      <div className="flex flex-wrap gap-1">
+                        {RESTAURANT_TYPES.map((type) => (
+                          <button
+                            key={type.value}
+                            type="button"
+                            onClick={() => setEditIdea({ ...editIdea, restaurantTags: toggleTag(editIdea.restaurantTags, type.value) })}
+                            className={`px-2 py-0.5 rounded-full text-xs transition-colors ${
+                              editIdea.restaurantTags.includes(type.value)
+                                ? 'bg-primary text-white'
+                                : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
+                            }`}
+                          >
+                            {type.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                     <div className="flex gap-2 justify-end">
                       <button
                         type="button"
@@ -480,6 +554,20 @@ export default function AdminTemplatesEdit({ template, strategies, tutorials }: 
                           <p className="text-xs text-neutral-500 mt-1">
                             Conseils: {idea.photoTips}
                           </p>
+                        )}
+                        {idea.restaurantTags && idea.restaurantTags.length > 0 ? (
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {idea.restaurantTags.map((tag) => (
+                              <span
+                                key={tag}
+                                className="px-2 py-0.5 rounded-full text-xs bg-blue-100 text-blue-700"
+                              >
+                                {getTagLabel(tag)}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-xs text-neutral-400 mt-2">Tous types de restaurants</p>
                         )}
                       </div>
                       <div className="flex items-center gap-1">

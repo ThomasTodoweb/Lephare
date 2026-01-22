@@ -2,6 +2,7 @@ import { DateTime } from 'luxon'
 import { BaseModel, column, belongsTo } from '@adonisjs/lucid/orm'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 import MissionTemplate from './mission_template.js'
+import type { RestaurantType } from './restaurant.js'
 
 export default class ContentIdea extends BaseModel {
   @column({ isPrimary: true })
@@ -18,6 +19,16 @@ export default class ContentIdea extends BaseModel {
 
   @column()
   declare isActive: boolean
+
+  /**
+   * Restaurant types this idea applies to.
+   * If null or empty, applies to ALL restaurant types.
+   */
+  @column({
+    prepare: (value: RestaurantType[] | null) => (value ? JSON.stringify(value) : null),
+    consume: (value: string | null) => (value ? JSON.parse(value) : null),
+  })
+  declare restaurantTags: RestaurantType[] | null
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
