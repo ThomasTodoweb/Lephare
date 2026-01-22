@@ -14,6 +14,8 @@ interface Template {
   isActive: boolean
   tutorialId: number | null
   tutorialTitle: string | null
+  requiredTutorialId: number | null
+  requiredTutorialTitle: string | null
   missionsCount: number
 }
 
@@ -118,6 +120,11 @@ export default function AdminTemplatesIndex({ templates, strategies, currentFilt
               <p className="text-sm text-neutral-600 line-clamp-1">{template.contentIdea}</p>
               {template.tutorialTitle && (
                 <p className="text-xs text-primary mt-1">📚 {template.tutorialTitle}</p>
+              )}
+              {template.requiredTutorialTitle && (
+                <p className="text-xs text-amber-600 mt-1">
+                  🔒 Prérequis: {template.requiredTutorialTitle}
+                </p>
               )}
             </div>
 

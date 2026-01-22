@@ -14,6 +14,7 @@ export default class TemplatesController {
     let query = MissionTemplate.query()
       .preload('strategy')
       .preload('tutorial')
+      .preload('requiredTutorial')
       .withCount('missions')
       .orderBy('strategy_id', 'asc')
       .orderBy('order', 'asc')
@@ -38,6 +39,8 @@ export default class TemplatesController {
         isActive: t.isActive,
         tutorialId: t.tutorialId,
         tutorialTitle: t.tutorial?.title || null,
+        requiredTutorialId: t.requiredTutorialId,
+        requiredTutorialTitle: t.requiredTutorial?.title || null,
         missionsCount: Number(t.$extras.missions_count || 0),
       })),
       strategies: strategies.map((s) => ({
@@ -85,6 +88,7 @@ export default class TemplatesController {
       order,
       isActive: data.isActive ?? true,
       tutorialId: data.tutorialId || null,
+      requiredTutorialId: data.requiredTutorialId || null,
     })
 
     return response.redirect('/admin/templates')
@@ -116,6 +120,7 @@ export default class TemplatesController {
         order: template.order,
         isActive: template.isActive,
         tutorialId: template.tutorialId,
+        requiredTutorialId: template.requiredTutorialId,
       },
       strategies: strategies.map((s) => ({ id: s.id, name: s.name })),
       tutorials: tutorials.map((t) => ({ id: t.id, title: t.title })),
@@ -147,6 +152,7 @@ export default class TemplatesController {
       order: data.order,
       isActive: data.isActive,
       tutorialId: data.tutorialId || null,
+      requiredTutorialId: data.requiredTutorialId || null,
     })
 
     await template.save()

@@ -33,6 +33,9 @@ export default class MissionTemplate extends BaseModel {
   @column()
   declare tutorialId: number | null
 
+  @column()
+  declare requiredTutorialId: number | null
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 
@@ -50,4 +53,7 @@ export default class MissionTemplate extends BaseModel {
 
   @belongsTo(() => Tutorial)
   declare tutorial: BelongsTo<typeof Tutorial>
+
+  @belongsTo(() => Tutorial, { foreignKey: 'requiredTutorialId' })
+  declare requiredTutorial: BelongsTo<typeof Tutorial>
 }

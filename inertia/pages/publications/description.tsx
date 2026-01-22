@@ -1,7 +1,7 @@
 import { Head, useForm, Link } from '@inertiajs/react'
 import { useState } from 'react'
 import { Button } from '~/components/ui/Button'
-import { Card } from '~/components/ui/Card'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 interface MediaItem {
   type: 'image' | 'video'
@@ -60,57 +60,27 @@ export default function Description({ publication, mission }: Props) {
 
   const isCarousel = publication.contentType === 'carousel'
   const isReel = publication.contentType === 'reel'
-  const isStory = publication.contentType === 'story'
   const mediaItems = publication.mediaItems?.length > 0 ? publication.mediaItems : [{ type: 'image' as const, path: publication.imagePath, order: 0 }]
-
-  const getContentTypeLabel = () => {
-    switch (publication.contentType) {
-      case 'carousel':
-        return 'Carrousel'
-      case 'reel':
-        return 'Reel'
-      case 'story':
-        return 'Story'
-      default:
-        return 'Post'
-    }
-  }
-
-  const getContentTypeIcon = () => {
-    switch (publication.contentType) {
-      case 'carousel':
-        return '🖼️'
-      case 'reel':
-        return '🎬'
-      case 'story':
-        return '📱'
-      default:
-        return '📷'
-    }
-  }
 
   return (
     <>
       <Head title="Description - Le Phare" />
-      <div className="min-h-screen bg-background flex flex-col">
+      <div className="min-h-screen bg-white flex flex-col">
         {/* Header */}
-        <div className="px-6 pt-8 pb-4">
-          <Link href={mission ? `/missions/${mission.id}/photo` : '/missions'} className="text-primary text-sm mb-2 inline-block">
-            ← Retour
+        <div className="px-6 pt-8 pb-4 border-b border-neutral-100">
+          <Link href={mission ? `/missions/${mission.id}/photo` : '/missions'} className="text-neutral-500 text-sm mb-4 inline-flex items-center gap-1 hover:text-neutral-700">
+            <span>←</span> Retour
           </Link>
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-xl">{getContentTypeIcon()}</span>
-            <h1 className="text-2xl font-extrabold text-neutral-900 uppercase tracking-tight">
-              Votre {getContentTypeLabel()}
-            </h1>
-          </div>
+          <h1 className="text-xl font-semibold text-neutral-900 mb-1">
+            Légende
+          </h1>
           {mission && (
-            <p className="text-neutral-600">{mission.template.title}</p>
+            <p className="text-sm text-neutral-500">{mission.template.title}</p>
           )}
         </div>
 
         {/* Content */}
-        <div className="flex-1 px-6 pb-40 overflow-y-auto">
+        <div className="flex-1 px-6 py-6 pb-40 overflow-y-auto">
           {/* Media preview */}
           <div className="mb-6 relative">
             {isCarousel ? (
@@ -118,26 +88,26 @@ export default function Description({ publication, mission }: Props) {
                 {mediaItems[currentSlide]?.type === 'video' ? (
                   <video
                     src={`/${mediaItems[currentSlide].path}`}
-                    className="w-full max-h-[50vh] object-contain rounded-2xl border-4 border-primary bg-neutral-100"
+                    className="w-full max-h-48 object-contain rounded-lg border border-neutral-200 bg-neutral-50"
                     controls
                   />
                 ) : (
                   <img
                     src={`/${mediaItems[currentSlide]?.path}`}
                     alt={`Image ${currentSlide + 1}`}
-                    className="w-full max-h-[50vh] object-contain rounded-2xl border-4 border-primary bg-neutral-100"
+                    className="w-full max-h-48 object-contain rounded-lg border border-neutral-200 bg-neutral-50"
                   />
                 )}
                 {/* Carousel navigation */}
                 {mediaItems.length > 1 && (
                   <>
-                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                    <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
                       {mediaItems.map((_, idx) => (
                         <button
                           key={idx}
                           onClick={() => setCurrentSlide(idx)}
-                          className={`w-2 h-2 rounded-full transition-colors ${
-                            idx === currentSlide ? 'bg-primary' : 'bg-white/70'
+                          className={`w-1.5 h-1.5 rounded-full transition-colors ${
+                            idx === currentSlide ? 'bg-neutral-800' : 'bg-neutral-300'
                           }`}
                         />
                       ))}
@@ -145,18 +115,18 @@ export default function Description({ publication, mission }: Props) {
                     <button
                       onClick={() => setCurrentSlide((c) => Math.max(0, c - 1))}
                       disabled={currentSlide === 0}
-                      className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 rounded-full p-2 disabled:opacity-30"
+                      className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 rounded-full p-1.5 shadow-sm border border-neutral-200 disabled:opacity-30"
                     >
-                      ←
+                      <ChevronLeft className="w-4 h-4 text-neutral-600" />
                     </button>
                     <button
                       onClick={() => setCurrentSlide((c) => Math.min(mediaItems.length - 1, c + 1))}
                       disabled={currentSlide === mediaItems.length - 1}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 rounded-full p-2 disabled:opacity-30"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 rounded-full p-1.5 shadow-sm border border-neutral-200 disabled:opacity-30"
                     >
-                      →
+                      <ChevronRight className="w-4 h-4 text-neutral-600" />
                     </button>
-                    <span className="absolute top-3 right-3 bg-black/70 text-white px-2 py-1 rounded text-sm">
+                    <span className="absolute top-2 right-2 bg-black/60 text-white px-2 py-0.5 rounded text-xs">
                       {currentSlide + 1}/{mediaItems.length}
                     </span>
                   </>
@@ -166,12 +136,12 @@ export default function Description({ publication, mission }: Props) {
               <div>
                 <video
                   src={`/${mediaItems[0]?.path}`}
-                  className="w-full max-h-[50vh] object-contain rounded-2xl border-4 border-primary bg-neutral-100"
+                  className="w-full max-h-48 object-contain rounded-lg border border-neutral-200 bg-neutral-50"
                   controls
                 />
                 {publication.shareToFeed && (
-                  <p className="text-sm text-neutral-600 mt-2 text-center">
-                    ✓ Sera aussi partagé dans le feed
+                  <p className="text-xs text-neutral-500 mt-2 text-center">
+                    Sera aussi partagé dans le feed
                   </p>
                 )}
               </div>
@@ -179,26 +149,14 @@ export default function Description({ publication, mission }: Props) {
               <img
                 src={`/${publication.imagePath}`}
                 alt="Votre photo"
-                className="w-full max-h-[50vh] object-contain rounded-2xl border-4 border-primary bg-neutral-100"
+                className="w-full max-h-48 object-contain rounded-lg border border-neutral-200 bg-neutral-50"
               />
             )}
           </div>
 
-          {/* AI indicator */}
-          {publication.aiGeneratedCaption && (
-            <Card className="mb-4 bg-green-50 border-green-200">
-              <div className="flex items-center gap-2">
-                <span className="text-xl">✨</span>
-                <p className="text-green-800 text-sm font-medium">
-                  Description générée par IA
-                </p>
-              </div>
-            </Card>
-          )}
-
           {/* Caption editor */}
           <div className="mb-4">
-            <label className="block text-sm font-bold text-neutral-900 mb-2">
+            <label className="block text-sm font-medium text-neutral-700 mb-2">
               Légende Instagram
             </label>
             {isEditing ? (
@@ -206,10 +164,10 @@ export default function Description({ publication, mission }: Props) {
                 <textarea
                   value={caption}
                   onChange={(e) => setCaption(e.target.value)}
-                  className="w-full h-40 px-4 py-3 border-2 border-primary rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
+                  className="w-full h-40 px-4 py-3 border border-neutral-200 rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary resize-none text-sm"
                   placeholder="Écrivez votre légende..."
                 />
-                <div className="flex gap-2 mt-2">
+                <div className="flex gap-2 mt-3">
                   <Button
                     onClick={handleSave}
                     disabled={saveForm.processing}
@@ -232,46 +190,52 @@ export default function Description({ publication, mission }: Props) {
                   <button
                     type="button"
                     onClick={handleResetToAI}
-                    className="text-sm text-primary mt-2"
+                    className="text-sm text-neutral-500 hover:text-neutral-700 mt-3"
                   >
-                    ↩ Revenir à la description IA
+                    Revenir à la description IA
                   </button>
                 )}
               </div>
             ) : (
               <div
                 onClick={() => setIsEditing(true)}
-                className="w-full min-h-[120px] px-4 py-3 bg-white border-2 border-neutral-200 rounded-xl cursor-pointer hover:border-primary transition-colors"
+                className="w-full min-h-[120px] px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-lg cursor-pointer hover:border-neutral-300 transition-colors"
               >
-                <p className="text-neutral-800 whitespace-pre-wrap">
+                <p className="text-sm text-neutral-700 whitespace-pre-wrap">
                   {caption || 'Appuyez pour ajouter une description...'}
                 </p>
               </div>
             )}
           </div>
 
+          {/* AI indicator & edit link */}
           {!isEditing && (
-            <button
-              type="button"
-              onClick={() => setIsEditing(true)}
-              className="text-sm text-primary font-medium"
-            >
-              ✏️ Modifier la description
-            </button>
+            <div className="flex items-center gap-3 text-sm">
+              {publication.aiGeneratedCaption && (
+                <span className="text-neutral-400">Généré par IA</span>
+              )}
+              <button
+                type="button"
+                onClick={() => setIsEditing(true)}
+                className="text-primary hover:text-primary-dark"
+              >
+                Modifier
+              </button>
+            </div>
           )}
         </div>
 
         {/* Fixed bottom buttons */}
-        <div className="fixed bottom-0 left-0 right-0 p-6 bg-background border-t border-neutral-200">
+        <div className="fixed bottom-0 left-0 right-0 p-6 bg-white border-t border-neutral-100">
           <Button
             onClick={handlePublish}
             disabled={publishForm.processing || isEditing || !caption.trim()}
             className="w-full"
           >
-            {publishForm.processing ? 'Publication en cours...' : 'Publier sur Instagram'}
+            {publishForm.processing ? 'Publication en cours...' : 'Publier'}
           </Button>
           {!caption.trim() && (
-            <p className="text-center text-sm text-neutral-500 mt-2">
+            <p className="text-center text-xs text-neutral-400 mt-2">
               Ajoutez une description pour publier
             </p>
           )}

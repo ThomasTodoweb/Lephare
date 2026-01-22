@@ -197,7 +197,7 @@ export default function Profile({
       <Head title="Mon profil - Le Phare" />
       {/* Header */}
       <div className="pt-4 pb-4">
-        <h1 className="text-2xl font-extrabold text-neutral-900 uppercase tracking-tight">
+        <h1 className="text-2xl font-bolota font-bold text-neutral-900 uppercase">
           Mon profil
         </h1>
       </div>

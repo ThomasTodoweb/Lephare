@@ -13,11 +13,11 @@ export function Button({
   children,
   ...props
 }: ButtonProps) {
-  const baseClasses = 'font-bold uppercase tracking-wide rounded-full transition-colors'
+  const baseClasses = 'font-medium rounded-lg transition-colors'
 
   const variantClasses = {
     filled: 'bg-primary text-white hover:bg-primary-dark disabled:bg-primary/50',
-    outlined: 'bg-transparent border-2 border-primary text-primary hover:bg-primary/10 disabled:border-primary/50 disabled:text-primary/50',
+    outlined: 'bg-white border border-neutral-300 text-neutral-700 hover:bg-neutral-50 disabled:border-neutral-200 disabled:text-neutral-300',
   }
 
   const sizeClasses = {

@@ -1,6 +1,7 @@
 import { DateTime } from 'luxon'
 import Mission from '#models/mission'
 import MissionTemplate from '#models/mission_template'
+import TutorialCompletion from '#models/tutorial_completion'
 import User from '#models/user'
 import GamificationService from '#services/gamification_service'
 
@@ -75,6 +76,14 @@ export default class MissionService {
       .select('mission_template_id')
 
     const completedTemplateIds = completedMissions.map((m) => m.missionTemplateId)
+
+    // Get completed tutorial IDs for filtering missions with prerequisites
+    const completedTutorials = await TutorialCompletion.query()
+      .where('user_id', userId)
+      .select('tutorial_id')
+
+    const completedTutorialIds = completedTutorials.map((tc) => tc.tutorialId)
+
     const usedTemplateIds: number[] = []
     const usedTypes: string[] = []
     const missions: Mission[] = []
@@ -86,7 +95,8 @@ export default class MissionService {
       ['post', 'story', 'reel'],
       completedTemplateIds,
       usedTemplateIds,
-      usedTypes
+      usedTypes,
+      completedTutorialIds
     )
     if (publicationTemplate) {
       const mission = await Mission.create({
@@ -111,7 +121,8 @@ export default class MissionService {
       ['engagement'],
       completedTemplateIds,
       usedTemplateIds,
-      usedTypes
+      usedTypes,
+      completedTutorialIds
     )
     if (engagementTemplate) {
       const mission = await Mission.create({
@@ -136,7 +147,8 @@ export default class MissionService {
       ['tuto', 'post', 'story', 'reel'], // Tuto preferred, fallback to other publication types
       completedTemplateIds,
       usedTemplateIds,
-      usedTypes
+      usedTypes,
+      completedTutorialIds
     )
     if (thirdTemplate) {
       const mission = await Mission.create({
@@ -158,13 +170,15 @@ export default class MissionService {
 
   /**
    * Select a template from preferred types, avoiding already used templates and types
+   * Also filters out templates whose required tutorial has not been completed
    */
   private async selectTemplate(
     strategyId: number,
     preferredTypes: string[],
     completedTemplateIds: number[],
     usedTemplateIds: number[],
-    usedTypes: string[]
+    usedTypes: string[],
+    completedTutorialIds: number[]
   ): Promise<MissionTemplate | null> {
     // Filter out types already used today
     const availableTypes = preferredTypes.filter((t) => !usedTypes.includes(t))
@@ -180,6 +194,13 @@ export default class MissionService {
       .where('strategy_id', strategyId)
       .where('is_active', true)
       .whereIn('type', availableTypes)
+      // Only include templates without prerequisites OR with completed prerequisites
+      .where((query) => {
+        query.whereNull('required_tutorial_id')
+        if (completedTutorialIds.length > 0) {
+          query.orWhereIn('required_tutorial_id', completedTutorialIds)
+        }
+      })
       .if(excludeIds.length > 0, (query) => query.whereNotIn('id', excludeIds))
       .orderByRaw('RANDOM()')
       .first()
@@ -190,6 +211,13 @@ export default class MissionService {
         .where('strategy_id', strategyId)
         .where('is_active', true)
         .whereIn('type', availableTypes)
+        // Still apply prerequisite filter in fallback
+        .where((query) => {
+          query.whereNull('required_tutorial_id')
+          if (completedTutorialIds.length > 0) {
+            query.orWhereIn('required_tutorial_id', completedTutorialIds)
+          }
+        })
         .if(usedTemplateIds.length > 0, (query) => query.whereNotIn('id', usedTemplateIds))
         .orderByRaw('RANDOM()')
         .first()

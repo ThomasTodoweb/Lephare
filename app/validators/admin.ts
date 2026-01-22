@@ -61,6 +61,7 @@ export const createTemplateValidator = vine.compile(
     order: vine.number().positive().optional(),
     isActive: vine.boolean().optional(),
     tutorialId: vine.number().positive().optional().nullable(),
+    requiredTutorialId: vine.number().positive().optional().nullable(),
   })
 )
 createTemplateValidator.messagesProvider = messages
@@ -74,6 +75,7 @@ export const updateTemplateValidator = vine.compile(
     order: vine.number().positive().optional(),
     isActive: vine.boolean().optional(),
     tutorialId: vine.number().positive().optional().nullable(),
+    requiredTutorialId: vine.number().positive().optional().nullable(),
   })
 )
 updateTemplateValidator.messagesProvider = messages

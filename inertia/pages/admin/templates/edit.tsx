@@ -11,6 +11,7 @@ interface Template {
   order: number
   isActive: boolean
   tutorialId: number | null
+  requiredTutorialId: number | null
 }
 
 interface Strategy {
@@ -38,6 +39,7 @@ export default function AdminTemplatesEdit({ template, strategies, tutorials }: 
     order: template.order,
     isActive: template.isActive,
     tutorialId: template.tutorialId,
+    requiredTutorialId: template.requiredTutorialId,
   })
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -147,6 +149,28 @@ export default function AdminTemplatesEdit({ template, strategies, tutorials }: 
               </select>
             </div>
           )}
+
+          {/* Required Tutorial (prerequisite) - for all types */}
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-1">
+              Tutoriel prérequis (optionnel)
+            </label>
+            <select
+              value={data.requiredTutorialId || ''}
+              onChange={(e) => setData('requiredTutorialId', e.target.value ? Number(e.target.value) : null)}
+              className="w-full px-4 py-3 rounded-lg border border-neutral-200 focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+            >
+              <option value="">Aucun prérequis</option>
+              {tutorials.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.title}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-neutral-500 mt-1">
+              L'utilisateur devra compléter ce tutoriel avant de débloquer cette mission
+            </p>
+          </div>
 
           {/* Order */}
           <div>

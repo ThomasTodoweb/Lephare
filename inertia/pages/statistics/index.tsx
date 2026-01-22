@@ -164,7 +164,7 @@ export default function StatisticsIndex({ keyMetrics, summary, comparison, insta
       <div className="py-4">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-extrabold text-neutral-900 uppercase tracking-tight">
+          <h1 className="text-2xl font-bolota font-bold text-neutral-900 uppercase">
             Mes Stats
           </h1>
           <p className="text-neutral-600 mt-1">

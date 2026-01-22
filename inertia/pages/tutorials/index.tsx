@@ -33,7 +33,7 @@ const CATEGORY_ICONS: Record<string, string> = {
 }
 
 export default function TutorialsIndex({ categories }: Props) {
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid')
   const totalTutorials = categories.reduce((acc, cat) => acc + cat.tutorials.length, 0)
   const completedTutorials = categories.reduce(
     (acc, cat) => acc + cat.tutorials.filter((t) => t.isCompleted).length,
@@ -46,7 +46,7 @@ export default function TutorialsIndex({ categories }: Props) {
       {/* Header */}
       <div className="pt-4 pb-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-extrabold text-neutral-900 uppercase tracking-tight">
+          <h1 className="text-2xl font-bolota font-bold text-neutral-900 uppercase">
             Formations
           </h1>
           {/* View mode toggle */}

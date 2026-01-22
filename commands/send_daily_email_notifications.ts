@@ -33,9 +33,11 @@ export default class SendDailyEmailNotifications extends BaseCommand {
     this.logger.info(`Checking for email notifications scheduled at ${currentTime} (Europe/Paris)`)
 
     // Get users who want email notifications at this time
+    // Check both legacy toggle and granular preference
     const users = await User.query()
       .where('email_verified', true)
       .where('email_notifications_enabled', true)
+      .where('email_daily_mission_enabled', true)
       .where('email_notification_time', currentTime)
       .preload('restaurant')
 
@@ -52,10 +54,12 @@ export default class SendDailyEmailNotifications extends BaseCommand {
 
     for (const user of users) {
       try {
-        // Check if user has a pending mission today
-        const mission = await missionService.getTodayMission(user.id)
+        // Get all today's missions and find a pending one
+        const missions = await missionService.getTodayMissions(user.id)
+        const pendingMission = missions.find((m) => m.status === 'pending')
 
-        if (mission && mission.status === 'pending') {
+        if (pendingMission) {
+          const mission = pendingMission
           const template = mission.missionTemplate
           const success = await emailService.sendDailyMissionEmail(
             user.email,
@@ -69,10 +73,14 @@ export default class SendDailyEmailNotifications extends BaseCommand {
           )
 
           if (success) {
+            this.logger.info(`Email sent to ${user.email} for mission: ${mission.missionTemplate.title}`)
             sent++
           } else {
+            this.logger.warning(`Failed to send email to ${user.email}`)
             failed++
           }
+        } else {
+          this.logger.info(`User ${user.id} has no pending missions today (found ${missions.length} missions)`)
         }
       } catch (error) {
         this.logger.error(`Error sending email to user ${user.id}: ${error}`)

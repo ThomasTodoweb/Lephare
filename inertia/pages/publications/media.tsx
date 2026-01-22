@@ -1,7 +1,7 @@
 import { Head, useForm, Link, usePage, router } from '@inertiajs/react'
 import { useRef, useState, useCallback } from 'react'
 import { Button } from '~/components/ui/Button'
-import { Card } from '~/components/ui/Card'
+import { Upload, X, Plus, Image, Film, Smartphone, Grid } from 'lucide-react'
 import axios from 'axios'
 
 interface Props {
@@ -64,7 +64,7 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
     return new Promise((resolve) => {
       const reader = new FileReader()
       reader.onload = (e) => {
-        const img = new Image()
+        const img = new window.Image()
         img.onload = () => {
           const canvas = document.createElement('canvas')
           let { width, height } = img
@@ -301,83 +301,61 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
   const getContentTypeIcon = () => {
     switch (contentType) {
       case 'carousel':
-        return '🖼️'
+        return <Grid className="w-5 h-5 text-neutral-400" />
       case 'reel':
-        return '🎬'
+        return <Film className="w-5 h-5 text-neutral-400" />
       case 'story':
-        return '📱'
+        return <Smartphone className="w-5 h-5 text-neutral-400" />
       default:
-        return '📷'
+        return <Image className="w-5 h-5 text-neutral-400" />
     }
+  }
+
+  const getPlaceholderText = () => {
+    if (acceptVideo) {
+      return 'Sélectionner une vidéo'
+    }
+    if (isCarousel) {
+      return 'Sélectionner des images'
+    }
+    return 'Sélectionner une image'
+  }
+
+  const getContentHint = () => {
+    if (isCarousel) {
+      return `Jusqu'à ${maxImages} images`
+    }
+    if (isReel) {
+      return 'Vidéo de 90 secondes max'
+    }
+    if (isStory) {
+      return 'Visible pendant 24h'
+    }
+    return null
   }
 
   return (
     <>
       <Head title={`${getContentTypeLabel()} - Le Phare`} />
-      <div className="min-h-screen bg-background flex flex-col">
+      <div className="min-h-screen bg-white flex flex-col">
         {/* Header */}
-        <div className="px-6 pt-8 pb-4">
-          <Link href="/missions" className="text-primary text-sm mb-2 inline-block">
-            ← Retour à la mission
+        <div className="px-6 pt-8 pb-4 border-b border-neutral-100">
+          <Link href="/missions" className="text-neutral-500 text-sm mb-4 inline-flex items-center gap-1 hover:text-neutral-700">
+            <span>←</span> Retour
           </Link>
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-2xl">{getContentTypeIcon()}</span>
-            <h1 className="text-2xl font-extrabold text-neutral-900 uppercase tracking-tight">
-              {getContentTypeLabel()}
-            </h1>
-          </div>
-          <p className="text-neutral-600">{mission.template.title}</p>
+          <h1 className="text-xl font-semibold text-neutral-900 mb-1">
+            Ajouter votre {getContentTypeLabel().toLowerCase()}
+          </h1>
+          <p className="text-sm text-neutral-500">{mission.template.title}</p>
         </div>
 
         {/* Content */}
-        <div className="flex-1 px-6 pb-32">
-          {/* Error message */}
-          {flash?.error && (
-            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700">
-              {flash.error}
-            </div>
-          )}
-
-          {/* Tip Card */}
-          <Card className="mb-6 bg-neutral-50">
-            <h3 className="font-bold text-neutral-900 mb-2">💡 Conseil</h3>
-            <p className="text-neutral-700 text-sm">{mission.template.contentIdea}</p>
-          </Card>
-
-          {/* Content type info */}
-          {isCarousel && (
-            <div className="mb-4 p-3 bg-blue-50 rounded-xl text-blue-800 text-sm">
-              📸 Sélectionnez jusqu'à 10 images pour votre carrousel
-            </div>
-          )}
-          {isReel && (
-            <div className="mb-4 p-3 bg-purple-50 rounded-xl text-purple-800 text-sm">
-              🎬 Sélectionnez une vidéo pour votre reel (max 90s, format MP4 recommandé)
-            </div>
-          )}
-          {(videoError || uploadError) && (
-            <div className="mb-4 p-3 bg-red-50 rounded-xl text-red-700 text-sm">
-              ⚠️ {videoError || uploadError}
-            </div>
-          )}
-          {videoLoading && (
-            <div className="mb-4 p-3 bg-blue-50 rounded-xl text-blue-700 text-sm">
-              ⏳ Chargement de la vidéo...
-            </div>
-          )}
-          {/* File size indicator for videos */}
-          {mediaFiles[0]?.type === 'video' && currentFileSize > 0 && !isUploading && (
-            <div className="mb-4 p-3 bg-neutral-50 rounded-xl text-neutral-600 text-sm">
-              📁 Taille : {formatFileSize(currentFileSize)}
-              {currentFileSize > 50 * 1024 * 1024 && (
-                <span className="text-orange-600 ml-2">(fichier volumineux, l'envoi peut prendre du temps)</span>
-              )}
-            </div>
-          )}
-          {isStory && (
-            <div className="mb-4 p-3 bg-pink-50 rounded-xl text-pink-800 text-sm">
-              📱 Votre story sera visible pendant 24h
-            </div>
+        <div className="flex-1 px-6 py-6 pb-32">
+          {/* Error messages */}
+          {(flash?.error || videoError || uploadError) && (
+            <p className="text-red-600 text-sm mb-4">
+              {flash?.error || videoError || uploadError}
+            </p>
           )}
 
           {/* Media preview */}
@@ -389,7 +367,7 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
                     {media.type === 'video' ? (
                       <video
                         src={media.preview}
-                        className="w-full max-h-[50vh] object-contain rounded-2xl border-4 border-primary bg-neutral-900"
+                        className="w-full max-h-[50vh] object-contain rounded-lg border border-neutral-200 bg-neutral-50"
                         controls
                         playsInline
                         preload="metadata"
@@ -400,18 +378,18 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
                       <img
                         src={media.preview}
                         alt={`Aperçu ${index + 1}`}
-                        className="w-full max-h-[50vh] object-contain rounded-2xl border-4 border-primary bg-neutral-100"
+                        className="w-full max-h-[50vh] object-contain rounded-lg border border-neutral-200 bg-neutral-50"
                       />
                     )}
                     <button
                       type="button"
                       onClick={() => removeMedia(index)}
-                      className="absolute top-3 right-3 bg-white rounded-full p-2 shadow-lg"
+                      className="absolute top-2 right-2 bg-white/90 rounded-full p-1.5 shadow-sm border border-neutral-200 hover:bg-neutral-50"
                     >
-                      ✕
+                      <X className="w-4 h-4 text-neutral-600" />
                     </button>
                     {isCarousel && (
-                      <span className="absolute bottom-3 left-3 bg-black/70 text-white px-2 py-1 rounded text-sm">
+                      <span className="absolute bottom-2 left-2 bg-black/60 text-white px-2 py-0.5 rounded text-xs">
                         {index + 1}/{mediaFiles.length}
                       </span>
                     )}
@@ -421,30 +399,54 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
                   <button
                     type="button"
                     onClick={() => galleryInputRef.current?.click()}
-                    className="aspect-square bg-neutral-100 rounded-2xl border-4 border-dashed border-neutral-300 flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors"
+                    className="aspect-square bg-neutral-50 rounded-lg border-2 border-dashed border-neutral-200 flex flex-col items-center justify-center cursor-pointer hover:border-neutral-300 transition-colors"
                   >
-                    <span className="text-3xl mb-2">➕</span>
-                    <span className="text-sm text-neutral-600">Ajouter</span>
+                    <Plus className="w-6 h-6 text-neutral-400 mb-1" />
+                    <span className="text-xs text-neutral-500">Ajouter</span>
                   </button>
                 )}
               </div>
             ) : (
               <div
                 onClick={handleChooseFromGallery}
-                className="w-full aspect-[4/5] bg-neutral-100 rounded-2xl border-4 border-dashed border-neutral-300 flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors"
+                className="w-full aspect-square max-w-sm mx-auto bg-neutral-50 rounded-xl border-2 border-dashed border-neutral-200 flex flex-col items-center justify-center cursor-pointer hover:border-neutral-300 transition-colors"
               >
-                <span className="text-5xl mb-4">{getContentTypeIcon()}</span>
-                <p className="text-neutral-600 font-medium">
-                  {acceptVideo ? 'Appuyez pour choisir une vidéo' : 'Appuyez pour choisir une photo'}
-                </p>
-                <p className="text-neutral-500 text-sm mt-1">ou utilisez les boutons ci-dessous</p>
+                <Upload className="w-8 h-8 text-neutral-400 mb-3" />
+                <p className="text-sm text-neutral-600 font-medium">{getPlaceholderText()}</p>
+                {getContentHint() && (
+                  <p className="text-xs text-neutral-400 mt-1">{getContentHint()}</p>
+                )}
               </div>
             )}
           </div>
 
+          {/* Conseil - texte discret */}
+          {mediaFiles.length === 0 && mission.template.contentIdea && (
+            <p className="text-sm text-neutral-500 text-center mb-6">
+              {mission.template.contentIdea}
+            </p>
+          )}
+
+          {/* Video loading indicator */}
+          {videoLoading && (
+            <p className="text-sm text-neutral-500 text-center mb-4">
+              Chargement de la vidéo...
+            </p>
+          )}
+
+          {/* File size indicator for videos */}
+          {mediaFiles[0]?.type === 'video' && currentFileSize > 0 && !isUploading && (
+            <p className="text-sm text-neutral-500 text-center mb-4">
+              Taille : {formatFileSize(currentFileSize)}
+              {currentFileSize > 50 * 1024 * 1024 && (
+                <span className="text-amber-600 ml-1">(fichier volumineux)</span>
+              )}
+            </p>
+          )}
+
           {/* Reel options */}
           {isReel && mediaFiles.length > 0 && (
-            <div className="mb-6 space-y-4">
+            <div className="space-y-4 mb-6">
               {/* Cover image */}
               <div>
                 <label className="block text-sm font-medium text-neutral-700 mb-2">
@@ -455,7 +457,7 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
                     <img
                       src={coverImage.preview}
                       alt="Couverture"
-                      className="w-24 h-24 object-cover rounded-xl border-2 border-primary"
+                      className="w-20 h-20 object-cover rounded-lg border border-neutral-200"
                     />
                     <button
                       type="button"
@@ -463,18 +465,18 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
                         setCoverImage(null)
                         form.setData('cover', null)
                       }}
-                      className="absolute -top-2 -right-2 bg-white rounded-full p-1 shadow-lg text-xs"
+                      className="absolute -top-1.5 -right-1.5 bg-white rounded-full p-0.5 shadow-sm border border-neutral-200"
                     >
-                      ✕
+                      <X className="w-3 h-3 text-neutral-500" />
                     </button>
                   </div>
                 ) : (
                   <button
                     type="button"
                     onClick={() => coverInputRef.current?.click()}
-                    className="w-24 h-24 bg-neutral-100 rounded-xl border-2 border-dashed border-neutral-300 flex flex-col items-center justify-center text-neutral-500 hover:border-primary transition-colors"
+                    className="w-20 h-20 bg-neutral-50 rounded-lg border-2 border-dashed border-neutral-200 flex flex-col items-center justify-center text-neutral-400 hover:border-neutral-300 transition-colors"
                   >
-                    <span className="text-xl">🖼️</span>
+                    <Image className="w-5 h-5" />
                     <span className="text-xs mt-1">Ajouter</span>
                   </button>
                 )}
@@ -484,17 +486,17 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
               <label className="flex items-center gap-3 cursor-pointer">
                 <div
                   onClick={() => setShareToFeed(!shareToFeed)}
-                  className={`w-12 h-7 rounded-full transition-colors ${
-                    shareToFeed ? 'bg-primary' : 'bg-neutral-300'
+                  className={`w-11 h-6 rounded-full transition-colors ${
+                    shareToFeed ? 'bg-primary' : 'bg-neutral-200'
                   }`}
                 >
                   <div
-                    className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform mt-1 ${
-                      shareToFeed ? 'translate-x-6' : 'translate-x-1'
+                    className={`w-5 h-5 bg-white rounded-full shadow-sm transform transition-transform mt-0.5 ${
+                      shareToFeed ? 'translate-x-[22px]' : 'translate-x-0.5'
                     }`}
                   />
                 </div>
-                <span className="text-neutral-700">Partager aussi dans le feed</span>
+                <span className="text-sm text-neutral-700">Partager aussi dans le feed</span>
               </label>
             </div>
           )}
@@ -533,24 +535,24 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
         </div>
 
         {/* Fixed bottom buttons */}
-        <div className="fixed bottom-0 left-0 right-0 p-6 bg-background border-t border-neutral-200 space-y-3">
+        <div className="fixed bottom-0 left-0 right-0 p-6 bg-white border-t border-neutral-100 space-y-3">
           {isCompressing ? (
-            <div className="text-center py-4">
-              <p className="text-neutral-600">Optimisation des images...</p>
-            </div>
+            <p className="text-center text-sm text-neutral-500 py-3">
+              Optimisation des images...
+            </p>
           ) : isUploading ? (
             <div className="space-y-3">
               <div className="text-center">
-                <p className="text-neutral-700 font-medium mb-2">
+                <p className="text-sm text-neutral-700 mb-2">
                   Envoi en cours... {uploadProgress}%
                 </p>
-                <div className="w-full bg-neutral-200 rounded-full h-3 overflow-hidden">
+                <div className="w-full bg-neutral-100 rounded-full h-2 overflow-hidden">
                   <div
                     className="bg-primary h-full rounded-full transition-all duration-300 ease-out"
                     style={{ width: `${uploadProgress}%` }}
                   />
                 </div>
-                <p className="text-neutral-500 text-sm mt-2">
+                <p className="text-xs text-neutral-400 mt-2">
                   {uploadProgress < 100 ? 'Ne fermez pas cette page' : 'Traitement en cours...'}
                 </p>
               </div>
