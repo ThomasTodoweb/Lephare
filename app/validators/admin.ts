@@ -130,3 +130,25 @@ export const sendBulkAlertsValidator = vine.compile(
   })
 )
 sendBulkAlertsValidator.messagesProvider = messages
+
+/**
+ * Content Idea validation
+ */
+export const createContentIdeaValidator = vine.compile(
+  vine.object({
+    missionTemplateId: vine.number().positive(),
+    suggestionText: vine.string().minLength(3).maxLength(500).trim(),
+    photoTips: vine.string().maxLength(500).trim().optional().nullable(),
+    isActive: vine.boolean().optional(),
+  })
+)
+createContentIdeaValidator.messagesProvider = messages
+
+export const updateContentIdeaValidator = vine.compile(
+  vine.object({
+    suggestionText: vine.string().minLength(3).maxLength(500).trim(),
+    photoTips: vine.string().maxLength(500).trim().optional().nullable(),
+    isActive: vine.boolean().optional(),
+  })
+)
+updateContentIdeaValidator.messagesProvider = messages

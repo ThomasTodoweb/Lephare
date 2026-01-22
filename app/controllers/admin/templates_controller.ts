@@ -101,6 +101,7 @@ export default class TemplatesController {
     const template = await MissionTemplate.query()
       .where('id', params.id)
       .preload('strategy')
+      .preload('contentIdeas')
       .first()
 
     if (!template) {
@@ -121,6 +122,12 @@ export default class TemplatesController {
         isActive: template.isActive,
         tutorialId: template.tutorialId,
         requiredTutorialId: template.requiredTutorialId,
+        ideas: template.contentIdeas.map((idea) => ({
+          id: idea.id,
+          suggestionText: idea.suggestionText,
+          photoTips: idea.photoTips,
+          isActive: idea.isActive,
+        })),
       },
       strategies: strategies.map((s) => ({ id: s.id, name: s.name })),
       tutorials: tutorials.map((t) => ({ id: t.id, title: t.title })),

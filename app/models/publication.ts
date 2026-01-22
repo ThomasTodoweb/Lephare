@@ -3,6 +3,7 @@ import { BaseModel, column, belongsTo } from '@adonisjs/lucid/orm'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 import User from './user.js'
 import Mission from './mission.js'
+import ContentIdea from './content_idea.js'
 
 export type PublicationStatus = 'draft' | 'pending' | 'published' | 'failed' | 'deleted'
 
@@ -116,9 +117,18 @@ export default class Publication extends BaseModel {
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
 
+  /**
+   * Content idea that inspired this publication
+   */
+  @column()
+  declare contentIdeaId: number | null
+
   @belongsTo(() => User)
   declare user: BelongsTo<typeof User>
 
   @belongsTo(() => Mission)
   declare mission: BelongsTo<typeof Mission>
+
+  @belongsTo(() => ContentIdea)
+  declare contentIdea: BelongsTo<typeof ContentIdea>
 }

@@ -1,8 +1,14 @@
 import { Head, useForm, Link, usePage, router } from '@inertiajs/react'
 import { useRef, useState, useCallback } from 'react'
 import { Button } from '~/components/ui/Button'
-import { Upload, X, Plus, Image, Film, Smartphone, Grid } from 'lucide-react'
+import { Upload, X, Plus, Image, Film, Smartphone, Grid, Lightbulb, ChevronDown, ChevronUp, Check } from 'lucide-react'
 import axios from 'axios'
+
+interface ContentIdea {
+  id: number
+  suggestionText: string
+  photoTips: string | null
+}
 
 interface Props {
   mission: {
@@ -11,6 +17,7 @@ interface Props {
       type: string
       title: string
       contentIdea: string
+      ideas?: ContentIdea[]
     }
   }
   contentType: 'post' | 'carousel' | 'reel' | 'story'
@@ -40,6 +47,11 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
   const [uploadProgress, setUploadProgress] = useState(0)
   const [isUploading, setIsUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
+
+  // Content ideas state
+  const ideas = mission.template.ideas || []
+  const [selectedIdeaId, setSelectedIdeaId] = useState<number | null>(null)
+  const [showIdeas, setShowIdeas] = useState(ideas.length > 0)
 
   const form = useForm<{
     photo: File | null
@@ -247,6 +259,11 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
     // Add share to feed option
     formData.append('shareToFeed', shareToFeed ? 'true' : 'false')
 
+    // Add selected content idea if any
+    if (selectedIdeaId) {
+      formData.append('contentIdeaId', String(selectedIdeaId))
+    }
+
     try {
       const response = await axios.post(`/missions/${mission.id}/photo`, formData, {
         headers: {
@@ -283,7 +300,7 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
       }
       setIsUploading(false)
     }
-  }, [mediaFiles, coverImage, shareToFeed, mission.id, isCarousel])
+  }, [mediaFiles, coverImage, shareToFeed, mission.id, isCarousel, selectedIdeaId])
 
   const getContentTypeLabel = () => {
     switch (contentType) {
@@ -420,8 +437,66 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
             )}
           </div>
 
-          {/* Conseil - texte discret */}
-          {mediaFiles.length === 0 && mission.template.contentIdea && (
+          {/* Content Ideas Section */}
+          {ideas.length > 0 && (
+            <div className="mb-6">
+              <button
+                type="button"
+                onClick={() => setShowIdeas(!showIdeas)}
+                className="w-full flex items-center justify-between p-3 bg-amber-50 rounded-lg text-amber-700 hover:bg-amber-100 transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <Lightbulb className="w-5 h-5" />
+                  <span className="text-sm font-medium">Besoin d'inspiration ?</span>
+                </div>
+                {showIdeas ? (
+                  <ChevronUp className="w-5 h-5" />
+                ) : (
+                  <ChevronDown className="w-5 h-5" />
+                )}
+              </button>
+
+              {showIdeas && (
+                <div className="mt-3 space-y-2">
+                  {ideas.map((idea) => (
+                    <button
+                      key={idea.id}
+                      type="button"
+                      onClick={() => setSelectedIdeaId(selectedIdeaId === idea.id ? null : idea.id)}
+                      className={`w-full text-left p-3 rounded-lg border transition-colors ${
+                        selectedIdeaId === idea.id
+                          ? 'border-primary bg-primary/5'
+                          : 'border-neutral-200 bg-white hover:border-neutral-300'
+                      }`}
+                    >
+                      <div className="flex items-start gap-2">
+                        <div className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                          selectedIdeaId === idea.id
+                            ? 'border-primary bg-primary'
+                            : 'border-neutral-300'
+                        }`}>
+                          {selectedIdeaId === idea.id && (
+                            <Check className="w-3 h-3 text-white" />
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm text-neutral-800">{idea.suggestionText}</p>
+                          {idea.photoTips && (
+                            <p className="text-xs text-neutral-500 mt-1">
+                              Conseil : {idea.photoTips}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Conseil - texte discret (only show if no ideas available) */}
+          {mediaFiles.length === 0 && ideas.length === 0 && mission.template.contentIdea && (
             <p className="text-sm text-neutral-500 text-center mb-6">
               {mission.template.contentIdea}
             </p>

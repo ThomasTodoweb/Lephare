@@ -34,7 +34,11 @@ export default class PublicationsController {
     const mission = await Mission.query()
       .where('id', missionId)
       .where('user_id', user.id)
-      .preload('missionTemplate')
+      .preload('missionTemplate', (query) => {
+        query.preload('contentIdeas', (ideaQuery) => {
+          ideaQuery.where('is_active', true)
+        })
+      })
       .first()
 
     if (!mission) {
@@ -51,6 +55,11 @@ export default class PublicationsController {
           type: mission.missionTemplate.type,
           title: mission.missionTemplate.title,
           contentIdea: mission.missionTemplate.contentIdea,
+          ideas: mission.missionTemplate.contentIdeas.map((idea) => ({
+            id: idea.id,
+            suggestionText: idea.suggestionText,
+            photoTips: idea.photoTips,
+          })),
         },
       },
       contentType,
@@ -89,6 +98,10 @@ export default class PublicationsController {
       extnames: ['mp4', 'mov', 'webm'],
     })
     const hasVideo = videoFile && videoFile.isValid
+
+    // Get selected content idea ID if provided
+    const contentIdeaIdInput = request.input('contentIdeaId')
+    const contentIdeaId = contentIdeaIdInput ? Number(contentIdeaIdInput) : null
 
     // Handle video upload for reels and stories with video
     if (isReel || (isStory && hasVideo)) {
@@ -129,6 +142,7 @@ export default class PublicationsController {
         coverImagePath: isReel ? coverImagePath : null, // Only reels have cover images
         caption: '',
         status: 'draft',
+        contentIdeaId,
       })
 
       return response.redirect().toRoute('publications.analysis', { id: publication.id })
@@ -180,6 +194,7 @@ export default class PublicationsController {
         mediaItems,
         caption: '',
         status: 'draft',
+        contentIdeaId,
       })
 
       return response.redirect().toRoute('publications.analysis', { id: publication.id })
@@ -211,6 +226,7 @@ export default class PublicationsController {
       mediaItems,
       caption: '',
       status: 'draft',
+      contentIdeaId,
     })
 
     return response.redirect().toRoute('publications.analysis', { id: publication.id })

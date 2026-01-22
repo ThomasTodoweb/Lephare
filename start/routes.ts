@@ -33,6 +33,7 @@ const AdminReportsController = () => import('#controllers/admin/reports_controll
 const AdminSubscriptionsController = () => import('#controllers/admin/subscriptions_controller')
 const AdminEmailsController = () => import('#controllers/admin/emails_controller')
 const AdminEmailLogsController = () => import('#controllers/admin/email_logs_controller')
+const AdminContentIdeasController = () => import('#controllers/admin/content_ideas_controller')
 const HomeController = () => import('#controllers/home_controller')
 const SocialAuthController = () => import('#controllers/social_auth_controller')
 
@@ -234,6 +235,13 @@ router.group(() => {
   router.put('/templates/:id', [AdminTemplatesController, 'update']).as('admin.templates.update')
   router.post('/templates/:id/toggle', [AdminTemplatesController, 'toggleActive']).as('admin.templates.toggle')
   router.delete('/templates/:id', [AdminTemplatesController, 'destroy']).as('admin.templates.destroy')
+
+  // Content Ideas CRUD (nested under templates)
+  router.get('/templates/:templateId/ideas', [AdminContentIdeasController, 'index']).as('admin.ideas.index')
+  router.post('/templates/:templateId/ideas', [AdminContentIdeasController, 'store']).as('admin.ideas.store')
+  router.put('/ideas/:id', [AdminContentIdeasController, 'update']).as('admin.ideas.update')
+  router.post('/ideas/:id/toggle', [AdminContentIdeasController, 'toggleActive']).as('admin.ideas.toggle')
+  router.delete('/ideas/:id', [AdminContentIdeasController, 'destroy']).as('admin.ideas.destroy')
 
   // Tutorials CRUD (FR46)
   router.get('/tutorials', [AdminTutorialsController, 'index']).as('admin.tutorials.index')
