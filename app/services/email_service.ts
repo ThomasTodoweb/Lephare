@@ -253,12 +253,9 @@ export default class EmailService {
       text-align: center;
       margin-bottom: 30px;
     }
-    .logo-text {
-      font-size: 28px;
-      font-weight: 800;
-      color: #dd2c0c;
-      text-transform: uppercase;
-      letter-spacing: 2px;
+    .logo img {
+      max-width: 180px;
+      height: auto;
     }
     h1 {
       font-size: 24px;
@@ -343,7 +340,7 @@ export default class EmailService {
   <div class="container">
     <div class="card">
       <div class="logo">
-        <span class="logo-text">Le Phare</span>
+        <img src="https://lephare.todoweb.fr/logo-rectangle.png" alt="Le Phare" />
       </div>
       ${content}
       <div class="footer">
