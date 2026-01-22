@@ -128,6 +128,8 @@ export default class TemplatesController {
           photoTips: idea.photoTips,
           isActive: idea.isActive,
           restaurantTags: idea.restaurantTags,
+          exampleMediaPath: idea.exampleMediaPath,
+          exampleMediaType: idea.exampleMediaType,
         })),
       },
       strategies: strategies.map((s) => ({ id: s.id, name: s.name })),

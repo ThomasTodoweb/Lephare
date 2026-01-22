@@ -72,6 +72,8 @@ export default class PublicationsController {
             id: idea.id,
             suggestionText: idea.suggestionText,
             photoTips: idea.photoTips,
+            exampleMediaPath: idea.exampleMediaPath,
+            exampleMediaType: idea.exampleMediaType,
           })),
         },
       },

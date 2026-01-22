@@ -30,6 +30,18 @@ export default class ContentIdea extends BaseModel {
   })
   declare restaurantTags: RestaurantType[] | null
 
+  /**
+   * Path to example media file (image or video) for visual inspiration
+   */
+  @column()
+  declare exampleMediaPath: string | null
+
+  /**
+   * Type of example media: 'image' or 'video'
+   */
+  @column()
+  declare exampleMediaType: 'image' | 'video' | null
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 

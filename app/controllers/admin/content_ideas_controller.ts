@@ -1,7 +1,9 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import ContentIdea from '#models/content_idea'
 import MissionTemplate from '#models/mission_template'
-import { createContentIdeaValidator, updateContentIdeaValidator } from '#validators/admin'
+import app from '@adonisjs/core/services/app'
+import { cuid } from '@adonisjs/core/helpers'
+import fs from 'node:fs/promises'
 
 export default class ContentIdeasController {
   /**
@@ -25,28 +27,85 @@ export default class ContentIdeasController {
         photoTips: idea.photoTips,
         isActive: idea.isActive,
         restaurantTags: idea.restaurantTags,
+        exampleMediaPath: idea.exampleMediaPath,
+        exampleMediaType: idea.exampleMediaType,
       })),
     })
   }
 
   /**
-   * Create a new content idea for a template
+   * Create a new content idea for a template (with optional media upload)
    */
   async store({ request, response }: HttpContext) {
-    const data = await request.validateUsing(createContentIdeaValidator)
+    // Handle multipart form data
+    const missionTemplateId = Number(request.input('missionTemplateId'))
+    const suggestionText = request.input('suggestionText')?.trim()
+    const photoTips = request.input('photoTips')?.trim() || null
+    const isActive = request.input('isActive') !== 'false'
+    const restaurantTagsInput = request.input('restaurantTags')
+
+    // Parse restaurant tags (can be JSON string or array)
+    let restaurantTags = null
+    if (restaurantTagsInput) {
+      try {
+        restaurantTags =
+          typeof restaurantTagsInput === 'string'
+            ? JSON.parse(restaurantTagsInput)
+            : restaurantTagsInput
+        if (Array.isArray(restaurantTags) && restaurantTags.length === 0) {
+          restaurantTags = null
+        }
+      } catch {
+        restaurantTags = null
+      }
+    }
+
+    // Validate required fields
+    if (!missionTemplateId || Number.isNaN(missionTemplateId)) {
+      return response.badRequest({ error: 'ID de template requis' })
+    }
+    if (!suggestionText || suggestionText.length < 3) {
+      return response.badRequest({ error: 'Texte de suggestion requis (min 3 caracteres)' })
+    }
 
     // Verify template exists
-    const template = await MissionTemplate.find(data.missionTemplateId)
+    const template = await MissionTemplate.find(missionTemplateId)
     if (!template) {
       return response.notFound({ error: 'Template non trouve' })
     }
 
+    // Handle media file upload
+    let exampleMediaPath: string | null = null
+    let exampleMediaType: 'image' | 'video' | null = null
+
+    const mediaFile = request.file('exampleMedia', {
+      size: '50mb',
+      extnames: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'mp4', 'mov', 'webm'],
+    })
+
+    if (mediaFile && mediaFile.isValid) {
+      const fileName = `idea_${cuid()}.${mediaFile.extname}`
+      const uploadPath = app.makePath('storage/uploads/ideas')
+
+      // Ensure directory exists
+      await fs.mkdir(uploadPath, { recursive: true })
+
+      await mediaFile.move(uploadPath, { name: fileName })
+      exampleMediaPath = `storage/uploads/ideas/${fileName}`
+
+      // Determine media type
+      const videoExtensions = ['mp4', 'mov', 'webm']
+      exampleMediaType = videoExtensions.includes(mediaFile.extname || '') ? 'video' : 'image'
+    }
+
     const idea = await ContentIdea.create({
-      missionTemplateId: data.missionTemplateId,
-      suggestionText: data.suggestionText,
-      photoTips: data.photoTips || null,
-      isActive: data.isActive ?? true,
-      restaurantTags: data.restaurantTags || null,
+      missionTemplateId,
+      suggestionText,
+      photoTips,
+      isActive,
+      restaurantTags,
+      exampleMediaPath,
+      exampleMediaType,
     })
 
     return response.json({
@@ -58,12 +117,14 @@ export default class ContentIdeasController {
         photoTips: idea.photoTips,
         isActive: idea.isActive,
         restaurantTags: idea.restaurantTags,
+        exampleMediaPath: idea.exampleMediaPath,
+        exampleMediaType: idea.exampleMediaType,
       },
     })
   }
 
   /**
-   * Update a content idea
+   * Update a content idea (with optional media upload)
    */
   async update({ params, request, response }: HttpContext) {
     const ideaId = Number(params.id)
@@ -76,13 +137,79 @@ export default class ContentIdeasController {
       return response.notFound({ error: 'Idee non trouvee' })
     }
 
-    const data = await request.validateUsing(updateContentIdeaValidator)
+    // Handle multipart form data
+    const suggestionText = request.input('suggestionText')?.trim()
+    const photoTips = request.input('photoTips')?.trim() || null
+    const isActiveInput = request.input('isActive')
+    const restaurantTagsInput = request.input('restaurantTags')
+    const removeMedia = request.input('removeMedia') === 'true'
+
+    // Parse restaurant tags
+    let restaurantTags = idea.restaurantTags
+    if (restaurantTagsInput !== undefined) {
+      try {
+        restaurantTags =
+          typeof restaurantTagsInput === 'string'
+            ? JSON.parse(restaurantTagsInput)
+            : restaurantTagsInput
+        if (Array.isArray(restaurantTags) && restaurantTags.length === 0) {
+          restaurantTags = null
+        }
+      } catch {
+        restaurantTags = null
+      }
+    }
+
+    // Validate required fields
+    if (!suggestionText || suggestionText.length < 3) {
+      return response.badRequest({ error: 'Texte de suggestion requis (min 3 caracteres)' })
+    }
+
+    // Handle media removal
+    if (removeMedia && idea.exampleMediaPath) {
+      try {
+        const fullPath = app.makePath(idea.exampleMediaPath)
+        await fs.unlink(fullPath)
+      } catch {
+        // Ignore file deletion errors
+      }
+      idea.exampleMediaPath = null
+      idea.exampleMediaType = null
+    }
+
+    // Handle new media file upload
+    const mediaFile = request.file('exampleMedia', {
+      size: '50mb',
+      extnames: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'mp4', 'mov', 'webm'],
+    })
+
+    if (mediaFile && mediaFile.isValid) {
+      // Delete old media if exists
+      if (idea.exampleMediaPath) {
+        try {
+          const fullPath = app.makePath(idea.exampleMediaPath)
+          await fs.unlink(fullPath)
+        } catch {
+          // Ignore file deletion errors
+        }
+      }
+
+      const fileName = `idea_${cuid()}.${mediaFile.extname}`
+      const uploadPath = app.makePath('storage/uploads/ideas')
+
+      await fs.mkdir(uploadPath, { recursive: true })
+      await mediaFile.move(uploadPath, { name: fileName })
+
+      idea.exampleMediaPath = `storage/uploads/ideas/${fileName}`
+      const videoExtensions = ['mp4', 'mov', 'webm']
+      idea.exampleMediaType = videoExtensions.includes(mediaFile.extname || '') ? 'video' : 'image'
+    }
 
     idea.merge({
-      suggestionText: data.suggestionText,
-      photoTips: data.photoTips ?? null,
-      isActive: data.isActive ?? idea.isActive,
-      restaurantTags: data.restaurantTags !== undefined ? (data.restaurantTags || null) : idea.restaurantTags,
+      suggestionText,
+      photoTips,
+      isActive: isActiveInput !== undefined ? isActiveInput !== 'false' : idea.isActive,
+      restaurantTags,
     })
 
     await idea.save()
@@ -96,6 +223,8 @@ export default class ContentIdeasController {
         photoTips: idea.photoTips,
         isActive: idea.isActive,
         restaurantTags: idea.restaurantTags,
+        exampleMediaPath: idea.exampleMediaPath,
+        exampleMediaType: idea.exampleMediaType,
       },
     })
   }
@@ -132,6 +261,16 @@ export default class ContentIdeasController {
     const idea = await ContentIdea.find(ideaId)
     if (!idea) {
       return response.notFound({ error: 'Idee non trouvee' })
+    }
+
+    // Delete media file if exists
+    if (idea.exampleMediaPath) {
+      try {
+        const fullPath = app.makePath(idea.exampleMediaPath)
+        await fs.unlink(fullPath)
+      } catch {
+        // Ignore file deletion errors
+      }
     }
 
     await idea.delete()

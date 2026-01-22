@@ -1,13 +1,15 @@
 import { Head, useForm, Link, usePage, router } from '@inertiajs/react'
 import { useRef, useState, useCallback } from 'react'
 import { Button } from '~/components/ui/Button'
-import { Upload, X, Plus, Image, Film, Smartphone, Grid, Lightbulb, ChevronDown, ChevronUp, Check } from 'lucide-react'
+import { Upload, X, Plus, Image, Film, Smartphone, Grid, Lightbulb, ChevronDown, ChevronUp, Check, Play } from 'lucide-react'
 import axios from 'axios'
 
 interface ContentIdea {
   id: number
   suggestionText: string
   photoTips: string | null
+  exampleMediaPath: string | null
+  exampleMediaType: 'image' | 'video' | null
 }
 
 interface Props {
@@ -50,8 +52,10 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
 
   // Content ideas state
   const ideas = mission.template.ideas || []
+  const ideasWithMedia = ideas.filter((idea) => idea.exampleMediaPath)
   const [selectedIdeaId, setSelectedIdeaId] = useState<number | null>(null)
-  const [showIdeas, setShowIdeas] = useState(ideas.length > 0)
+  const [showIdeas, setShowIdeas] = useState(ideasWithMedia.length > 0)
+  const [expandedIdeaId, setExpandedIdeaId] = useState<number | null>(null)
 
   const form = useForm<{
     photo: File | null
@@ -162,14 +166,14 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
 
     // Verify it's a valid video file
     if (!file.type.startsWith('video/')) {
-      setVideoError('Ce fichier n\'est pas une vidéo valide')
+      setVideoError('Ce fichier n\'est pas une video valide')
       setVideoLoading(false)
       return
     }
 
     // Check file size (max 100MB)
     if (file.size > 100 * 1024 * 1024) {
-      setVideoError('La vidéo est trop volumineuse (max 100 Mo)')
+      setVideoError('La video est trop volumineuse (max 100 Mo)')
       setVideoLoading(false)
       return
     }
@@ -289,14 +293,14 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
       console.error('Upload error:', error)
       if (axios.isAxiosError(error)) {
         if (error.code === 'ECONNABORTED') {
-          setUploadError('La connexion a expiré. Vérifiez votre connexion internet et réessayez.')
+          setUploadError('La connexion a expire. Verifiez votre connexion internet et reessayez.')
         } else if (error.response?.status === 413) {
-          setUploadError('Le fichier est trop volumineux. Essayez une vidéo plus courte.')
+          setUploadError('Le fichier est trop volumineux. Essayez une video plus courte.')
         } else {
-          setUploadError(error.response?.data?.error || 'Erreur lors de l\'envoi. Veuillez réessayer.')
+          setUploadError(error.response?.data?.error || 'Erreur lors de l\'envoi. Veuillez reessayer.')
         }
       } else {
-        setUploadError('Erreur lors de l\'envoi. Veuillez réessayer.')
+        setUploadError('Erreur lors de l\'envoi. Veuillez reessayer.')
       }
       setIsUploading(false)
     }
@@ -330,20 +334,20 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
 
   const getPlaceholderText = () => {
     if (acceptVideo) {
-      return 'Sélectionner une vidéo'
+      return 'Selectionner une video'
     }
     if (isCarousel) {
-      return 'Sélectionner des images'
+      return 'Selectionner des images'
     }
-    return 'Sélectionner une image'
+    return 'Selectionner une image'
   }
 
   const getContentHint = () => {
     if (isCarousel) {
-      return `Jusqu'à ${maxImages} images`
+      return `Jusqu'a ${maxImages} images`
     }
     if (isReel) {
-      return 'Vidéo de 90 secondes max'
+      return 'Video de 90 secondes max'
     }
     if (isStory) {
       return 'Visible pendant 24h'
@@ -388,13 +392,13 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
                         controls
                         playsInline
                         preload="metadata"
-                        onError={() => setVideoError('Impossible de lire cette vidéo. Essayez un autre format (MP4 recommandé).')}
+                        onError={() => setVideoError('Impossible de lire cette video. Essayez un autre format (MP4 recommande).')}
                         onLoadedData={() => setVideoLoading(false)}
                       />
                     ) : (
                       <img
                         src={media.preview}
-                        alt={`Aperçu ${index + 1}`}
+                        alt={`Apercu ${index + 1}`}
                         className="w-full max-h-[50vh] object-contain rounded-lg border border-neutral-200 bg-neutral-50"
                       />
                     )}
@@ -437,8 +441,94 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
             )}
           </div>
 
-          {/* Content Ideas Section */}
-          {ideas.length > 0 && (
+          {/* Visual Inspiration Section */}
+          {ideasWithMedia.length > 0 && (
+            <div className="mb-6">
+              <button
+                type="button"
+                onClick={() => setShowIdeas(!showIdeas)}
+                className="w-full flex items-center justify-between p-3 bg-amber-50 rounded-lg text-amber-700 hover:bg-amber-100 transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <Lightbulb className="w-5 h-5" />
+                  <span className="text-sm font-medium">Besoin d'inspiration ?</span>
+                </div>
+                {showIdeas ? (
+                  <ChevronUp className="w-5 h-5" />
+                ) : (
+                  <ChevronDown className="w-5 h-5" />
+                )}
+              </button>
+
+              {showIdeas && (
+                <div className="mt-3 grid grid-cols-2 gap-3">
+                  {ideasWithMedia.map((idea) => (
+                    <div key={idea.id} className="relative">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (expandedIdeaId === idea.id) {
+                            setExpandedIdeaId(null)
+                          } else {
+                            setExpandedIdeaId(idea.id)
+                          }
+                          setSelectedIdeaId(selectedIdeaId === idea.id ? null : idea.id)
+                        }}
+                        className={`w-full overflow-hidden rounded-lg border-2 transition-all ${
+                          selectedIdeaId === idea.id
+                            ? 'border-primary ring-2 ring-primary/20'
+                            : 'border-neutral-200 hover:border-neutral-300'
+                        }`}
+                      >
+                        {idea.exampleMediaType === 'video' ? (
+                          <div className="relative aspect-square bg-neutral-100">
+                            <video
+                              src={`/${idea.exampleMediaPath}`}
+                              className="w-full h-full object-cover"
+                              muted
+                              playsInline
+                              preload="metadata"
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                              <div className="w-10 h-10 bg-white/90 rounded-full flex items-center justify-center">
+                                <Play className="w-5 h-5 text-neutral-700 ml-0.5" />
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <img
+                            src={`/${idea.exampleMediaPath}`}
+                            alt={idea.suggestionText}
+                            className="w-full aspect-square object-cover"
+                          />
+                        )}
+                        {selectedIdeaId === idea.id && (
+                          <div className="absolute top-2 right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center">
+                            <Check className="w-4 h-4 text-white" />
+                          </div>
+                        )}
+                      </button>
+
+                      {/* Expanded view with details */}
+                      {expandedIdeaId === idea.id && (
+                        <div className="mt-2 p-3 bg-neutral-50 rounded-lg">
+                          <p className="text-sm text-neutral-800">{idea.suggestionText}</p>
+                          {idea.photoTips && (
+                            <p className="text-xs text-neutral-500 mt-1">
+                              Conseil : {idea.photoTips}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Fallback to text-only ideas if no media */}
+          {ideasWithMedia.length === 0 && ideas.length > 0 && (
             <div className="mb-6">
               <button
                 type="button"
@@ -505,7 +595,7 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
           {/* Video loading indicator */}
           {videoLoading && (
             <p className="text-sm text-neutral-500 text-center mb-4">
-              Chargement de la vidéo...
+              Chargement de la video...
             </p>
           )}
 
@@ -639,7 +729,7 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
           ) : (
             <>
               <Button onClick={handleChooseFromGallery} className="w-full">
-                {acceptVideo ? 'Choisir une vidéo' : 'Choisir depuis la galerie'}
+                {acceptVideo ? 'Choisir une video' : 'Choisir depuis la galerie'}
               </Button>
               {!acceptVideo && (
                 <Button variant="outlined" onClick={handleTakePhoto} className="w-full">
