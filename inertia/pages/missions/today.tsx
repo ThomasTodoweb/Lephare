@@ -1,5 +1,5 @@
 import { Head, Link, useForm } from '@inertiajs/react'
-import { ChevronLeft, ChevronRight, Star } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Star, Gift } from 'lucide-react'
 import { AppLayout } from '~/components/layout'
 import { Button } from '~/components/ui/Button'
 import { Card } from '~/components/ui/Card'
@@ -65,10 +65,20 @@ export default function TodayMission({ mission, todayMissions = [] }: Props) {
     }
   }
 
+  // Sort missions: required first
+  const sortedMissions = [...todayMissions].sort((a, b) => {
+    if (a.isRecommended && !b.isRecommended) return -1
+    if (!a.isRecommended && b.isRecommended) return 1
+    return 0
+  })
+
   // Find current mission index and prev/next missions
-  const currentIndex = mission ? todayMissions.findIndex(m => m.id === mission.id) : -1
-  const prevMission = currentIndex > 0 ? todayMissions[currentIndex - 1] : null
-  const nextMission = currentIndex < todayMissions.length - 1 ? todayMissions[currentIndex + 1] : null
+  const currentIndex = mission ? sortedMissions.findIndex(m => m.id === mission.id) : -1
+  const prevMission = currentIndex > 0 ? sortedMissions[currentIndex - 1] : null
+  const nextMission = currentIndex < sortedMissions.length - 1 ? sortedMissions[currentIndex + 1] : null
+
+  // isRecommended = mission obligatoire
+  const isRequired = mission?.isRecommended
 
   return (
     <AppLayout>
@@ -77,22 +87,22 @@ export default function TodayMission({ mission, todayMissions = [] }: Props) {
       <div className="pb-4">
         <div className="flex items-center justify-between mb-2">
           <h1 className="text-2xl font-extrabold text-neutral-900 uppercase tracking-tight">
-            Mission du jour
+            {isRequired ? 'Objectif du jour' : 'Mission bonus'}
           </h1>
           {/* Navigation counter */}
-          {todayMissions.length > 1 && mission && (
+          {sortedMissions.length > 1 && mission && (
             <span className="text-sm font-medium text-neutral-500">
-              {currentIndex + 1} / {todayMissions.length}
+              {currentIndex + 1} / {sortedMissions.length}
             </span>
           )}
         </div>
         <p className="text-neutral-600">
-          Votre défi créatif vous attend !
+          {isRequired ? 'Votre défi du jour !' : 'Mission optionnelle pour aller plus loin'}
         </p>
       </div>
 
       {/* Mission navigation arrows */}
-      {todayMissions.length > 1 && (
+      {sortedMissions.length > 1 && (
         <div className="flex justify-between items-center mb-4">
           {prevMission ? (
             <Link
@@ -100,7 +110,7 @@ export default function TodayMission({ mission, todayMissions = [] }: Props) {
               className="flex items-center gap-1 text-primary font-medium text-sm"
             >
               <ChevronLeft className="w-4 h-4" />
-              Précédent
+              {prevMission.isRecommended ? 'Objectif' : 'Bonus'}
             </Link>
           ) : (
             <div />
@@ -110,7 +120,7 @@ export default function TodayMission({ mission, todayMissions = [] }: Props) {
               href={`/missions/${nextMission.id}`}
               className="flex items-center gap-1 text-primary font-medium text-sm"
             >
-              Suivant
+              {nextMission.isRecommended ? 'Objectif' : 'Bonus'}
               <ChevronRight className="w-4 h-4" />
             </Link>
           ) : (
@@ -124,20 +134,25 @@ export default function TodayMission({ mission, todayMissions = [] }: Props) {
           {mission ? (
             <>
               {/* Mission Card */}
-              <Card className="mb-6">
+              <Card className={`mb-6 ${!isRequired ? 'border-2 border-neutral-200' : ''}`}>
                 <div className="flex items-start gap-4">
-                  <div className="w-14 h-14 bg-primary rounded-2xl flex items-center justify-center text-2xl">
+                  <div className={`w-14 h-14 ${isRequired ? 'bg-primary' : 'bg-neutral-500'} rounded-2xl flex items-center justify-center text-2xl`}>
                     {TYPE_ICONS[mission.template.type]}
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs font-bold text-primary uppercase">
+                      <span className={`text-xs font-bold uppercase ${isRequired ? 'text-primary' : 'text-neutral-500'}`}>
                         {TYPE_LABELS[mission.template.type]}
                       </span>
-                      {mission.isRecommended && (
+                      {isRequired ? (
                         <span className="inline-flex items-center gap-1 bg-primary/10 text-primary text-xs px-2 py-0.5 rounded-full font-medium">
                           <Star className="w-3 h-3 fill-current" />
-                          Recommandé
+                          Objectif
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 bg-neutral-100 text-neutral-600 text-xs px-2 py-0.5 rounded-full font-medium">
+                          <Gift className="w-3 h-3" />
+                          Bonus
                         </span>
                       )}
                     </div>
@@ -150,24 +165,26 @@ export default function TodayMission({ mission, todayMissions = [] }: Props) {
 
               {/* Content Idea */}
               <Card className="mb-6 bg-neutral-50">
-                <h3 className="font-bold text-neutral-900 mb-2">💡 L'idée</h3>
+                <h3 className="font-bold text-neutral-900 mb-2">L'idée</h3>
                 <p className="text-neutral-700">{mission.template.contentIdea}</p>
               </Card>
 
               {/* Status indicator for used actions */}
               {(mission.usedPass || mission.usedReload) && (
                 <div className="text-center text-sm text-neutral-500 mb-4">
-                  {mission.usedPass && '✓ Pass utilisé aujourd\'hui'}
-                  {mission.usedReload && '✓ Rechargement utilisé aujourd\'hui'}
+                  {mission.usedPass && 'Pass utilisé aujourd\'hui'}
+                  {mission.usedReload && 'Rechargement utilisé aujourd\'hui'}
                 </div>
               )}
 
               {/* Other missions preview */}
-              {todayMissions.length > 1 && (
+              {sortedMissions.length > 1 && (
                 <div className="mb-6">
-                  <h3 className="text-sm font-medium text-neutral-500 mb-3">Autres missions du jour</h3>
+                  <h3 className="text-sm font-medium text-neutral-500 mb-3">
+                    {isRequired ? 'Missions bonus disponibles' : 'Retour à l\'objectif'}
+                  </h3>
                   <div className="flex gap-2 overflow-x-auto pb-2">
-                    {todayMissions.filter(m => m.id !== mission.id).map(m => (
+                    {sortedMissions.filter(m => m.id !== mission.id).map(m => (
                       <Link
                         key={m.id}
                         href={`/missions/${m.id}`}
@@ -175,14 +192,18 @@ export default function TodayMission({ mission, todayMissions = [] }: Props) {
                           flex-shrink-0 px-4 py-3 rounded-xl border-2 transition-colors
                           ${m.status === 'completed'
                             ? 'border-green-500 bg-green-50'
-                            : 'border-neutral-200 bg-white hover:border-primary/50'
+                            : m.isRecommended
+                              ? 'border-primary bg-primary/5 hover:bg-primary/10'
+                              : 'border-neutral-200 bg-white hover:border-neutral-300'
                           }
                         `}
                       >
                         <div className="flex items-center gap-2">
                           <span className="text-xl">{TYPE_ICONS[m.template.type]}</span>
                           <div>
-                            <p className="text-xs font-medium text-neutral-500">{TYPE_LABELS[m.template.type]}</p>
+                            <p className={`text-xs font-medium ${m.isRecommended ? 'text-primary' : 'text-neutral-500'}`}>
+                              {m.isRecommended ? 'Objectif' : 'Bonus'}
+                            </p>
                             <p className="text-sm font-bold text-neutral-900 truncate max-w-[120px]">{m.template.title}</p>
                           </div>
                           {m.status === 'completed' && (
@@ -248,7 +269,6 @@ export default function TodayMission({ mission, todayMissions = [] }: Props) {
       {mission && mission.status === 'completed' && (
         <div className="fixed bottom-20 left-0 right-0 p-6 bg-background border-t border-neutral-200">
           <div className="bg-green-100 text-green-800 rounded-xl p-4 text-center">
-            <span className="text-2xl mb-2 block">🎉</span>
             <p className="font-bold">Mission accomplie !</p>
           </div>
         </div>
@@ -257,7 +277,7 @@ export default function TodayMission({ mission, todayMissions = [] }: Props) {
       {mission && mission.status === 'skipped' && (
         <div className="fixed bottom-20 left-0 right-0 p-6 bg-background border-t border-neutral-200">
           <div className="bg-neutral-100 text-neutral-600 rounded-xl p-4 text-center">
-            <p className="font-medium">Mission passée. À demain !</p>
+            <p className="font-medium">Mission passée</p>
           </div>
         </div>
       )}

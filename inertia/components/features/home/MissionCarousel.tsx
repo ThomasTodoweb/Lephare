@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import useEmblaCarousel from 'embla-carousel-react'
 import { MissionCard } from './MissionCard'
 
@@ -18,8 +18,18 @@ interface MissionCarouselProps {
 }
 
 export function MissionCarousel({ missions, onMissionStart }: MissionCarouselProps) {
+  // Sort missions: required (isRecommended) first, then by id
+  const sortedMissions = useMemo(() => {
+    return [...missions].sort((a, b) => {
+      // Required mission first
+      if (a.isRecommended && !b.isRecommended) return -1
+      if (!a.isRecommended && b.isRecommended) return 1
+      return 0
+    })
+  }, [missions])
+
   const [emblaRef, emblaApi] = useEmblaCarousel({
-    loop: true,
+    loop: sortedMissions.length > 1,
     align: 'center',
     containScroll: false,
   })
@@ -47,7 +57,7 @@ export function MissionCarousel({ missions, onMissionStart }: MissionCarouselPro
     [emblaApi]
   )
 
-  if (missions.length === 0) {
+  if (sortedMissions.length === 0) {
     return null
   }
 
@@ -56,7 +66,7 @@ export function MissionCarousel({ missions, onMissionStart }: MissionCarouselPro
       {/* Embla carousel container */}
       <div className="overflow-hidden px-4" ref={emblaRef}>
         <div className="flex -mx-2">
-          {missions.map((mission, index) => (
+          {sortedMissions.map((mission, index) => (
             <div
               key={mission.id}
               className="flex-[0_0_80%] min-w-0 px-2"
@@ -71,24 +81,26 @@ export function MissionCarousel({ missions, onMissionStart }: MissionCarouselPro
         </div>
       </div>
 
-      {/* Pagination dots */}
-      <div className="flex justify-center gap-2 mt-4 px-4">
-        {missions.map((_, index) => (
-          <button
-            key={index}
-            type="button"
-            onClick={() => scrollTo(index)}
-            className={`
-              h-2.5 rounded-full transition-all duration-300
-              ${index === selectedIndex
-                ? 'bg-primary w-6'
-                : 'bg-neutral w-2.5'
-              }
-            `}
-            aria-label={`Aller à la mission ${index + 1}`}
-          />
-        ))}
-      </div>
+      {/* Pagination dots - star for required, circle for bonus */}
+      {sortedMissions.length > 1 && (
+        <div className="flex justify-center items-center gap-2 mt-4 px-4">
+          {sortedMissions.map((mission, index) => (
+            <button
+              key={mission.id}
+              type="button"
+              onClick={() => scrollTo(index)}
+              className={`
+                h-2.5 rounded-full transition-all duration-300
+                ${index === selectedIndex
+                  ? mission.isRecommended ? 'bg-primary w-6' : 'bg-neutral-500 w-6'
+                  : mission.isRecommended ? 'bg-primary/40 w-2.5' : 'bg-neutral w-2.5'
+                }
+              `}
+              aria-label={`${mission.isRecommended ? 'Objectif' : 'Bonus'} - ${mission.title}`}
+            />
+          ))}
+        </div>
+      )}
     </div>
   )
 }

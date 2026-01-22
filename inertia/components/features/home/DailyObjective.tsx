@@ -1,7 +1,8 @@
 interface DailyObjectiveProps {
   objectiveType: string
-  count?: number
-  completedCount?: number
+  requiredCompleted: boolean
+  bonusCount?: number
+  bonusCompleted?: number
 }
 
 const OBJECTIVE_LABELS: Record<string, string> = {
@@ -9,22 +10,26 @@ const OBJECTIVE_LABELS: Record<string, string> = {
   story: 'STORY',
   reel: 'REEL',
   tuto: 'TUTO',
-  engagement: 'SOCIAL',
+  engagement: 'ENGAGEMENT',
   carousel: 'CAROUSEL',
 }
 
-export function DailyObjective({ objectiveType, count = 1, completedCount = 0 }: DailyObjectiveProps) {
-  const label = count > 1 ? 'MISSIONS' : (OBJECTIVE_LABELS[objectiveType] || 'MISSION')
-  const allCompleted = count > 0 && completedCount === count
+export function DailyObjective({ objectiveType, requiredCompleted, bonusCount = 0, bonusCompleted = 0 }: DailyObjectiveProps) {
+  const label = OBJECTIVE_LABELS[objectiveType] || 'MISSION'
 
   return (
     <div className="text-center mb-4">
       <p className="italic text-text/70 text-sm">
-        {allCompleted ? 'Bravo ! Objectif atteint :' : 'Objectif du jour :'}
+        {requiredCompleted ? 'Bravo ! Objectif atteint' : 'Objectif du jour :'}
       </p>
-      <p className={`font-bolota text-2xl uppercase font-bold ${allCompleted ? 'text-green-600' : 'text-primary'}`}>
-        {completedCount > 0 ? `${completedCount}/${count}` : count} {label}
+      <p className={`font-bolota text-2xl uppercase font-bold ${requiredCompleted ? 'text-green-600' : 'text-primary'}`}>
+        1 {label}
       </p>
+      {bonusCount > 0 && (
+        <p className="text-sm text-neutral-500 mt-1">
+          + {bonusCompleted}/{bonusCount} bonus
+        </p>
+      )}
     </div>
   )
 }

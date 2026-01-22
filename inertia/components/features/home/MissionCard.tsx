@@ -1,4 +1,4 @@
-import { Star, Check } from 'lucide-react'
+import { Star, Check, Gift } from 'lucide-react'
 import { Heading } from '~/components/ui'
 
 export interface MissionCardProps {
@@ -16,13 +16,14 @@ export interface MissionCardProps {
 
 export function MissionCard({ mission, onStart, isActive }: MissionCardProps) {
   const isCompleted = mission.status === 'completed'
+  const isRequired = mission.isRecommended // isRecommended = mission obligatoire
 
   return (
     <div
       className={`
         relative overflow-hidden rounded-2xl border-4
         transition-all duration-300 ease-out
-        ${isCompleted ? 'border-green-500' : 'border-primary'}
+        ${isCompleted ? 'border-green-500' : isRequired ? 'border-primary' : 'border-neutral-300'}
         ${isActive ? 'scale-100 opacity-100' : 'scale-90 opacity-80'}
         h-[320px] w-full
       `}
@@ -38,11 +39,19 @@ export function MissionCard({ mission, onStart, isActive }: MissionCardProps) {
       {/* Overlay gradient - darker if completed */}
       <div className={`absolute inset-0 ${isCompleted ? 'bg-black/60' : 'bg-gradient-to-t from-black/80 via-black/30 to-transparent'}`} />
 
-      {/* Badge Recommandé */}
-      {mission.isRecommended && !isCompleted && (
+      {/* Badge Objectif (mission principale) */}
+      {isRequired && !isCompleted && (
         <div className="absolute top-3 right-3 bg-primary text-white text-xs px-2.5 py-1 rounded-full flex items-center gap-1 font-semibold">
           <Star className="w-3 h-3 fill-current" />
-          Recommandé
+          Objectif
+        </div>
+      )}
+
+      {/* Badge Bonus (mission optionnelle) */}
+      {!isRequired && !isCompleted && (
+        <div className="absolute top-3 right-3 bg-neutral-600 text-white text-xs px-2.5 py-1 rounded-full flex items-center gap-1 font-semibold">
+          <Gift className="w-3 h-3" />
+          Bonus
         </div>
       )}
 

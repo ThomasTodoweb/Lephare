@@ -59,22 +59,6 @@ interface Props {
   }
 }
 
-const MISSION_TYPE_ICONS: Record<string, string> = {
-  post: '📸',
-  story: '📱',
-  reel: '🎬',
-  tuto: '📚',
-  engagement: '💬',
-}
-
-const MISSION_TYPE_LABELS: Record<string, string> = {
-  post: 'Post',
-  story: 'Story',
-  reel: 'Réel',
-  tuto: 'Tutoriel',
-  engagement: 'Engagement',
-}
-
 export default function Dashboard({ user, restaurant, mission, todayMissions, streak, notifications, calendarMissions, plannedFutureDays }: Props) {
   const { flash } = usePage<{ flash?: { success?: string } }>().props
 
@@ -87,11 +71,18 @@ export default function Dashboard({ user, restaurant, mission, todayMissions, st
     router.visit(`/missions/${missionId}`)
   }
 
-  // Count completed missions
-  const completedCount = todayMissions.filter(m => m.status === 'completed').length
+  // Find required mission (isRecommended = true) and bonus missions
+  const requiredMission = todayMissions.find(m => m.isRecommended)
+  const bonusMissions = todayMissions.filter(m => !m.isRecommended)
 
-  // Get the first mission type for DailyObjective
-  const firstMissionType = todayMissions[0]?.type || 'post'
+  // Check if required mission is completed
+  const requiredCompleted = requiredMission?.status === 'completed'
+
+  // Count completed bonus missions
+  const bonusCompleted = bonusMissions.filter(m => m.status === 'completed').length
+
+  // Get the required mission type for DailyObjective
+  const requiredMissionType = requiredMission?.type || todayMissions[0]?.type || 'post'
 
   return (
     <AppLayout >
@@ -134,9 +125,10 @@ export default function Dashboard({ user, restaurant, mission, todayMissions, st
         {/* Daily Objective & Mission Carousel */}
         <div className="mb-6">
           <DailyObjective
-            objectiveType={firstMissionType}
-            count={todayMissions.length}
-            completedCount={completedCount}
+            objectiveType={requiredMissionType}
+            requiredCompleted={requiredCompleted}
+            bonusCount={bonusMissions.length}
+            bonusCompleted={bonusCompleted}
           />
           {todayMissions.length > 0 ? (
             <MissionCarousel
