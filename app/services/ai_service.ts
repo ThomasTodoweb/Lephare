@@ -11,6 +11,12 @@ interface DescriptionContext {
   imageMimeType?: string // e.g., 'image/jpeg'
 }
 
+export interface MediaQualityResult {
+  score: 'green' | 'yellow' | 'red'
+  feedback: string // User-facing message
+  details?: string // Technical details for logging
+}
+
 type AIProvider = 'claude' | 'openai'
 
 export default class AIService {
@@ -384,5 +390,121 @@ Statistiques Le Phare:
 Donne un feedback personnalisé et 1-2 conseils pour la semaine suivante.`
 
     return this.chatCompletion(systemPrompt, userPrompt, 200)
+  }
+
+  /**
+   * Analyze media quality for Instagram publication
+   * Returns a score (green/yellow/red) and feedback
+   */
+  async analyzeMediaQuality(
+    imageBase64: string,
+    imageMimeType: string,
+    contentType: 'post' | 'story' | 'reel' | 'carousel'
+  ): Promise<MediaQualityResult> {
+    // Default response if AI is not configured
+    if (!this.claudeApiKey) {
+      console.log('AIService: No Claude API key, skipping quality analysis')
+      return {
+        score: 'green',
+        feedback: 'Analyse non disponible, vous pouvez continuer.',
+        details: 'AI not configured',
+      }
+    }
+
+    const contentTypeLabels: Record<string, string> = {
+      post: 'un post Instagram',
+      story: 'une story Instagram',
+      reel: 'un reel Instagram',
+      carousel: 'un carrousel Instagram',
+    }
+
+    const systemPrompt = `Tu es un expert en contenu Instagram pour restaurants.
+Analyse cette image et évalue sa qualité pour publication sur Instagram.
+
+CRITÈRES D'ÉVALUATION :
+1. Luminosité : pas trop sombre (< 20% de l'image), pas surexposée
+2. Netteté : l'image doit être nette, pas floue
+3. Cadrage : le sujet principal doit être visible et bien cadré
+4. Qualité professionnelle : pas de doigt visible, pas de reflet indésirable, pas d'élément perturbateur
+5. Appétence : pour un restaurant, l'image doit donner envie (plats, ambiance, équipe)
+
+SCORING STRICT :
+- VERT (green) : Image de bonne qualité, prête à publier. Répond aux standards Instagram.
+- JAUNE (yellow) : Quelques défauts mineurs mais l'image reste acceptable. Avertir l'utilisateur.
+- ROUGE (red) : Problèmes majeurs qui nuiront à l'image du restaurant. UNIQUEMENT pour :
+  * Image très floue ou illisible
+  * Image quasi entièrement sombre ou surexposée
+  * Sujet complètement hors cadre
+  * Contenu inapproprié ou non professionnel évident
+
+IMPORTANT : Sois bienveillant dans ton feedback. Le but est d'aider, pas de décourager.
+La majorité des images devraient être vertes ou jaunes. Le rouge est réservé aux cas vraiment problématiques.
+
+RÉPONSE OBLIGATOIRE en JSON valide :
+{"score": "green" | "yellow" | "red", "feedback": "Une phrase courte et encourageante pour l'utilisateur", "details": "Analyse technique détaillée"}`
+
+    const userPrompt = `Analyse cette image destinée à ${contentTypeLabels[contentType] || 'une publication Instagram'}.
+
+Évalue sa qualité et donne ton verdict avec un feedback constructif et bienveillant.`
+
+    try {
+      const result = await this.claudeVisionCompletion(
+        systemPrompt,
+        userPrompt,
+        imageBase64,
+        imageMimeType,
+        300
+      )
+
+      if (!result) {
+        console.error('AIService: No response from Claude Vision for quality analysis')
+        return {
+          score: 'green',
+          feedback: 'Analyse temporairement indisponible, vous pouvez continuer.',
+          details: 'No API response',
+        }
+      }
+
+      // Parse JSON response
+      try {
+        // Try to extract JSON from the response (in case there's extra text)
+        const jsonMatch = result.match(/\{[\s\S]*\}/)
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]) as {
+            score?: string
+            feedback?: string
+            details?: string
+          }
+
+          // Validate score
+          const validScores = ['green', 'yellow', 'red']
+          const score = validScores.includes(parsed.score || '')
+            ? (parsed.score as 'green' | 'yellow' | 'red')
+            : 'green'
+
+          return {
+            score,
+            feedback: parsed.feedback || 'Image analysée.',
+            details: parsed.details,
+          }
+        }
+      } catch (parseError) {
+        console.error('AIService: Failed to parse quality analysis JSON', parseError, result)
+      }
+
+      // Fallback if JSON parsing fails
+      return {
+        score: 'green',
+        feedback: 'Image analysée avec succès.',
+        details: `Raw response: ${result}`,
+      }
+    } catch (error) {
+      console.error('AIService: Quality analysis failed', error)
+      return {
+        score: 'green',
+        feedback: 'Analyse temporairement indisponible, vous pouvez continuer.',
+        details: String(error),
+      }
+    }
   }
 }

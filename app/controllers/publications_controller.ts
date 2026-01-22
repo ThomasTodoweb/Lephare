@@ -131,7 +131,7 @@ export default class PublicationsController {
         status: 'draft',
       })
 
-      return response.redirect().toRoute('publications.description', { id: publication.id })
+      return response.redirect().toRoute('publications.analysis', { id: publication.id })
     }
 
     // Handle carousel (multiple images)
@@ -182,7 +182,7 @@ export default class PublicationsController {
         status: 'draft',
       })
 
-      return response.redirect().toRoute('publications.description', { id: publication.id })
+      return response.redirect().toRoute('publications.analysis', { id: publication.id })
     }
 
     // Handle single photo (post or story)
@@ -213,7 +213,142 @@ export default class PublicationsController {
       status: 'draft',
     })
 
-    return response.redirect().toRoute('publications.description', { id: publication.id })
+    return response.redirect().toRoute('publications.analysis', { id: publication.id })
+  }
+
+  /**
+   * Show analysis page - AI evaluates media quality
+   */
+  async analysis({ inertia, auth, params }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const publicationId = params.id
+
+    const publication = await Publication.query()
+      .where('id', publicationId)
+      .where('user_id', user.id)
+      .preload('mission', (query) => {
+        query.preload('missionTemplate')
+      })
+      .first()
+
+    if (!publication) {
+      return inertia.render('errors/not_found')
+    }
+
+    return inertia.render('publications/analysis', {
+      publication: {
+        id: publication.id,
+        imagePath: publication.imagePath,
+        contentType: publication.contentType || 'post',
+        mediaItems: publication.mediaItems || [],
+        qualityScore: publication.qualityScore,
+        qualityFeedback: publication.qualityFeedback,
+      },
+      mission: publication.mission
+        ? {
+            id: publication.mission.id,
+            template: {
+              title: publication.mission.missionTemplate.title,
+              tutorialId: publication.mission.missionTemplate.tutorialId,
+            },
+          }
+        : null,
+    })
+  }
+
+  /**
+   * Run AI quality analysis on the media
+   */
+  async runAnalysis({ response, auth, params }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const publicationId = params.id
+
+    const publication = await Publication.query()
+      .where('id', publicationId)
+      .where('user_id', user.id)
+      .first()
+
+    if (!publication) {
+      return response.status(404).json({ error: 'Publication introuvable' })
+    }
+
+    // If already analyzed, return cached result
+    if (publication.qualityScore) {
+      return response.json({
+        score: publication.qualityScore,
+        feedback: publication.qualityFeedback,
+      })
+    }
+
+    // Read the image for analysis
+    let imageBase64: string | undefined
+    let imageMimeType: string | undefined
+
+    try {
+      // For videos, we'd ideally extract a thumbnail - for now, skip analysis
+      const isVideo = publication.mediaItems?.[0]?.type === 'video' ||
+        publication.contentType === 'reel'
+
+      if (isVideo) {
+        // For videos, we can't easily analyze - default to green
+        publication.qualityScore = 'green'
+        publication.qualityFeedback = 'Vidéo prête pour la publication.'
+        publication.qualityAnalyzedAt = DateTime.now()
+        await publication.save()
+
+        return response.json({
+          score: publication.qualityScore,
+          feedback: publication.qualityFeedback,
+        })
+      }
+
+      const imagePath = app.makePath(publication.imagePath)
+      const imageBuffer = await readFile(imagePath)
+      imageBase64 = imageBuffer.toString('base64')
+
+      // Determine mime type from extension
+      const ext = publication.imagePath.split('.').pop()?.toLowerCase()
+      if (ext === 'jpg' || ext === 'jpeg') {
+        imageMimeType = 'image/jpeg'
+      } else if (ext === 'png') {
+        imageMimeType = 'image/png'
+      } else if (ext === 'webp') {
+        imageMimeType = 'image/webp'
+      } else {
+        imageMimeType = 'image/jpeg' // Default
+      }
+    } catch (error) {
+      console.error('Failed to read image for quality analysis:', error)
+      // Default to green if we can't read the file
+      publication.qualityScore = 'green'
+      publication.qualityFeedback = 'Analyse non disponible, vous pouvez continuer.'
+      publication.qualityAnalyzedAt = DateTime.now()
+      await publication.save()
+
+      return response.json({
+        score: publication.qualityScore,
+        feedback: publication.qualityFeedback,
+      })
+    }
+
+    // Run AI analysis
+    const aiService = new AIService()
+    const result = await aiService.analyzeMediaQuality(
+      imageBase64!,
+      imageMimeType!,
+      publication.contentType || 'post'
+    )
+
+    // Save result
+    publication.qualityScore = result.score
+    publication.qualityFeedback = result.feedback
+    publication.qualityAnalyzedAt = DateTime.now()
+    await publication.save()
+
+    return response.json({
+      score: result.score,
+      feedback: result.feedback,
+    })
   }
 
   /**

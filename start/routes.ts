@@ -165,6 +165,8 @@ router.group(() => {
   // Publication flow - premium feature
   router.get('/missions/:id/photo', [PublicationsController, 'photo']).as('missions.photo')
   router.post('/missions/:id/photo', [PublicationsController, 'uploadPhoto']).as('missions.photo.upload')
+  router.get('/publications/:id/analysis', [PublicationsController, 'analysis']).as('publications.analysis')
+  router.post('/publications/:id/analysis', [PublicationsController, 'runAnalysis']).as('publications.runAnalysis')
   router.get('/publications/:id/description', [PublicationsController, 'description']).as('publications.description')
   router.post('/publications/:id/caption', [PublicationsController, 'updateCaption']).as('publications.caption')
   router.post('/publications/:id/publish', [PublicationsController, 'publish']).as('publications.publish')

@@ -92,6 +92,24 @@ export default class Publication extends BaseModel {
   @column()
   declare coverImagePath: string | null
 
+  /**
+   * AI quality analysis score: green, yellow, red
+   */
+  @column()
+  declare qualityScore: 'green' | 'yellow' | 'red' | null
+
+  /**
+   * AI feedback message about the media quality
+   */
+  @column()
+  declare qualityFeedback: string | null
+
+  /**
+   * When the AI analysis was performed
+   */
+  @column.dateTime()
+  declare qualityAnalyzedAt: DateTime | null
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 
