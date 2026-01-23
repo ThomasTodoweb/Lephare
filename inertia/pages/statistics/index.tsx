@@ -1,7 +1,7 @@
 import { Head, Link } from '@inertiajs/react'
 import { useState, useEffect } from 'react'
 import { AppLayout } from '~/components/layout'
-import { Card } from '~/components/ui'
+import { Card, PopoteMessage } from '~/components/ui'
 
 interface KeyMetric {
   type: string
@@ -172,59 +172,33 @@ export default function StatisticsIndex({ keyMetrics, summary, comparison, insta
           </p>
         </div>
 
-        {/* AI Interpretation Card */}
-        <Card className="mb-6">
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl flex items-center justify-center flex-shrink-0">
-              <span className="text-white text-lg">AI</span>
-            </div>
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                <h2 className="font-bold text-neutral-900">Analyse IA</h2>
-                {interpretation ? (
-                  <span
-                    className={`px-2 py-0.5 text-xs font-medium rounded-full ${
-                      interpretation.sentiment === 'positive'
-                        ? 'bg-green-100 text-green-700'
-                        : interpretation.sentiment === 'negative'
-                          ? 'bg-red-100 text-red-700'
-                          : 'bg-yellow-100 text-yellow-700'
-                    }`}
-                  >
-                    {interpretation.sentiment === 'positive'
-                      ? 'Positif'
-                      : interpretation.sentiment === 'negative'
-                        ? 'À améliorer'
-                        : 'Stable'}
-                  </span>
-                ) : !isLoadingInterpretation && instagram ? (
-                  // Show "Bienvenue" badge when using fallback message
-                  <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-blue-100 text-blue-700">
-                    Bienvenue
-                  </span>
-                ) : null}
+        {/* Popote AI Interpretation */}
+        {isLoadingInterpretation ? (
+          <Card className="mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-white border-2 border-neutral flex items-center justify-center animate-bounce-subtle">
+                <img src="/images/popote.png" alt="Popote" className="w-full h-full object-contain p-0.5" />
               </div>
-              {isLoadingInterpretation ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                  <span className="text-sm text-neutral-500">Analyse en cours...</span>
-                </div>
-              ) : interpretation ? (
-                <p className="text-neutral-700">{interpretation.text}</p>
-              ) : instagram ? (
-                // Fallback message when AI is not available but we have Instagram stats
-                <p className="text-neutral-700">
-                  Bienvenue ! Avec {(instagram.followers?.current ?? 0).toLocaleString('fr-FR')} abonnés et {(instagram.engagement?.impressions ?? 0).toLocaleString('fr-FR')} impressions,
-                  tu as une belle base pour progresser ensemble.
-                </p>
-              ) : (
-                <p className="text-neutral-500 text-sm">
-                  Continuez à utiliser l'app pour obtenir une analyse personnalisée.
-                </p>
-              )}
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                <span className="text-sm text-neutral-500">Popote analyse tes stats...</span>
+              </div>
             </div>
+          </Card>
+        ) : (
+          <div className="mb-6">
+            <PopoteMessage
+              message={
+                interpretation?.text ||
+                (instagram
+                  ? `Bienvenue ! Avec ${(instagram.followers?.current ?? 0).toLocaleString('fr-FR')} abonnés et ${(instagram.engagement?.impressions ?? 0).toLocaleString('fr-FR')} impressions, tu as une belle base pour progresser ensemble.`
+                  : "Continue à utiliser l'app pour que je puisse t'analyser tes stats !")
+              }
+              variant={interpretation?.sentiment === 'positive' ? 'happy' : 'default'}
+              size="md"
+            />
           </div>
-        </Card>
+        )}
 
         {/* Key Metrics */}
         <div className="grid grid-cols-3 gap-3 mb-6">

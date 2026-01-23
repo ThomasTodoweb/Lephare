@@ -122,3 +122,17 @@ body {
 .animate-scale-in {
   animation: scale-in 0.2s ease-out forwards;
 }
+
+/* Popote bounce animation - subtil sautillement pendant qu'il parle */
+@keyframes bounce-subtle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.animate-bounce-subtle {
+  animation: bounce-subtle 0.5s ease-in-out infinite;
+}
