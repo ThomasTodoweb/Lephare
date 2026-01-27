@@ -19,7 +19,7 @@ export function DailyObjective({ objectiveType, requiredCompleted, bonusCount = 
 
   return (
     <div className="text-center mb-4">
-      <p className="italic text-text/70 text-base font-bold">
+      <p className="text-text/70 text-base font-bold">
         {requiredCompleted ? 'Bravo ! Objectif atteint' : 'Objectif du jour :'}
       </p>
       <p className={`font-bolota text-2xl uppercase font-bold ${requiredCompleted ? 'text-green-600' : 'text-primary'}`}>
