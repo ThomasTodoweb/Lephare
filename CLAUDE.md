@@ -1,78 +1,186 @@
-# Le Phare - Instructions pour Claude
+# CLAUDE.md
 
-## Déploiement
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-Quand l'utilisateur demande de "déployer", "mettre en ligne", "push en prod", ou similaire, effectuer ces étapes automatiquement :
+## Project Overview
 
-### 1. Commit et push vers GitHub
+Le Phare is an Instagram management SaaS for restaurants. Users get daily missions, publish content to Instagram via the Late API, receive AI-generated captions (OpenAI), track stats, earn badges/streaks, and follow tutorials. Subscriptions are handled via Stripe. All UI is in French.
+
+## Commands
+
 ```bash
-cd /Users/thomaspraizelin/Devs/LEPHAREPROJET/le-phare
+npm run dev          # Dev server with HMR (port 3333)
+npm run build        # Production build (node ace build)
+npm start            # Start production server (node bin/server.js)
+npm run lint         # ESLint
+npm run format       # Prettier
+npm run typecheck    # TypeScript type checking (tsc --noEmit)
+npm run test         # Run all tests
+node ace test --suites=unit        # Unit tests only
+node ace test --suites=functional  # Functional tests only
+```
+
+### Database
+
+```bash
+node ace migration:run              # Run pending migrations
+node ace migration:rollback         # Rollback last batch
+node ace migration:status           # Check migration status
+node ace make:migration <name>      # Create new migration
+node ace db:seed                    # Run seeders (badges, strategies, tutorials)
+sudo -u postgres psql lephare       # Accès direct PostgreSQL
+```
+
+### Ace scaffolding
+
+```bash
+node ace make:controller <name>
+node ace make:model <name>
+node ace make:migration <name>
+node ace make:validator <name>
+node ace make:middleware <name>
+node ace make:service <name>
+```
+
+## Architecture
+
+### Tech Stack
+
+- **Backend**: AdonisJS 6 + TypeScript + Lucid ORM
+- **Frontend**: React 19 + Inertia.js + TailwindCSS 4
+- **Database**: PostgreSQL 17
+- **External APIs**: Stripe (payments), Late (Instagram publishing), OpenAI (captions/stats), Resend (email), Web Push (notifications)
+- **Auth**: Session-based with Google/Apple OAuth via @adonisjs/ally
+
+### Request Flow
+
+Routes (`start/routes.ts`, 275+ routes) -> Middleware (`app/middleware/`) -> Controllers (`app/controllers/`) -> Services (`app/services/`) -> Models (`app/models/`)
+
+Controllers return Inertia responses that render React pages from `inertia/pages/`.
+
+### Key Directories
+
+| Path | Purpose |
+|------|---------|
+| `app/controllers/http/` | Main route handlers |
+| `app/controllers/admin/` | Admin panel controllers (under `/admin` routes) |
+| `app/services/` | Business logic (Stripe, Late API, AI, push, gamification, etc.) |
+| `app/models/` | Lucid ORM models (20+) |
+| `app/middleware/` | Auth, subscription, admin, throttle, raw body, guest |
+| `app/validators/` | Vine request validators (French error messages) |
+| `inertia/pages/` | React page components (58 pages, organized by feature) |
+| `inertia/components/` | Reusable React components (ui/, layout/, features/) |
+| `database/migrations/` | 89 migration files |
+| `start/routes.ts` | All route definitions |
+| `start/kernel.ts` | Middleware registration |
+| `config/` | AdonisJS configuration files |
+
+### Frontend Conventions
+
+- Vite entry point: `inertia/app/app.tsx`
+- Import alias: `~/` resolves to `inertia/`
+- Shared Inertia props (available on every page): `user`, `flash`, `errors` (defined in `config/inertia.ts`)
+- SSR is disabled
+- Icons: `lucide-react`
+- Mobile-first responsive design (max-width 428px container)
+- Service Worker registered in app.tsx for PWA & push notifications
+
+### Route Groups & Middleware
+
+- **Public**: Home, static files (no auth)
+- **Auth routes**: Register, login, password reset (guest middleware + rate limiting)
+- **Protected (free tier)**: Dashboard, profile, onboarding, subscription page (auth middleware)
+- **Premium routes**: Missions, publications, tutorials, badges, reports, statistics (auth + subscription middleware)
+- **Admin routes** (`/admin`): Dashboard, strategies, templates, tutorials, alerts, users (auth + admin middleware)
+- **Webhooks**: Stripe webhook at `POST /webhooks/stripe` (raw body middleware for signature verification)
+
+### Subscription Tiers
+
+The `subscription` middleware checks for active subscription (trial or paid). Returns 402 for API requests, redirects otherwise. Free tier users can access dashboard, profile, onboarding, and subscription pages.
+
+### Important Patterns
+
+- **Service layer**: Controllers delegate to services in `app/services/` for business logic and external API calls
+- **Vine validators**: Request validation with French error messages, compiled schemas in `app/validators/`
+- **JSONB columns**: Complex data (aiInterpretation, mediaItems) stored as PostgreSQL JSONB
+- **UTC DateTimes**: All dates handled in UTC with Luxon
+- **Eager loading**: Use `.preload()` on relationships to avoid N+1 queries
+- **Node subpath imports**: Use `#controllers/*`, `#models/*`, `#services/*` etc. (defined in package.json `imports`)
+
+### Environment Variables
+
+Validated in `start/env.ts`. Key groups: App (PORT, HOST, APP_KEY), Database (DB_*), Stripe (STRIPE_*), Late API (LATE_API_KEY), OpenAI (OPENAI_API_KEY), VAPID (push notifications), Google/Apple OAuth.
+
+## Workflow de développement et déploiement
+
+**On développe directement sur le serveur de production** (`/var/www/lephare`).
+Après chaque modification, proposer à l'utilisateur de commit et push vers GitHub pour garder l'historique et pouvoir revenir en arrière.
+
+### GitHub
+
+- **Repo**: `git@github.com:ThomasTodoweb/Lephare.git`
+- **Branch**: `main`
+
+### Après chaque modification de code
+
+**1. Commit et push vers GitHub**
+```bash
+cd /var/www/lephare
 git add -A
 git commit -m "description des changements"
-git push
+git push origin main
 ```
 
-### 2. Connexion au serveur et déploiement
+**2. Build et redémarrage**
 ```bash
-ssh root@lephare.todoweb.fr "cd /var/www/lephare && ./server-deploy.sh"
+npm run build
+cp .env build/.env
+cd build && npm ci --omit=dev
+pm2 restart lephare
 ```
 
-Le script `server-deploy.sh` effectue automatiquement :
-- `git pull origin main`
-- `npm ci`
-- `npm run build`
-- `node ace migration:run --force`
+**3. Si nouvelles migrations**
+```bash
+cd /var/www/lephare/build && node ace migration:run --force
+```
+
+**4. Vérification**
+```bash
+pm2 status && pm2 logs lephare --lines 10
+```
+
+### Rappel important
+
+Toujours demander à l'utilisateur : **"On push sur GitHub ?"** après avoir effectué des modifications, pour s'assurer que chaque changement est versionné et réversible.
+
+### Server Info
+
+| Property | Value |
+|----------|-------|
+| Server | `lephare.todoweb.fr` (147.93.94.82) |
+| App path | `/var/www/lephare` |
+| Build dir | `/var/www/lephare/build` |
+| App port | `3335` |
+| Production URL | `https://lephare.todoweb.fr` |
+
+### PM2
+
+```bash
+pm2 status                          # App status
+pm2 logs lephare --lines 50        # App logs
+pm2 logs lephare --err --lines 50  # Error logs only
+pm2 restart lephare                 # Restart
+```
+
+Production runs from `/var/www/lephare/build/`, not the project root. The `.env` file must be copied to `build/.env` after each build.
+
+### Script server-deploy.sh (alternative)
+
+Le script `server-deploy.sh` peut aussi être utilisé. Il effectue :
+- Sauvegarde `.env` et `storage/` depuis `build/`
+- `git fetch origin` + `git reset --hard origin/main`
+- `npm ci` + `npm run build`
+- Restaure `.env` et `storage/` dans `build/`
+- `cd build && npm ci --omit=dev`
 - `pm2 restart lephare`
-
-### 3. Vérification
-```bash
-ssh root@lephare.todoweb.fr "pm2 status && pm2 logs lephare --lines 10"
-```
-
-## Informations serveur
-
-| Propriété | Valeur |
-|-----------|--------|
-| Serveur | `lephare.todoweb.fr` (147.93.94.82) |
-| Utilisateur SSH | `root` |
-| Chemin application | `/var/www/lephare` |
-| Build directory | `/var/www/lephare/build` |
-| Port application | `3335` |
-| URL production | `https://lephare.todoweb.fr` |
-
-## Base de données
-
-- PostgreSQL 17 sur le serveur
-- Commande migration : `node ace migration:run --force`
-- Accès DB : `sudo -u postgres psql lephare`
-
-## PM2 (Process Manager)
-
-```bash
-pm2 status           # État de l'application
-pm2 logs lephare     # Voir les logs
-pm2 restart lephare  # Redémarrer
-pm2 stop lephare     # Arrêter
-```
-
-## Logs utiles
-
-```bash
-# Logs applicatifs
-pm2 logs lephare --lines 50
-
-# Logs d'erreur uniquement
-pm2 logs lephare --err --lines 50
-
-# Logs Nginx
-tail -f /var/log/nginx/access.log
-tail -f /var/log/nginx/error.log
-```
-
-## Stack technique
-
-- **Backend** : AdonisJS 6
-- **Frontend** : React + Inertia.js
-- **Base de données** : PostgreSQL
-- **Process manager** : PM2
-- **Reverse proxy** : Nginx avec SSL Let's Encrypt
+- **⚠️ Les migrations ne sont PAS exécutées automatiquement** par ce script.
