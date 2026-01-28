@@ -1,10 +1,8 @@
-import { Head, Link, router, usePage } from '@inertiajs/react'
+import { Head, router, usePage } from '@inertiajs/react'
 import { AppLayout } from '~/components/layout'
-import { Button, Card, Heading } from '~/components/ui'
+import { Card, Heading } from '~/components/ui'
 import { NotificationBanner } from '~/components/NotificationBanner'
-import { WelcomeMessage, StreakRestaurantBar, MissionCard } from '~/components/features/home'
-import { LevelProgressBar } from '~/components/features/home/LevelProgressBar'
-import { BookOpen } from 'lucide-react'
+import { WelcomeMessage, StreakRestaurantBar, MissionCarousel } from '~/components/features/home'
 
 interface Mission {
   id: number
@@ -44,17 +42,6 @@ interface CalendarMission {
   title: string
 }
 
-interface LevelInfo {
-  xpTotal: number
-  currentLevel: number
-  levelName: string
-  levelIcon: string
-  xpForNextLevel: number
-  xpProgressInLevel: number
-  progressPercent: number
-  isMaxLevel: boolean
-}
-
 interface Props {
   user: { id: number; email: string; fullName?: string; notificationBannerDismissed?: boolean }
   restaurant: { name: string; type: string }
@@ -67,13 +54,12 @@ interface Props {
   }
   calendarMissions: CalendarMission[]
   plannedFutureDays: string[]
-  level: LevelInfo
   flash?: {
     success?: string
   }
 }
 
-export default function Dashboard({ user, restaurant, mission, todayMissions, streak, notifications, calendarMissions, plannedFutureDays, level }: Props) {
+export default function Dashboard({ user, restaurant, mission, todayMissions, streak, notifications, calendarMissions, plannedFutureDays }: Props) {
   const { flash } = usePage<{ flash?: { success?: string } }>().props
 
   function handleLogout() {
@@ -84,9 +70,6 @@ export default function Dashboard({ user, restaurant, mission, todayMissions, st
   function handleMissionStart(missionId: number) {
     router.visit(`/missions/${missionId}`)
   }
-
-  // Find the recommended mission (mission du jour)
-  const todayMission = todayMissions.find(m => m.isRecommended) || todayMissions[0]
 
   return (
     <AppLayout >
@@ -126,37 +109,15 @@ export default function Dashboard({ user, restaurant, mission, todayMissions, st
           )}
         </div>
 
-        {/* Level Progress Bar */}
-        <div className="mb-6">
-          <LevelProgressBar
-            currentLevel={level.currentLevel}
-            levelName={level.levelName}
-            levelIcon={level.levelIcon}
-            xpTotal={level.xpTotal}
-            xpProgressInLevel={level.xpProgressInLevel}
-            xpForNextLevel={level.xpForNextLevel}
-            progressPercent={level.progressPercent}
-            isMaxLevel={level.isMaxLevel}
-          />
-        </div>
-
-        {/* Mission du jour */}
+        {/* Missions du jour - Carousel swipable */}
         <div className="mb-6">
           <Heading level={2} className="mb-3 text-neutral-900">
-            Ta mission du jour
+            Tes missions du jour
           </Heading>
-          {todayMission ? (
-            <MissionCard
-              mission={{
-                id: todayMission.id,
-                title: todayMission.title,
-                description: todayMission.description,
-                coverImageUrl: todayMission.coverImageUrl,
-                type: todayMission.type,
-                status: todayMission.status,
-                isRecommended: todayMission.isRecommended,
-              }}
-              onStart={() => handleMissionStart(todayMission.id)}
+          {todayMissions.length > 0 ? (
+            <MissionCarousel
+              missions={todayMissions}
+              onMissionStart={handleMissionStart}
             />
           ) : (
             <Card>
@@ -166,31 +127,11 @@ export default function Dashboard({ user, restaurant, mission, todayMissions, st
                   Pas de mission aujourd'hui
                 </Heading>
                 <p className="text-neutral-600 text-sm">
-                  Repose-toi ou explore les tutoriels !
+                  Repose-toi, tu l'as bien mérité !
                 </p>
               </div>
             </Card>
           )}
-        </div>
-
-        {/* Lien vers les tutoriels */}
-        <div className="mb-6">
-          <Link href="/tutorials" className="block">
-            <Card className="flex items-center gap-4 hover:bg-neutral-50 transition-colors">
-              <div className="bg-primary/10 rounded-full p-3">
-                <BookOpen className="w-6 h-6 text-primary" />
-              </div>
-              <div className="flex-1">
-                <Heading level={4} className="text-neutral-900">
-                  Tutoriels
-                </Heading>
-                <p className="text-sm text-neutral-600">
-                  Apprends les meilleures pratiques Instagram
-                </p>
-              </div>
-              <span className="text-primary font-medium text-sm">Voir →</span>
-            </Card>
-          </Link>
         </div>
 
       </div>

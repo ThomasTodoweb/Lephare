@@ -6,6 +6,7 @@ import { Card } from '~/components/ui/Card'
 import { RHYTHM_LABELS, TYPE_LABELS } from '~/lib/constants'
 import { usePushNotifications } from '~/hooks/use_push_notifications'
 import { usePWAInstall } from '~/hooks/use_pwa_install'
+import { LevelProgressBar } from '~/components/features/home/LevelProgressBar'
 
 interface RestaurantType {
   value: string
@@ -26,11 +27,23 @@ interface StrategyOption {
   description: string
 }
 
+interface LevelInfo {
+  xpTotal: number
+  currentLevel: number
+  levelName: string
+  levelIcon: string
+  xpForNextLevel: number
+  xpProgressInLevel: number
+  progressPercent: number
+  isMaxLevel: boolean
+}
+
 interface Props {
   user: {
     email: string
     createdAt: string
   }
+  level: LevelInfo
   restaurant: {
     name: string
     type: string
@@ -71,6 +84,7 @@ type EditingField = 'email' | 'name' | 'type' | 'rhythm' | 'strategy' | null
 
 export default function Profile({
   user,
+  level,
   restaurant,
   strategy,
   instagram,
@@ -226,6 +240,20 @@ export default function Profile({
           {flash.error}
         </div>
       )}
+
+      {/* Level Progress */}
+      <div className="mb-6">
+        <LevelProgressBar
+          currentLevel={level.currentLevel}
+          levelName={level.levelName}
+          levelIcon={level.levelIcon}
+          xpTotal={level.xpTotal}
+          xpProgressInLevel={level.xpProgressInLevel}
+          xpForNextLevel={level.xpForNextLevel}
+          progressPercent={level.progressPercent}
+          isMaxLevel={level.isMaxLevel}
+        />
+      </div>
 
       {/* Content */}
       <div className="pb-8 space-y-6">

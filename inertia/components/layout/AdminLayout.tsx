@@ -137,7 +137,7 @@ export function AdminLayout({ children, title = 'Administration' }: AdminLayoutP
                       : 'text-neutral-300 hover:bg-neutral-800 hover:text-white'
                   }`}
                 >
-                  <span className="text-lg">{group.icon}</span>
+                  <span className="text-sm">{group.icon}</span>
                   <span>{group.label}</span>
                 </Link>
               )
@@ -151,7 +151,7 @@ export function AdminLayout({ children, title = 'Administration' }: AdminLayoutP
                   onClick={() => toggleGroup(group.label)}
                   className="flex items-center gap-3 px-4 py-3 text-sm text-neutral-300 hover:bg-neutral-800 hover:text-white w-full transition-colors"
                 >
-                  <span className="text-lg">{group.icon}</span>
+                  <span className="text-sm">{group.icon}</span>
                   <span className="flex-1 text-left">{group.label}</span>
                   {isOpen ? (
                     <ChevronDown className="w-4 h-4 text-neutral-500" />
@@ -174,7 +174,7 @@ export function AdminLayout({ children, title = 'Administration' }: AdminLayoutP
                               : 'text-neutral-400 hover:bg-neutral-800 hover:text-white rounded-lg'
                           }`}
                         >
-                          <span className="text-base">{item.icon}</span>
+                          <span className="text-sm">{item.icon}</span>
                           <span>{item.label}</span>
                         </Link>
                       )

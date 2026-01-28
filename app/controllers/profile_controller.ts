@@ -1,6 +1,7 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import LateService from '#services/late_service'
 import GamificationService from '#services/gamification_service'
+import LevelService from '#services/level_service'
 import StripeService from '#services/stripe_service'
 import Strategy from '#models/strategy'
 import PushSubscription from '#models/push_subscription'
@@ -35,6 +36,10 @@ export default class ProfileController {
 
     // Get streak info
     const streakInfo = await this.gamificationService.getStreakInfo(user.id)
+
+    // Get level info
+    const levelService = new LevelService()
+    const levelInfo = await levelService.getLevelInfo(user.id)
 
     // Get subscription info
     const subscription = await this.stripeService.getSubscription(user.id)
@@ -104,6 +109,8 @@ export default class ProfileController {
       })),
       // Notification settings
       notificationReminderTime,
+      // Level info
+      level: levelInfo,
       // Email preferences
       emailPreferences: {
         dailyMission: user.emailDailyMissionEnabled ?? true,

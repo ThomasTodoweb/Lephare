@@ -1,12 +1,32 @@
 import { Head, router } from '@inertiajs/react'
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { AppLayout } from '~/components/layout'
-import { ChevronLeft, ChevronRight, Check, X as XIcon, Clock, Target } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Check, X as XIcon, Clock, Target, Star, Camera, Smartphone, Film, BookOpen, MessageCircle, Images } from 'lucide-react'
+import { LevelProgressBar } from '~/components/features/home/LevelProgressBar'
 
 interface DayStats {
   completed: number
   skipped: number
   pending: number
+}
+
+interface UpcomingMission {
+  id: number
+  date: string
+  dateFormatted: string
+  type: string
+  title: string
+}
+
+interface LevelInfo {
+  xpTotal: number
+  currentLevel: number
+  levelName: string
+  levelIcon: string
+  xpForNextLevel: number
+  xpProgressInLevel: number
+  progressPercent: number
+  isMaxLevel: boolean
 }
 
 interface Props {
@@ -15,6 +35,8 @@ interface Props {
   monthName: string
   missionsByDay: Record<string, DayStats>
   today: string
+  upcomingMissions: UpcomingMission[]
+  level: LevelInfo
 }
 
 interface DayMission {
@@ -30,7 +52,16 @@ interface DayMission {
 
 const WEEKDAYS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
 
-export default function CalendarPage({ year, month, monthName, missionsByDay, today }: Props) {
+const missionTypeEmojis: Record<string, { icon: React.ReactNode; label: string }> = {
+  post: { icon: <Camera className="w-4 h-4" />, label: 'Post' },
+  story: { icon: <Smartphone className="w-4 h-4" />, label: 'Story' },
+  reel: { icon: <Film className="w-4 h-4" />, label: 'Reel' },
+  tuto: { icon: <BookOpen className="w-4 h-4" />, label: 'Tuto' },
+  engagement: { icon: <MessageCircle className="w-4 h-4" />, label: 'Engage' },
+  carousel: { icon: <Images className="w-4 h-4" />, label: 'Carrousel' },
+}
+
+export default function CalendarPage({ year, month, monthName, missionsByDay, today, upcomingMissions, level }: Props) {
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [dayMissions, setDayMissions] = useState<DayMission[]>([])
   const [loadingDay, setLoadingDay] = useState(false)
@@ -253,6 +284,51 @@ export default function CalendarPage({ year, month, monthName, missionsByDay, to
           <span>Aujourd'hui</span>
         </div>
       </div>
+
+      {/* Level Progress */}
+      <div className="mb-6">
+        <LevelProgressBar
+          currentLevel={level.currentLevel}
+          levelName={level.levelName}
+          levelIcon={level.levelIcon}
+          xpTotal={level.xpTotal}
+          xpProgressInLevel={level.xpProgressInLevel}
+          xpForNextLevel={level.xpForNextLevel}
+          progressPercent={level.progressPercent}
+          isMaxLevel={level.isMaxLevel}
+        />
+      </div>
+
+      {/* Upcoming missions */}
+      {upcomingMissions.length > 0 && (
+        <div className="mb-6">
+          <h2 className="text-lg font-bold text-neutral-900 mb-3">Prochaines missions</h2>
+          <div className="space-y-2">
+            {upcomingMissions.map((mission) => {
+              const typeConfig = missionTypeEmojis[mission.type] || missionTypeEmojis.post
+              return (
+                <button
+                  key={mission.id}
+                  type="button"
+                  onClick={() => router.visit(`/missions/${mission.id}`)}
+                  className="w-full flex items-center gap-3 bg-white rounded-xl p-3 border border-neutral-100 hover:border-primary/30 transition-colors text-left"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
+                    {typeConfig.icon}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-neutral-900 text-sm truncate">{mission.title}</p>
+                    <p className="text-xs text-neutral-500 capitalize">{mission.dateFormatted}</p>
+                  </div>
+                  <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
+                    {typeConfig.label}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Day detail panel */}
       {selectedDate && (

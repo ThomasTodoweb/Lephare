@@ -1,6 +1,7 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import { DateTime } from 'luxon'
 import Mission from '#models/mission'
+import LevelService from '#services/level_service'
 
 export default class CalendarController {
   /**
@@ -43,12 +44,37 @@ export default class CalendarController {
       }
     }
 
+    // Get upcoming pending missions (next 14 days)
+    const upcomingStart = DateTime.utc().startOf('day').plus({ days: 1 })
+    const upcomingEnd = upcomingStart.plus({ days: 14 })
+
+    const upcomingMissions = await Mission.query()
+      .where('user_id', user.id)
+      .where('status', 'pending')
+      .where('assigned_at', '>=', upcomingStart.toSQL()!)
+      .where('assigned_at', '<=', upcomingEnd.toSQL()!)
+      .preload('missionTemplate')
+      .orderBy('assigned_at', 'asc')
+      .limit(10)
+
+    // Get level info
+    const levelService = new LevelService()
+    const levelInfo = await levelService.getLevelInfo(user.id)
+
     return inertia.render('calendar/index', {
       year,
       month,
       monthName: startOfMonth.setLocale('fr').toFormat('MMMM yyyy'),
       missionsByDay,
       today: DateTime.utc().toFormat('yyyy-MM-dd'),
+      upcomingMissions: upcomingMissions.map((m) => ({
+        id: m.id,
+        date: m.assignedAt.toFormat('yyyy-MM-dd'),
+        dateFormatted: m.assignedAt.setLocale('fr').toFormat('ccc dd MMM'),
+        type: m.missionTemplate?.type || 'post',
+        title: m.missionTemplate?.title || 'Mission',
+      })),
+      level: levelInfo,
     })
   }
 
