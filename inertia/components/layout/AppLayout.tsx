@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { Header } from './Header'
 import { BottomNav } from './BottomNav'
 
@@ -7,14 +7,13 @@ interface AppLayoutProps {
   showBottomNav?: boolean
 }
 
-export function AppLayout({
-  children,
-  showBottomNav = true,
-}: AppLayoutProps) {
+// Note: Not memoized because `children` prop creates new reference on every render
+// Memoization would add overhead without benefit
+export function AppLayout({ children, showBottomNav = true }: AppLayoutProps) {
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background">
       <Header />
-      <main className="flex-1 overflow-auto pb-24">
+      <main className={showBottomNav ? 'pb-24' : ''}>
         <div className="max-w-[428px] mx-auto px-4 py-4">
           {children}
         </div>

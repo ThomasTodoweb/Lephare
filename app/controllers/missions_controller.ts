@@ -4,26 +4,6 @@ import MissionService from '#services/mission_service'
 
 export default class MissionsController {
   /**
-   * Helper to format a mission for the frontend
-   */
-  private formatMission(mission: Mission) {
-    return {
-      id: mission.id,
-      status: mission.status,
-      canUseAction: mission.canUsePassOrReload(),
-      usedPass: mission.usedPass,
-      usedReload: mission.usedReload,
-      slotNumber: mission.slotNumber,
-      isRecommended: mission.isRecommended,
-      template: {
-        type: mission.missionTemplate.type,
-        title: mission.missionTemplate.title,
-        contentIdea: mission.missionTemplate.contentIdea,
-      },
-    }
-  }
-
-  /**
    * Show today's missions page (redirects to recommended mission)
    */
   async today({ response, auth }: HttpContext) {
@@ -43,12 +23,12 @@ export default class MissionsController {
   }
 
   /**
-   * Show a specific mission
+   * Show a specific mission - redirects directly to mission creation flow
+   * (Previously showed an intermediate page, now goes straight to publications/mission.tsx)
    */
-  async show({ inertia, auth, params }: HttpContext) {
+  async show({ response, auth, params, session }: HttpContext) {
     const user = auth.getUserOrFail()
     const missionId = Number(params.id)
-    const missionService = new MissionService()
 
     // Get the specific mission
     const mission = await Mission.query()
@@ -58,16 +38,25 @@ export default class MissionsController {
       .first()
 
     if (!mission) {
-      return inertia.render('missions/today', { mission: null, todayMissions: [] })
+      session.flash('error', 'Mission introuvable')
+      return response.redirect().toRoute('dashboard')
     }
 
-    // Get all today's missions for navigation
-    const todayMissions = await missionService.getTodayMissions(user.id)
+    // For tuto missions, redirect to the tutorial
+    if (mission.missionTemplate.type === 'tuto' && mission.missionTemplate.tutorialId) {
+      return response.redirect().toRoute('tutorials.show', { id: mission.missionTemplate.tutorialId })
+    }
 
-    return inertia.render('missions/today', {
-      mission: this.formatMission(mission),
-      todayMissions: todayMissions.map((m) => this.formatMission(m)),
-    })
+    // For engagement missions, mark as completed and show bravo
+    if (mission.missionTemplate.type === 'engagement') {
+      const missionService = new MissionService()
+      await missionService.completeMission(missionId, user.id)
+      session.flash('success', 'Mission accomplie !')
+      return response.redirect().toRoute('dashboard')
+    }
+
+    // For publication missions, redirect directly to mission creation page
+    return response.redirect().toRoute('missions.photo', { id: missionId })
   }
 
   /**
@@ -139,7 +128,11 @@ export default class MissionsController {
     }
 
     session.flash('success', 'Nouvelle mission chargée !')
-    return response.redirect().toRoute('missions.today')
+
+    // Redirect directly to the mission photo page to avoid multiple history entries
+    // The reloadMission service updates the current mission with a new template
+    // so we can redirect directly to the same mission ID
+    return response.redirect().toRoute('missions.photo', { id: params.id })
   }
 
   /**

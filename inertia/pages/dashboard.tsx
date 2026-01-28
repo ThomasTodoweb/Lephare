@@ -2,7 +2,9 @@ import { Head, Link, router, usePage } from '@inertiajs/react'
 import { AppLayout } from '~/components/layout'
 import { Button, Card, Heading } from '~/components/ui'
 import { NotificationBanner } from '~/components/NotificationBanner'
-import { WelcomeMessage, StreakRestaurantBar, DailyObjective, MissionCarousel, type Mission as CarouselMission } from '~/components/features/home'
+import { WelcomeMessage, StreakRestaurantBar, MissionCard } from '~/components/features/home'
+import { LevelProgressBar } from '~/components/features/home/LevelProgressBar'
+import { BookOpen } from 'lucide-react'
 
 interface Mission {
   id: number
@@ -42,6 +44,17 @@ interface CalendarMission {
   title: string
 }
 
+interface LevelInfo {
+  xpTotal: number
+  currentLevel: number
+  levelName: string
+  levelIcon: string
+  xpForNextLevel: number
+  xpProgressInLevel: number
+  progressPercent: number
+  isMaxLevel: boolean
+}
+
 interface Props {
   user: { id: number; email: string; fullName?: string; notificationBannerDismissed?: boolean }
   restaurant: { name: string; type: string }
@@ -54,35 +67,26 @@ interface Props {
   }
   calendarMissions: CalendarMission[]
   plannedFutureDays: string[]
+  level: LevelInfo
   flash?: {
     success?: string
   }
 }
 
-export default function Dashboard({ user, restaurant, mission, todayMissions, streak, notifications, calendarMissions, plannedFutureDays }: Props) {
+export default function Dashboard({ user, restaurant, mission, todayMissions, streak, notifications, calendarMissions, plannedFutureDays, level }: Props) {
   const { flash } = usePage<{ flash?: { success?: string } }>().props
 
   function handleLogout() {
     router.post('/logout')
   }
 
-  // Navigate to specific mission when clicking on carousel
+  // Navigate to mission when clicking
   function handleMissionStart(missionId: number) {
     router.visit(`/missions/${missionId}`)
   }
 
-  // Find required mission (isRecommended = true) and bonus missions
-  const requiredMission = todayMissions.find(m => m.isRecommended)
-  const bonusMissions = todayMissions.filter(m => !m.isRecommended)
-
-  // Check if required mission is completed
-  const requiredCompleted = requiredMission?.status === 'completed'
-
-  // Count completed bonus missions
-  const bonusCompleted = bonusMissions.filter(m => m.status === 'completed').length
-
-  // Get the required mission type for DailyObjective
-  const requiredMissionType = requiredMission?.type || todayMissions[0]?.type || 'post'
+  // Find the recommended mission (mission du jour)
+  const todayMission = todayMissions.find(m => m.isRecommended) || todayMissions[0]
 
   return (
     <AppLayout >
@@ -122,18 +126,37 @@ export default function Dashboard({ user, restaurant, mission, todayMissions, st
           )}
         </div>
 
-        {/* Daily Objective & Mission Carousel */}
+        {/* Level Progress Bar */}
         <div className="mb-6">
-          <DailyObjective
-            objectiveType={requiredMissionType}
-            requiredCompleted={requiredCompleted}
-            bonusCount={bonusMissions.length}
-            bonusCompleted={bonusCompleted}
+          <LevelProgressBar
+            currentLevel={level.currentLevel}
+            levelName={level.levelName}
+            levelIcon={level.levelIcon}
+            xpTotal={level.xpTotal}
+            xpProgressInLevel={level.xpProgressInLevel}
+            xpForNextLevel={level.xpForNextLevel}
+            progressPercent={level.progressPercent}
+            isMaxLevel={level.isMaxLevel}
           />
-          {todayMissions.length > 0 ? (
-            <MissionCarousel
-              missions={todayMissions}
-              onMissionStart={handleMissionStart}
+        </div>
+
+        {/* Mission du jour */}
+        <div className="mb-6">
+          <Heading level={2} className="mb-3 text-neutral-900">
+            Ta mission du jour
+          </Heading>
+          {todayMission ? (
+            <MissionCard
+              mission={{
+                id: todayMission.id,
+                title: todayMission.title,
+                description: todayMission.description,
+                coverImageUrl: todayMission.coverImageUrl,
+                type: todayMission.type,
+                status: todayMission.status,
+                isRecommended: todayMission.isRecommended,
+              }}
+              onStart={() => handleMissionStart(todayMission.id)}
             />
           ) : (
             <Card>
@@ -145,42 +168,31 @@ export default function Dashboard({ user, restaurant, mission, todayMissions, st
                 <p className="text-neutral-600 text-sm">
                   Repose-toi ou explore les tutoriels !
                 </p>
-                <Link href="/tutorials" className="block mt-4">
-                  <Button variant="outlined" className="w-full">
-                    Voir les tutoriels
-                  </Button>
-                </Link>
               </div>
             </Card>
           )}
         </div>
 
-        {/* Quick links */}
-        <div className="grid grid-cols-2 gap-2 mb-4">
-          <Link href="/missions/history">
-            <Card className="text-center py-2">
-              <span className="text-lg mb-0.5 block">📋</span>
-              <p className="text-xs font-medium text-neutral-700">Historique</p>
-            </Card>
-          </Link>
-          <Link href="/tutorials">
-            <Card className="text-center py-2">
-              <span className="text-lg mb-0.5 block">📚</span>
-              <p className="text-xs font-medium text-neutral-700">Tutoriels</p>
+        {/* Lien vers les tutoriels */}
+        <div className="mb-6">
+          <Link href="/tutorials" className="block">
+            <Card className="flex items-center gap-4 hover:bg-neutral-50 transition-colors">
+              <div className="bg-primary/10 rounded-full p-3">
+                <BookOpen className="w-6 h-6 text-primary" />
+              </div>
+              <div className="flex-1">
+                <Heading level={4} className="text-neutral-900">
+                  Tutoriels
+                </Heading>
+                <p className="text-sm text-neutral-600">
+                  Apprends les meilleures pratiques Instagram
+                </p>
+              </div>
+              <span className="text-primary font-medium text-sm">Voir →</span>
             </Card>
           </Link>
         </div>
 
-        {/* Logout */}
-        <div className="text-center">
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="text-sm text-neutral-500 hover:text-neutral-700"
-          >
-            Déconnexion
-          </button>
-        </div>
       </div>
     </AppLayout>
   )

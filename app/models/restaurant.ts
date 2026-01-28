@@ -55,6 +55,9 @@ export default class Restaurant extends BaseModel {
   @column()
   declare onboardingCompleted: boolean
 
+  @column()
+  declare welcomeVideoSeen: boolean
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 

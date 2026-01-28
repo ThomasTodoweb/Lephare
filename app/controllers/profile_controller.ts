@@ -10,6 +10,7 @@ import {
   updateRestaurantNameValidator,
   updateRestaurantTypeValidator,
   updatePublicationRhythmValidator,
+  updateStrategyValidator,
 } from '#validators/profile'
 
 export default class ProfileController {
@@ -43,6 +44,9 @@ export default class ProfileController {
     if (restaurant?.strategyId) {
       strategy = await Strategy.find(restaurant.strategyId)
     }
+
+    // Get all available strategies for the edit form
+    const strategies = await Strategy.query().where('is_active', true)
 
     // Get user's notification reminder time from push subscriptions
     const pushSubscription = await PushSubscription.query()
@@ -92,6 +96,12 @@ export default class ProfileController {
       // Options for edit forms
       restaurantTypes: RESTAURANT_TYPES,
       publicationRhythms: PUBLICATION_RHYTHMS,
+      strategies: strategies.map((s) => ({
+        id: s.id,
+        name: s.name,
+        icon: s.icon,
+        description: s.description,
+      })),
       // Notification settings
       notificationReminderTime,
       // Email preferences
@@ -182,6 +192,39 @@ export default class ProfileController {
     await restaurant.save()
 
     session.flash('success', 'Rythme de publication mis à jour.')
+    return response.redirect().back()
+  }
+
+  /**
+   * Update strategy (objective)
+   */
+  async updateStrategy({ request, response, auth, session }: HttpContext) {
+    const user = auth.getUserOrFail()
+    await user.load('restaurant')
+
+    const restaurant = user.restaurant
+    if (!restaurant) {
+      session.flash('error', 'Aucun restaurant trouvé.')
+      return response.redirect().back()
+    }
+
+    const data = await request.validateUsing(updateStrategyValidator)
+
+    // Verify the strategy exists and is active
+    const strategy = await Strategy.query()
+      .where('id', data.strategy_id)
+      .where('is_active', true)
+      .first()
+
+    if (!strategy) {
+      session.flash('error', 'Stratégie non valide.')
+      return response.redirect().back()
+    }
+
+    restaurant.strategyId = data.strategy_id
+    await restaurant.save()
+
+    session.flash('success', 'Objectif mis à jour avec succès.')
     return response.redirect().back()
   }
 

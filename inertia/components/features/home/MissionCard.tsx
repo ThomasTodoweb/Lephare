@@ -1,4 +1,4 @@
-import { Star, Check, Gift } from 'lucide-react'
+import { Check, Camera, Smartphone, Film, BookOpen, MessageCircle, Images } from 'lucide-react'
 import { Heading } from '~/components/ui'
 
 export interface MissionCardProps {
@@ -7,25 +7,37 @@ export interface MissionCardProps {
     title: string
     description: string
     coverImageUrl: string
+    type?: 'post' | 'story' | 'reel' | 'tuto' | 'engagement' | 'carousel'
     status?: 'pending' | 'completed' | 'skipped'
     isRecommended?: boolean
   }
   onStart: () => void
-  isActive: boolean
+  isActive?: boolean
 }
 
-export function MissionCard({ mission, onStart, isActive }: MissionCardProps) {
+// Map mission type to icon and label
+const missionTypeConfig: Record<string, { icon: React.ReactNode; label: string; emoji: string }> = {
+  post: { icon: <Camera className="w-5 h-5" />, label: 'Post', emoji: '📸' },
+  story: { icon: <Smartphone className="w-5 h-5" />, label: 'Story', emoji: '📱' },
+  reel: { icon: <Film className="w-5 h-5" />, label: 'Reel', emoji: '🎬' },
+  tuto: { icon: <BookOpen className="w-5 h-5" />, label: 'Tutoriel', emoji: '📚' },
+  engagement: { icon: <MessageCircle className="w-5 h-5" />, label: 'Engagement', emoji: '💬' },
+  carousel: { icon: <Images className="w-5 h-5" />, label: 'Carrousel', emoji: '🖼️' },
+}
+
+export function MissionCard({ mission, onStart, isActive = true }: MissionCardProps) {
   const isCompleted = mission.status === 'completed'
-  const isRequired = mission.isRecommended // isRecommended = mission obligatoire
+  const isSkipped = mission.status === 'skipped'
+  const typeConfig = missionTypeConfig[mission.type || 'post'] || missionTypeConfig.post
 
   return (
     <div
       className={`
-        relative overflow-hidden rounded-2xl border-4
+        relative overflow-hidden rounded-2xl
         transition-all duration-300 ease-out
-        ${isCompleted ? 'border-green-500' : isRequired ? 'border-primary' : 'border-neutral-300'}
-        ${isActive ? 'scale-100 opacity-100' : 'scale-90 opacity-80'}
-        h-[320px] w-full
+        ${isCompleted ? 'ring-4 ring-green-500' : 'ring-2 ring-neutral-200'}
+        ${isActive ? 'scale-100 opacity-100' : 'scale-95 opacity-80'}
+        w-full min-h-[380px]
       `}
     >
       {/* Image de fond */}
@@ -36,53 +48,55 @@ export function MissionCard({ mission, onStart, isActive }: MissionCardProps) {
         className="absolute inset-0 w-full h-full object-cover"
       />
 
-      {/* Overlay gradient - darker if completed */}
-      <div className={`absolute inset-0 ${isCompleted ? 'bg-black/60' : 'bg-gradient-to-t from-black/80 via-black/30 to-transparent'}`} />
+      {/* Overlay gradient */}
+      <div className={`absolute inset-0 ${isCompleted ? 'bg-black/50' : 'bg-gradient-to-t from-black/90 via-black/40 to-black/20'}`} />
 
-      {/* Badge Objectif (mission principale) */}
-      {isRequired && !isCompleted && (
-        <div className="absolute top-3 right-3 bg-primary text-white text-xs px-2.5 py-1 rounded-full flex items-center gap-1 font-semibold">
-          <Star className="w-3 h-3 fill-current" />
-          Objectif
+      {/* Statut en haut */}
+      <div className="absolute top-4 left-4 right-4 flex justify-between items-start">
+        {/* Type de contenu */}
+        <div className="bg-white/95 backdrop-blur-sm text-neutral-900 px-3 py-2 rounded-xl flex items-center gap-2 shadow-lg">
+          <span className="text-xl">{typeConfig.emoji}</span>
+          <span className="font-semibold text-sm">{typeConfig.label}</span>
         </div>
-      )}
 
-      {/* Badge Bonus (mission optionnelle) */}
-      {!isRequired && !isCompleted && (
-        <div className="absolute top-3 right-3 bg-neutral-600 text-white text-xs px-2.5 py-1 rounded-full flex items-center gap-1 font-semibold">
-          <Gift className="w-3 h-3" />
-          Bonus
-        </div>
-      )}
+        {/* Indicateur de statut */}
+        {isCompleted ? (
+          <div className="bg-green-500 text-white px-3 py-2 rounded-xl flex items-center gap-2 shadow-lg">
+            <Check className="w-4 h-4" />
+            <span className="font-semibold text-sm">Fait !</span>
+          </div>
+        ) : isSkipped ? (
+          <div className="bg-neutral-500 text-white px-3 py-2 rounded-xl flex items-center gap-2 shadow-lg">
+            <span className="font-semibold text-sm">Passe</span>
+          </div>
+        ) : (
+          <div className="bg-primary text-white px-3 py-2 rounded-xl flex items-center gap-2 shadow-lg">
+            <span className="font-semibold text-sm">A faire</span>
+          </div>
+        )}
+      </div>
 
-      {/* Badge Fait */}
-      {isCompleted && (
-        <div className="absolute top-3 right-3 bg-green-500 text-white text-xs px-2.5 py-1 rounded-full flex items-center gap-1 font-semibold">
-          <Check className="w-3 h-3" />
-          Fait !
-        </div>
-      )}
-
-      {/* Contenu */}
-      <div className="relative p-5 flex flex-col h-full justify-end">
-        <Heading level={3} className="text-white mb-2">
+      {/* Contenu en bas */}
+      <div className="absolute bottom-0 left-0 right-0 p-5">
+        <Heading level={2} className="text-white mb-2 text-xl font-bold drop-shadow-lg">
           {mission.title}
         </Heading>
-        <p className="text-white/90 text-sm mb-4 line-clamp-2">
+        <p className="text-white/90 text-sm mb-5 line-clamp-2 drop-shadow-md">
           {mission.description}
         </p>
         <button
           type="button"
           onClick={onStart}
           className={`
-            rounded-full px-6 py-3 font-bold uppercase text-sm tracking-wide transition-colors
+            w-full rounded-xl px-6 py-4 font-bold text-base tracking-wide transition-all
+            shadow-lg active:scale-[0.98]
             ${isCompleted
               ? 'bg-green-500 text-white hover:bg-green-600'
-              : 'bg-black text-white hover:bg-black/80'
+              : 'bg-white text-neutral-900 hover:bg-neutral-100'
             }
           `}
         >
-          {isCompleted ? 'Voir détails' : "C'est parti !"}
+          {isCompleted ? 'Voir les details' : "C'est parti !"}
         </button>
       </div>
     </div>

@@ -235,13 +235,16 @@ export default class LateService {
         },
       })
 
+      // Parse response body
+      const data = await response.json() as T
+
+      // Handle HTTP-level errors (400, 500, etc.)
       if (!response.ok) {
-        const errorText = await response.text()
-        logger.error({ status: response.status, error: errorText, endpoint }, 'Late API error')
-        return { error: `API error: ${response.status}` }
+        const errorMsg = (data as unknown as { error?: string })?.error || `API error: ${response.status}`
+        logger.error({ status: response.status, error: errorMsg, endpoint, data }, 'Late API HTTP error')
+        return { error: errorMsg }
       }
 
-      const data = await response.json() as T
       return { data }
     } catch (error) {
       logger.error({ error, endpoint }, 'Late API request failed')
@@ -283,20 +286,36 @@ export default class LateService {
   /**
    * Create a new Late profile for a user
    * Each Le Phare user gets their own isolated profile
+   * Late API returns: { message: 'Profile created successfully', profile: { _id: '...', name: '...' } }
+   * Or error: { error: 'Profile limit reached...', planName: '...', limit: 10, current: 10 }
    */
   async createProfile(name: string): Promise<string | null> {
-    const result = await this.request<LateProfile>('/profiles', {
+    const result = await this.request<{ message?: string; profile?: { _id: string; name: string }; error?: string; limit?: number; current?: number }>('/profiles', {
       method: 'POST',
       body: JSON.stringify({ name }),
     })
 
-    if (result.error || !result.data?.id) {
+    // Check for profile limit error (Late API returns 200 with error in body)
+    if (result.data?.error) {
+      logger.error({ error: result.data.error, limit: result.data.limit, current: result.data.current, name }, 'Late API profile creation error - plan limit reached')
+      return null
+    }
+
+    // Handle HTTP-level errors
+    if (result.error) {
       logger.error({ error: result.error, name }, 'Failed to create Late profile')
       return null
     }
 
-    logger.info({ profileId: result.data.id, name }, 'Created Late profile')
-    return result.data.id
+    // Extract profile ID from nested response
+    const profileId = result.data?.profile?._id
+    if (!profileId) {
+      logger.error({ data: result.data, name }, 'Late profile creation response missing profile._id')
+      return null
+    }
+
+    logger.info({ profileId, name }, 'Created Late profile')
+    return profileId
   }
 
   /**
@@ -308,15 +327,18 @@ export default class LateService {
     const user = await User.find(userId)
 
     if (!user) {
+      logger.error({ userId }, 'User not found for getOrCreateProfile')
       return null
     }
 
     // If user already has a profile ID, return it
     if (user.lateProfileId) {
+      logger.info({ userId, profileId: user.lateProfileId }, 'User already has Late profile')
       return user.lateProfileId
     }
 
     const profileName = `Le Phare - ${userEmail}`
+    logger.info({ userId, profileName }, 'Creating/finding Late profile for user')
 
     // First, check if a profile with this name already exists
     let profileId = await this.findProfileByName(profileName)
@@ -325,14 +347,18 @@ export default class LateService {
       logger.info({ profileId, name: profileName }, 'Found existing Late profile')
     } else {
       // Create a new profile for this user
+      logger.info({ profileName }, 'Creating new Late profile')
       profileId = await this.createProfile(profileName)
+      if (!profileId) {
+        logger.error({ profileName }, 'Failed to create Late profile')
+        return null
+      }
     }
 
-    if (profileId) {
-      // Save profile ID to user
-      user.lateProfileId = profileId
-      await user.save()
-    }
+    // Save profile ID to user
+    user.lateProfileId = profileId
+    await user.save()
+    logger.info({ userId, profileId }, 'Saved Late profile to user')
 
     return profileId
   }
@@ -340,14 +366,17 @@ export default class LateService {
   /**
    * Get connect URL for Instagram OAuth through Late
    * Creates a profile for the user if they don't have one
+   * Returns { url, error } for better error handling
    */
   async getConnectUrl(userId: number, userEmail: string, callbackUrl: string): Promise<string | null> {
     // Get or create profile for this user
     const profileId = await this.getOrCreateProfile(userId, userEmail)
     if (!profileId) {
-      logger.error({ userId }, 'Failed to get/create Late profile')
+      logger.error({ userId, userEmail }, 'Failed to get/create Late profile for Instagram connect')
       return null
     }
+
+    logger.info({ userId, profileId, callbackUrl }, 'Calling Late connect/instagram endpoint')
 
     // Call Late connect endpoint to get OAuth URL
     const params = new URLSearchParams({
@@ -356,7 +385,19 @@ export default class LateService {
     })
 
     const result = await this.request<{ authUrl: string }>(`/connect/instagram?${params.toString()}`)
-    return result.data?.authUrl || null
+
+    if (result.error) {
+      logger.error({ userId, profileId, error: result.error }, 'Late connect/instagram endpoint failed')
+      return null
+    }
+
+    if (!result.data?.authUrl) {
+      logger.error({ userId, profileId, data: result.data }, 'Late connect/instagram returned no authUrl')
+      return null
+    }
+
+    logger.info({ userId, profileId, hasAuthUrl: !!result.data.authUrl }, 'Late connect URL obtained successfully')
+    return result.data.authUrl
   }
 
   /**

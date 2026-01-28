@@ -1,7 +1,7 @@
 import { Head, useForm, Link, usePage, router } from '@inertiajs/react'
-import { useRef, useState, useCallback } from 'react'
+import { useRef, useState, useCallback, useEffect } from 'react'
 import { Button } from '~/components/ui/Button'
-import { Upload, X, Plus, Image, Film, Smartphone, Grid, Lightbulb, ChevronDown, ChevronUp, Check, Play } from 'lucide-react'
+import { Upload, X, Plus, Image, Film, Smartphone, Grid, Lightbulb, ChevronDown, ChevronUp, Check, Play, Volume2, VolumeX } from 'lucide-react'
 import axios from 'axios'
 
 interface ContentIdea {
@@ -38,6 +38,7 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
   const galleryInputRef = useRef<HTMLInputElement>(null)
   const cameraInputRef = useRef<HTMLInputElement>(null)
   const videoInputRef = useRef<HTMLInputElement>(null)
+  const videoCaptureInputRef = useRef<HTMLInputElement>(null)
   const coverInputRef = useRef<HTMLInputElement>(null)
 
   const [mediaFiles, setMediaFiles] = useState<MediaFile[]>([])
@@ -56,6 +57,10 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
   const [selectedIdeaId, setSelectedIdeaId] = useState<number | null>(null)
   const [showIdeas, setShowIdeas] = useState(ideasWithMedia.length > 0)
   const [expandedIdeaId, setExpandedIdeaId] = useState<number | null>(null)
+
+  // Video playback state
+  const [isMuted, setIsMuted] = useState(true)
+  const previewVideoRef = useRef<HTMLVideoElement>(null)
 
   const form = useForm<{
     photo: File | null
@@ -223,8 +228,16 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
     }
   }
 
+  const handleChooseImageFromGallery = () => {
+    galleryInputRef.current?.click()
+  }
+
   const handleTakePhoto = () => {
     cameraInputRef.current?.click()
+  }
+
+  const handleRecordVideo = () => {
+    videoCaptureInputRef.current?.click()
   }
 
   // Format file size for display
@@ -382,45 +395,78 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
           {/* Media preview */}
           <div className="mb-6">
             {mediaFiles.length > 0 ? (
-              <div className={isCarousel ? 'grid grid-cols-2 gap-3' : ''}>
-                {mediaFiles.map((media, index) => (
-                  <div key={index} className="relative">
-                    {media.type === 'video' ? (
-                      <video
-                        src={media.preview}
-                        className="w-full max-h-[50vh] object-contain rounded-lg border border-neutral-200 bg-neutral-50"
-                        controls
-                        playsInline
-                        preload="metadata"
-                        onError={() => setVideoError('Impossible de lire cette video. Essayez un autre format (MP4 recommande).')}
-                        onLoadedData={() => setVideoLoading(false)}
-                      />
-                    ) : (
-                      <img
-                        src={media.preview}
-                        alt={`Apercu ${index + 1}`}
-                        className="w-full max-h-[50vh] object-contain rounded-lg border border-neutral-200 bg-neutral-50"
-                      />
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => removeMedia(index)}
-                      className="absolute top-2 right-2 bg-white/90 rounded-full p-1.5 shadow-sm border border-neutral-200 hover:bg-neutral-50"
+              <div className={isCarousel ? 'grid grid-cols-2 gap-3' : 'flex justify-center'}>
+                {mediaFiles.map((media, index) => {
+                  // Aspect ratio based on content type: 9:16 for stories/reels, 4:5 for posts
+                  const aspectClass = (isReel || isStory) ? 'aspect-[9/16]' : 'aspect-[4/5]'
+
+                  return (
+                    <div
+                      key={index}
+                      className={`relative ${isCarousel ? '' : 'w-full max-w-xs'}`}
                     >
-                      <X className="w-4 h-4 text-neutral-600" />
-                    </button>
-                    {isCarousel && (
-                      <span className="absolute bottom-2 left-2 bg-black/60 text-white px-2 py-0.5 rounded text-xs">
-                        {index + 1}/{mediaFiles.length}
-                      </span>
-                    )}
-                  </div>
-                ))}
+                      {media.type === 'video' ? (
+                        <div
+                          className={`relative ${aspectClass} bg-black rounded-xl overflow-hidden cursor-pointer`}
+                          onClick={() => {
+                            if (previewVideoRef.current) {
+                              previewVideoRef.current.muted = !previewVideoRef.current.muted
+                              setIsMuted(!isMuted)
+                            }
+                          }}
+                        >
+                          <video
+                            ref={previewVideoRef}
+                            src={media.preview}
+                            className="w-full h-full object-cover"
+                            autoPlay
+                            loop
+                            muted={isMuted}
+                            playsInline
+                            onError={() => setVideoError('Impossible de lire cette video. Essayez un autre format (MP4 recommande).')}
+                            onLoadedData={() => setVideoLoading(false)}
+                          />
+                          {/* Sound indicator */}
+                          <div className="absolute bottom-3 right-3 bg-black/60 rounded-full p-2">
+                            {isMuted ? (
+                              <VolumeX className="w-4 h-4 text-white" />
+                            ) : (
+                              <Volume2 className="w-4 h-4 text-white" />
+                            )}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className={`relative ${aspectClass} bg-neutral-100 rounded-xl overflow-hidden`}>
+                          <img
+                            src={media.preview}
+                            alt={`Apercu ${index + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          removeMedia(index)
+                        }}
+                        className="absolute top-2 right-2 bg-white/90 rounded-full p-1.5 shadow-sm border border-neutral-200 hover:bg-neutral-50"
+                      >
+                        <X className="w-4 h-4 text-neutral-600" />
+                      </button>
+                      {isCarousel && (
+                        <span className="absolute bottom-2 left-2 bg-black/60 text-white px-2 py-0.5 rounded text-xs">
+                          {index + 1}/{mediaFiles.length}
+                        </span>
+                      )}
+                    </div>
+                  )
+                })}
                 {isCarousel && mediaFiles.length < maxImages && (
                   <button
                     type="button"
                     onClick={() => galleryInputRef.current?.click()}
-                    className="aspect-square bg-neutral-50 rounded-lg border-2 border-dashed border-neutral-200 flex flex-col items-center justify-center cursor-pointer hover:border-neutral-300 transition-colors"
+                    className="aspect-[4/5] bg-neutral-50 rounded-lg border-2 border-dashed border-neutral-200 flex flex-col items-center justify-center cursor-pointer hover:border-neutral-300 transition-colors"
                   >
                     <Plus className="w-6 h-6 text-neutral-400 mb-1" />
                     <span className="text-xs text-neutral-500">Ajouter</span>
@@ -429,8 +475,8 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
               </div>
             ) : (
               <div
-                onClick={handleChooseFromGallery}
-                className="w-full aspect-square max-w-sm mx-auto bg-neutral-50 rounded-xl border-2 border-dashed border-neutral-200 flex flex-col items-center justify-center cursor-pointer hover:border-neutral-300 transition-colors"
+                onClick={isStory ? undefined : handleChooseFromGallery}
+                className={`w-full max-w-xs mx-auto bg-neutral-50 rounded-xl border-2 border-dashed border-neutral-200 flex flex-col items-center justify-center ${isStory ? '' : 'cursor-pointer hover:border-neutral-300'} transition-colors ${(isReel || isStory) ? 'aspect-[9/16]' : 'aspect-[4/5]'}`}
               >
                 <Upload className="w-8 h-8 text-neutral-400 mb-3" />
                 <p className="text-sm text-neutral-600 font-medium">{getPlaceholderText()}</p>
@@ -691,6 +737,14 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
             className="hidden"
           />
           <input
+            ref={videoCaptureInputRef}
+            type="file"
+            accept="video/*"
+            capture="environment"
+            onChange={handleVideoChange}
+            className="hidden"
+          />
+          <input
             ref={coverInputRef}
             type="file"
             accept="image/*"
@@ -726,16 +780,42 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
             <Button onClick={handleSubmit} disabled={form.processing || isUploading} className="w-full">
               Continuer
             </Button>
-          ) : (
+          ) : isStory ? (
+            /* Story: offer image gallery, video gallery, and direct video capture */
+            <>
+              <div className="grid grid-cols-2 gap-3">
+                <Button onClick={handleChooseImageFromGallery} className="w-full">
+                  <Image className="w-4 h-4 mr-2" />
+                  Photo
+                </Button>
+                <Button onClick={() => videoInputRef.current?.click()} className="w-full">
+                  <Film className="w-4 h-4 mr-2" />
+                  Vidéo
+                </Button>
+              </div>
+              <Button variant="outlined" onClick={handleRecordVideo} className="w-full">
+                Filmer une vidéo
+              </Button>
+            </>
+          ) : acceptVideo ? (
+            /* Reel: offer video gallery and direct video capture */
             <>
               <Button onClick={handleChooseFromGallery} className="w-full">
-                {acceptVideo ? 'Choisir une video' : 'Choisir depuis la galerie'}
+                Choisir une vidéo
               </Button>
-              {!acceptVideo && (
-                <Button variant="outlined" onClick={handleTakePhoto} className="w-full">
-                  Prendre une photo
-                </Button>
-              )}
+              <Button variant="outlined" onClick={handleRecordVideo} className="w-full">
+                Filmer une vidéo
+              </Button>
+            </>
+          ) : (
+            /* Post/Carousel: offer image gallery and camera */
+            <>
+              <Button onClick={handleChooseFromGallery} className="w-full">
+                Choisir depuis la galerie
+              </Button>
+              <Button variant="outlined" onClick={handleTakePhoto} className="w-full">
+                Prendre une photo
+              </Button>
             </>
           )}
         </div>

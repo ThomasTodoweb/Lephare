@@ -31,6 +31,6 @@ export default class RestaurantsController {
       city: data.city,
     })
 
-    return response.redirect().toRoute('onboarding.strategy')
+    return response.redirect().toRoute('onboarding.welcome')
   }
 }

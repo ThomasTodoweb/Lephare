@@ -1,7 +1,7 @@
-import { Head, useForm, Link } from '@inertiajs/react'
+import { Head, useForm, router } from '@inertiajs/react'
 import { useState } from 'react'
 import { Button } from '~/components/ui/Button'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react'
 
 interface MediaItem {
   type: 'image' | 'video'
@@ -27,9 +27,18 @@ interface Props {
       type: string
     }
   } | null
+  totalSteps?: number
+  currentStep?: number
 }
 
-export default function Description({ publication, mission }: Props) {
+const CONTENT_TYPE_LABELS: Record<string, string> = {
+  post: 'POST',
+  carousel: 'CAROUSEL',
+  reel: 'REEL',
+  story: 'STORY',
+}
+
+export default function Description({ publication, mission, totalSteps = 3, currentStep = 3 }: Props) {
   const [caption, setCaption] = useState(publication.caption)
   const [isEditing, setIsEditing] = useState(false)
   const [currentSlide, setCurrentSlide] = useState(0)
@@ -65,18 +74,38 @@ export default function Description({ publication, mission }: Props) {
   return (
     <>
       <Head title="Description - Le Phare" />
-      <div className="min-h-screen bg-white flex flex-col">
+      <div className="min-h-screen bg-background flex flex-col">
         {/* Header */}
-        <div className="px-6 pt-8 pb-4 border-b border-neutral-100">
-          <Link href={mission ? `/missions/${mission.id}/photo` : '/missions'} className="text-neutral-500 text-sm mb-4 inline-flex items-center gap-1 hover:text-neutral-700">
-            <span>←</span> Retour
-          </Link>
-          <h1 className="text-xl font-semibold text-neutral-900 mb-1">
-            Légende
-          </h1>
-          {mission && (
-            <p className="text-sm text-neutral-500">{mission.template.title}</p>
-          )}
+        <div className="px-6 pt-6 pb-4 pwa-safe-area-top">
+          <div className="flex items-center justify-between mb-4">
+            <button
+              onClick={() => router.visit(`/publications/${publication.id}/analysis`)}
+              className="p-2 -ml-2 text-neutral-500 hover:text-neutral-700"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-black text-neutral-900 uppercase tracking-tight font-display">
+              Mission du jour
+            </h1>
+            <span className="text-lg font-bold text-neutral-500">
+              {currentStep}/{totalSteps}
+            </span>
+          </div>
+        </div>
+
+        {/* Content Type Badge + Title */}
+        <div className="px-6 pb-4">
+          <div className="flex items-center gap-3">
+            <span className="bg-neutral-900 text-white px-3 py-1.5 rounded-lg text-sm font-bold font-display tracking-wide">
+              {CONTENT_TYPE_LABELS[publication.contentType] || 'POST'}
+            </span>
+            <span className="text-neutral-800 font-medium">
+              {mission?.template.title || 'Légende'}
+            </span>
+          </div>
         </div>
 
         {/* Content */}

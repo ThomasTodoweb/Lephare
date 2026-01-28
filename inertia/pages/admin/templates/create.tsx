@@ -20,7 +20,7 @@ interface Props {
 export default function AdminTemplatesCreate({ strategies, tutorials }: Props) {
   const { data, setData, post, processing, errors } = useForm({
     strategyId: strategies[0]?.id || 0,
-    type: 'post' as 'post' | 'story' | 'reel' | 'tuto',
+    type: 'post' as 'post' | 'carousel' | 'story' | 'reel' | 'engagement',
     title: '',
     contentIdea: '',
     order: 0,
@@ -34,11 +34,13 @@ export default function AdminTemplatesCreate({ strategies, tutorials }: Props) {
     post('/admin/templates')
   }
 
+  // Les tutos sont gérés séparément dans /admin/tutorials
   const typeOptions = [
     { value: 'post', label: 'Post', icon: '📸' },
+    { value: 'carousel', label: 'Carrousel', icon: '🎠' },
     { value: 'story', label: 'Story', icon: '📱' },
     { value: 'reel', label: 'Reel', icon: '🎬' },
-    { value: 'tuto', label: 'Tutoriel', icon: '📚' },
+    { value: 'engagement', label: 'Engagement', icon: '💬' },
   ]
 
   return (
@@ -116,26 +118,27 @@ export default function AdminTemplatesCreate({ strategies, tutorials }: Props) {
             />
           </div>
 
-          {/* Tutorial link (for tuto type) */}
-          {data.type === 'tuto' && (
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1">
-                Tutoriel associé
-              </label>
-              <select
-                value={data.tutorialId || ''}
-                onChange={(e) => setData('tutorialId', e.target.value ? Number(e.target.value) : null)}
-                className="w-full px-4 py-3 rounded-lg border border-neutral-200 focus:border-primary focus:ring-1 focus:ring-primary outline-none"
-              >
-                <option value="">Aucun tutoriel</option>
-                {tutorials.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.title}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
+          {/* Tutorial link */}
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-1">
+              Tutoriel associé (optionnel)
+            </label>
+            <select
+              value={data.tutorialId || ''}
+              onChange={(e) => setData('tutorialId', e.target.value ? Number(e.target.value) : null)}
+              className="w-full px-4 py-3 rounded-lg border border-neutral-200 focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+            >
+              <option value="">Aucun tutoriel</option>
+              {tutorials.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.title}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-neutral-500 mt-1">
+              Ce tutoriel sera suggéré à l'utilisateur lors de la mission
+            </p>
+          </div>
 
           {/* Required Tutorial (prerequisite) - for all types */}
           <div>

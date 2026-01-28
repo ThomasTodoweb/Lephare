@@ -14,6 +14,12 @@ const inertiaConfig = defineConfig({
     user: (ctx) => ctx.auth?.user?.serialize() ?? null,
     flash: (ctx) => ctx.session?.flashMessages?.all() ?? {},
     errors: (ctx) => ctx.session?.flashMessages?.get('errors') ?? null,
+    unreadNotificationsCount: async (ctx) => {
+      if (!ctx.auth?.user) return 0
+      const { default: InAppNotificationService } = await import('#services/in_app_notification_service')
+      const service = new InAppNotificationService()
+      return service.countUnread(ctx.auth.user.id)
+    },
   },
 
   /**

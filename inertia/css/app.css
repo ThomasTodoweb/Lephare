@@ -61,7 +61,7 @@ body {
 /* PWA-only safe area (standalone mode) - doesn't affect web browser */
 @media all and (display-mode: standalone) {
   .pwa-safe-area-top {
-    padding-top: calc(env(safe-area-inset-top, 0) + 12px);
+    padding-top: calc(env(safe-area-inset-top, 0) + 24px);
   }
 }
 

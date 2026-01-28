@@ -1,6 +1,8 @@
 import type { HttpContext } from '@adonisjs/core/http'
+import { DateTime } from 'luxon'
 import MissionService from '#services/mission_service'
 import GamificationService from '#services/gamification_service'
+import LevelService from '#services/level_service'
 import PushService from '#services/push_service'
 import PushSubscription from '#models/push_subscription'
 import Mission from '#models/mission'
@@ -41,6 +43,10 @@ export default class DashboardController {
       streakInfo.isAtRisk
     )
 
+    // Get level info
+    const levelService = new LevelService()
+    const levelInfo = await levelService.getLevelInfo(user.id)
+
     // Check if user has push notifications enabled
     const hasActiveSubscription = await PushSubscription.query()
       .where('user_id', user.id)
@@ -51,11 +57,21 @@ export default class DashboardController {
     const pushService = new PushService()
     const notificationsConfigured = pushService.isConfigured()
 
-    // Get all missions for calendar (no date filter - show all user missions)
+    // Calendar date range configuration
+    // Note: MissionCalendar component exists but is not currently imported in dashboard.tsx
+    // Keeping this query for future calendar feature activation - data is sent to frontend
+    const CALENDAR_RANGE_DAYS = 60
+    const calendarStartDate = DateTime.utc().startOf('day')
+    const calendarRangeStart = calendarStartDate.minus({ days: CALENDAR_RANGE_DAYS })
+    const calendarRangeEnd = calendarStartDate.plus({ days: CALENDAR_RANGE_DAYS })
+
     const calendarMissions = await Mission.query()
       .where('user_id', user.id)
+      .where('assigned_at', '>=', calendarRangeStart.toSQL())
+      .where('assigned_at', '<=', calendarRangeEnd.toSQL())
       .preload('missionTemplate')
       .orderBy('assigned_at', 'asc')
+      .limit(CALENDAR_RANGE_DAYS * 2)
 
     // Get planned future mission days based on rhythm
     const plannedFutureDays = missionService.getPlannedMissionDays(restaurant.publicationRhythm, 60)
@@ -113,6 +129,7 @@ export default class DashboardController {
         title: m.missionTemplate?.title || 'Mission',
       })),
       plannedFutureDays: plannedFutureDays.map((d) => d.setZone('Europe/Paris').toISODate()),
+      level: levelInfo,
     })
   }
 

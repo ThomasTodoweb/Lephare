@@ -23,7 +23,7 @@ rsync -avz --delete \
 # 3. Installer dépendances production et restart
 echo ""
 echo "🔧 [3/4] Installation dépendances et redémarrage..."
-ssh $SERVER "cd $APP_PATH/build && npm ci --omit=dev && pm2 restart lephare"
+ssh $SERVER "cd $APP_PATH/build && npm ci --omit=dev && ln -sf $APP_PATH/storage $APP_PATH/build/storage && pm2 restart lephare"
 
 # 4. Migrations
 echo ""

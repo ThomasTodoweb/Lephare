@@ -1,12 +1,99 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import PushService from '#services/push_service'
+import InAppNotificationService from '#services/in_app_notification_service'
+import User from '#models/user'
 
 export default class NotificationsController {
   /**
-   * Notifications page
+   * Notifications page - affiche les notifications in-app
    */
-  async index({ inertia }: HttpContext) {
-    return inertia.render('notifications/index')
+  async index({ inertia, auth }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const notificationService = new InAppNotificationService()
+
+    const notifications = await notificationService.getForUser(user.id, { limit: 50 })
+    const unreadCount = await notificationService.countUnread(user.id)
+
+    return inertia.render('notifications/index', {
+      notifications: notifications.map((n) => ({
+        id: n.id,
+        title: n.title,
+        body: n.body,
+        type: n.type,
+        data: n.data,
+        isRead: n.isRead,
+        createdAt: n.createdAt.toISO(),
+      })),
+      unreadCount,
+    })
+  }
+
+  /**
+   * Récupérer les notifications (API JSON)
+   */
+  async list({ response, auth }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const notificationService = new InAppNotificationService()
+
+    const notifications = await notificationService.getForUser(user.id, { limit: 50 })
+    const unreadCount = await notificationService.countUnread(user.id)
+
+    return response.json({
+      notifications: notifications.map((n) => ({
+        id: n.id,
+        title: n.title,
+        body: n.body,
+        type: n.type,
+        data: n.data,
+        isRead: n.isRead,
+        createdAt: n.createdAt.toISO(),
+      })),
+      unreadCount,
+    })
+  }
+
+  /**
+   * Marquer une notification comme lue
+   */
+  async markAsRead({ params, response, auth }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const notificationService = new InAppNotificationService()
+
+    const success = await notificationService.markAsRead(params.id, user.id)
+
+    if (!success) {
+      return response.status(404).json({ error: 'Notification non trouvée' })
+    }
+
+    return response.json({ success: true })
+  }
+
+  /**
+   * Marquer toutes les notifications comme lues
+   */
+  async markAllAsRead({ response, auth }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const notificationService = new InAppNotificationService()
+
+    const count = await notificationService.markAllAsRead(user.id)
+
+    return response.json({ success: true, count })
+  }
+
+  /**
+   * Supprimer une notification
+   */
+  async deleteNotification({ params, response, auth }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const notificationService = new InAppNotificationService()
+
+    const success = await notificationService.delete(params.id, user.id)
+
+    if (!success) {
+      return response.status(404).json({ error: 'Notification non trouvée' })
+    }
+
+    return response.json({ success: true })
   }
 
   /**
@@ -41,7 +128,12 @@ export default class NotificationsController {
     }
 
     try {
-      await pushService.subscribe(user.id, subscription, reminderTime || '10:00')
+      const time = reminderTime || '10:00'
+      await pushService.subscribe(user.id, subscription, time)
+
+      // Synchronize email notification time with push notification time
+      await User.query().where('id', user.id).update({ emailNotificationTime: time })
+
       return response.json({ success: true, message: 'Notifications activées !' })
     } catch (error) {
       console.error('NotificationsController: Subscribe error', error)
@@ -85,6 +177,9 @@ export default class NotificationsController {
     const pushService = new PushService()
     await pushService.updateReminderTime(user.id, reminderTime)
 
+    // Synchronize email notification time with push notification time
+    await User.query().where('id', user.id).update({ emailNotificationTime: reminderTime })
+
     return response.json({ success: true, message: 'Heure de rappel mise à jour' })
   }
 
@@ -103,6 +198,7 @@ export default class NotificationsController {
       title: 'Test Le Phare 🔥',
       body: 'Ceci est une notification test !',
       url: '/dashboard',
+      type: 'general',
     })
 
     return response.json({

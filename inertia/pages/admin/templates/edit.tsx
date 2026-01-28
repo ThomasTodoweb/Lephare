@@ -28,13 +28,14 @@ interface ContentIdea {
 interface Template {
   id: number
   strategyId: number
-  type: 'post' | 'story' | 'reel' | 'tuto'
+  type: 'post' | 'carousel' | 'story' | 'reel' | 'engagement'
   title: string
   contentIdea: string
   order: number
   isActive: boolean
   tutorialId: number | null
   requiredTutorialId: number | null
+  missionsCount: number
   ideas?: ContentIdea[]
 }
 
@@ -293,11 +294,13 @@ export default function AdminTemplatesEdit({ template, strategies, tutorials }: 
     return mediaType === 'video'
   }
 
+  // Les tutos sont gérés séparément dans /admin/tutorials
   const typeOptions = [
     { value: 'post', label: 'Post', icon: '📸' },
+    { value: 'carousel', label: 'Carrousel', icon: '🎠' },
     { value: 'story', label: 'Story', icon: '📱' },
     { value: 'reel', label: 'Reel', icon: '🎬' },
-    { value: 'tuto', label: 'Tutoriel', icon: '📚' },
+    { value: 'engagement', label: 'Engagement', icon: '💬' },
   ]
 
   return (
@@ -307,6 +310,23 @@ export default function AdminTemplatesEdit({ template, strategies, tutorials }: 
       <Link href="/admin/templates" className="text-primary text-sm mb-4 inline-block">
         ← Retour aux templates
       </Link>
+
+      {/* Stats info card */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+        <div className="flex items-center gap-3">
+          <div className="bg-blue-100 rounded-full p-2">
+            <span className="text-lg">📊</span>
+          </div>
+          <div>
+            <p className="font-medium text-blue-900">
+              {template.missionsCount} mission{template.missionsCount !== 1 ? 's' : ''} utilisent ce template
+            </p>
+            <p className="text-sm text-blue-700">
+              Ce nombre est calcule automatiquement et ne peut pas etre modifie manuellement.
+            </p>
+          </div>
+        </div>
+      </div>
 
       <Card>
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -375,26 +395,27 @@ export default function AdminTemplatesEdit({ template, strategies, tutorials }: 
             />
           </div>
 
-          {/* Tutorial link (for tuto type) */}
-          {data.type === 'tuto' && (
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1">
-                Tutoriel associe
-              </label>
-              <select
-                value={data.tutorialId || ''}
-                onChange={(e) => setData('tutorialId', e.target.value ? Number(e.target.value) : null)}
-                className="w-full px-4 py-3 rounded-lg border border-neutral-200 focus:border-primary focus:ring-1 focus:ring-primary outline-none"
-              >
-                <option value="">Aucun tutoriel</option>
-                {tutorials.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.title}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
+          {/* Tutorial link */}
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-1">
+              Tutoriel associé (optionnel)
+            </label>
+            <select
+              value={data.tutorialId || ''}
+              onChange={(e) => setData('tutorialId', e.target.value ? Number(e.target.value) : null)}
+              className="w-full px-4 py-3 rounded-lg border border-neutral-200 focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+            >
+              <option value="">Aucun tutoriel</option>
+              {tutorials.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.title}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-neutral-500 mt-1">
+              Ce tutoriel sera suggéré à l'utilisateur lors de la mission
+            </p>
+          </div>
 
           {/* Required Tutorial (prerequisite) - for all types */}
           <div>

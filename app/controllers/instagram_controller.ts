@@ -112,7 +112,7 @@ export default class InstagramController {
 
     if (!connectUrl) {
       logger.error({ userId: user.id }, 'Failed to get connect URL from Late')
-      session.flash('error', 'Impossible de se connecter a Late. Veuillez reessayer.')
+      session.flash('error', 'Service temporairement indisponible. Contactez le support si le problème persiste.')
       return response.redirect(errorRedirect)
     }
 

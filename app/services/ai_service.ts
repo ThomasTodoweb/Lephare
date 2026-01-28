@@ -202,6 +202,70 @@ export default class AIService {
   }
 
   /**
+   * Claude vision completion with multiple images (for video analysis)
+   */
+  private async claudeMultiImageCompletion(
+    systemPrompt: string,
+    userPrompt: string,
+    imagesBase64: string[],
+    imageMimeType: string,
+    maxTokens: number
+  ): Promise<string | null> {
+    if (!this.claudeApiKey) return null
+
+    try {
+      // Build content array with all images
+      const content: Array<
+        | { type: 'image'; source: { type: 'base64'; media_type: string; data: string } }
+        | { type: 'text'; text: string }
+      > = []
+
+      for (const imageBase64 of imagesBase64) {
+        content.push({
+          type: 'image',
+          source: {
+            type: 'base64',
+            media_type: imageMimeType,
+            data: imageBase64,
+          },
+        })
+      }
+
+      content.push({
+        type: 'text',
+        text: userPrompt,
+      })
+
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': this.claudeApiKey,
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify({
+          model: 'claude-3-5-haiku-latest',
+          max_tokens: maxTokens,
+          system: systemPrompt,
+          messages: [{ role: 'user', content }],
+        }),
+      })
+
+      if (!response.ok) {
+        const error = await response.text()
+        console.error('AIService: Claude Multi-Image API error', error)
+        return null
+      }
+
+      const data = (await response.json()) as { content?: { text?: string }[] }
+      return data.content?.[0]?.text?.trim() || null
+    } catch (error) {
+      console.error('AIService: Claude Multi-Image request failed', error)
+      return null
+    }
+  }
+
+  /**
    * Generate a description for an Instagram post
    * If an image is provided, Claude will analyze it for better context
    */
@@ -211,17 +275,34 @@ export default class AIService {
       return null
     }
 
-    const systemPrompt = `Tu es un expert en marketing digital pour restaurants français. Tu écris des descriptions Instagram COURTES, PERCUTANTES et AUTHENTIQUES.
+    const systemPrompt = `Tu es un créateur de contenu Instagram pour restaurants, expert du ton 2024-2026 : authentique, direct, zéro bullshit.
 
-RÈGLES STRICTES:
-- Maximum 2-3 phrases courtes et impactantes
-- Ton décontracté, comme si tu parlais à un ami
-- EXACTEMENT 3 hashtags à la fin (pas plus, pas moins)
-- Un hashtag DOIT contenir le nom de la ville (ex: #Lyon, #Bordeaux, #ParisFood)
-- 1-2 emojis maximum, bien placés
-- Pas de phrases commerciales ou trop vendeuses
-- Si tu vois l'image, décris ce que tu vois de manière appétissante
-- Encourage l'interaction de façon naturelle (question simple ou invitation)`
+VIBE OBLIGATOIRE :
+- Parle comme un pote, pas comme une pub
+- Phrases courtes, punchy, parfois incomplètes genre "Ce moment où..." ou "Quand tu..."
+- Utilise les codes actuels : "no caption needed", "iykyk", "POV:", "main character energy", "ate and left no crumbs"
+- Emojis : 0 à 2 max, jamais à la suite, jamais en fin de phrase
+- Tutoie TOUJOURS
+
+STRUCTURE :
+- Hook en première ligne (question, provoc légère, statement)
+- 1-2 phrases max après
+- EXACTEMENT 2-3 hashtags à la fin (1 hashtag ville obligatoire)
+
+INTERDIT :
+- "Venez découvrir", "N'hésitez pas", "Notre équipe", "Régalez-vous"
+- Phrases de pub type "Le meilleur X de la ville"
+- Plus de 2 emojis
+- Phrases longues et chiantes
+- Méta-commentaires ("Voici...", "Je vais...")
+
+EXEMPLES DU BON TON :
+- "Ce gratin qui fait oublier tous tes problèmes. Change my mind 🧀 #Lyon #ComfortFood"
+- "POV: t'as dit 'juste un verre' et te voilà. #Bordeaux #Apero"
+- "La team en cuisine à 6h. Pendant que vous dormez. #Paris #BehindTheScenes"
+- "Quand le plat arrive et que personne parle pendant 30 secondes. #Marseille #FoodPorn"
+
+OUTPUT : Retourne UNIQUEMENT la légende, rien d'autre. Commence direct par le texte.`
 
     const userPrompt = this.buildPrompt(context)
 
@@ -247,31 +328,26 @@ RÈGLES STRICTES:
    * Build the prompt based on context
    */
   private buildPrompt(context: DescriptionContext): string {
-    let prompt = `Écris une description Instagram pour ce post.
+    let prompt = `Écris une légende Instagram style 2026.
 
-CONTEXTE DU RESTAURANT:`
-
-    if (context.restaurantName) {
-      prompt += `\n- Nom: ${context.restaurantName}`
-    }
-
-    if (context.restaurantType) {
-      prompt += `\n- Type: ${context.restaurantType}`
-    }
-
-    if (context.restaurantCity) {
-      prompt += `\n- Ville: ${context.restaurantCity}`
-    }
+RESTO:`
+    if (context.restaurantName) prompt += ` ${context.restaurantName}`
+    if (context.restaurantType) prompt += ` (${context.restaurantType})`
+    if (context.restaurantCity) prompt += ` à ${context.restaurantCity}`
 
     prompt += `
 
-MISSION:
-- Titre: ${context.missionTitle}
-- Type de contenu: ${context.missionType}
-- Idée: ${context.contentIdea}`
+CONTENU: ${context.missionType} - ${context.missionTitle}
+THÈME: ${context.contentIdea}`
 
     if (context.imageBase64) {
-      prompt += `\n\nAnalyse l'image ci-jointe et décris ce que tu vois pour créer une description authentique et appétissante.`
+      prompt += `
+
+Regarde l'image et capte l'ambiance. Écris une légende qui matche le vibe, pas une description littérale.`
+    } else {
+      prompt += `
+
+Écris une légende qui matche ce thème, ton punchy et authentique.`
     }
 
     return prompt
@@ -394,58 +470,77 @@ Donne un feedback personnalisé et 1-2 conseils pour la semaine suivante.`
 
   /**
    * Analyze media quality for Instagram publication
-   * Returns a score (green/yellow/red) and feedback
+   * Returns a score (green/yellow/red) and feedback from Popote
    */
   async analyzeMediaQuality(
     imageBase64: string,
     imageMimeType: string,
-    contentType: 'post' | 'story' | 'reel' | 'carousel'
+    _contentType: 'post' | 'story' | 'reel' | 'carousel',
+    restaurantName?: string,
+    restaurantType?: string,
+    missionTitle?: string,
+    missionTheme?: string
   ): Promise<MediaQualityResult> {
     // Default response if AI is not configured
     if (!this.claudeApiKey) {
       console.log('AIService: No Claude API key, skipping quality analysis')
       return {
         score: 'green',
-        feedback: 'Analyse non disponible, vous pouvez continuer.',
+        feedback: 'Analyse non disponible, tu peux continuer !',
         details: 'AI not configured',
       }
     }
 
-    const contentTypeLabels: Record<string, string> = {
-      post: 'un post Instagram',
-      story: 'une story Instagram',
-      reel: 'un reel Instagram',
-      carousel: 'un carrousel Instagram',
-    }
+    const restaurantContext = restaurantName
+      ? `\nRESTAURANT : ${restaurantName}${restaurantType ? ` (${restaurantType})` : ''}`
+      : ''
 
-    const systemPrompt = `Tu es un expert en contenu Instagram pour restaurants.
-Analyse cette image et évalue sa qualité pour publication sur Instagram.
+    const missionContext = missionTitle
+      ? `\nMISSION : "${missionTitle}"${missionTheme ? ` - Thème : "${missionTheme}"` : ''}`
+      : ''
 
-CRITÈRES D'ÉVALUATION :
-1. Luminosité : pas trop sombre (< 20% de l'image), pas surexposée
-2. Netteté : l'image doit être nette, pas floue
-3. Cadrage : le sujet principal doit être visible et bien cadré
-4. Qualité professionnelle : pas de doigt visible, pas de reflet indésirable, pas d'élément perturbateur
-5. Appétence : pour un restaurant, l'image doit donner envie (plats, ambiance, équipe)
+    const systemPrompt = `Tu es Popote, un ami qui donne son avis honnête avant qu'on poste sur Instagram.
+${restaurantContext}${missionContext}
 
-SCORING STRICT :
-- VERT (green) : Image de bonne qualité, prête à publier. Répond aux standards Instagram.
-- JAUNE (yellow) : Quelques défauts mineurs mais l'image reste acceptable. Avertir l'utilisateur.
-- ROUGE (red) : Problèmes majeurs qui nuiront à l'image du restaurant. UNIQUEMENT pour :
-  * Image très floue ou illisible
-  * Image quasi entièrement sombre ou surexposée
-  * Sujet complètement hors cadre
-  * Contenu inapproprié ou non professionnel évident
+CONTEXTE : C'est le compte Instagram d'un RESTAURANT.
 
-IMPORTANT : Sois bienveillant dans ton feedback. Le but est d'aider, pas de décourager.
-La majorité des images devraient être vertes ou jaunes. Le rouge est réservé aux cas vraiment problématiques.
+VÉRIFICATIONS À FAIRE (dans l'ordre) :
 
-RÉPONSE OBLIGATOIRE en JSON valide :
-{"score": "green" | "yellow" | "red", "feedback": "Une phrase courte et encourageante pour l'utilisateur", "details": "Analyse technique détaillée"}`
+1. QUALITÉ TECHNIQUE
+   - Floue, très sombre, inutilisable → red
+   - Un peu sombre ou cadrage moyen → yellow
 
-    const userPrompt = `Analyse cette image destinée à ${contentTypeLabels[contentType] || 'une publication Instagram'}.
+2. PERTINENCE RESTAURANT
+   - Pas de lien visible avec un resto (animaux seuls, paysages, selfies perso) → yellow
+   - Contenu lié au resto (plats, cuisine, équipe, ambiance, service) → OK
 
-Évalue sa qualité et donne ton verdict avec un feedback constructif et bienveillant.`
+3. COHÉRENCE AVEC LA MISSION (si mission indiquée)
+   - Si la mission demande un type de contenu et la photo montre autre chose → yellow
+   - Exemple : mission "plat du jour" mais photo de l'extérieur du resto → yellow
+
+TON STYLE :
+- Parle normalement, comme un pote calme
+- Pas de surexcitation ("oh j'adore !", "trop bien !", "MDR")
+- 1-2 phrases max, direct
+
+SCORING :
+- green : Qualité OK + pertinent resto + cohérent avec la mission
+- yellow : Problème de qualité OU pas lié au resto OU pas cohérent avec la mission
+- red : Qualité vraiment mauvaise
+
+EXEMPLES :
+- green: "Ça donne faim, la lumière est jolie. Tu peux poster."
+- yellow: "C'est un peu sombre, on voit pas bien les détails."
+- yellow: "Sympa mais je vois pas le rapport avec ton resto."
+- yellow: "La mission c'était le plat du jour, là c'est plutôt l'ambiance générale non ?"
+- red: "C'est trop flou, refais-la."
+
+FORMAT RÉPONSE (JSON uniquement) :
+{"score": "green|yellow|red", "feedback": "ton avis", "details": "note technique"}`
+
+    const userPrompt = missionTitle
+      ? `Je vais poster cette photo sur l'Instagram de mon resto. La mission c'est "${missionTitle}". T'en penses quoi ?`
+      : `Je vais poster cette photo sur l'Instagram de mon resto. T'en penses quoi ?`
 
     try {
       const result = await this.claudeVisionCompletion(
@@ -502,7 +597,140 @@ RÉPONSE OBLIGATOIRE en JSON valide :
       console.error('AIService: Quality analysis failed', error)
       return {
         score: 'green',
-        feedback: 'Analyse temporairement indisponible, vous pouvez continuer.',
+        feedback: 'Analyse temporairement indisponible, tu peux continuer.',
+        details: String(error),
+      }
+    }
+  }
+
+  /**
+   * Analyze video quality using multiple frames
+   * Returns a score (green/yellow/red) and feedback from Popote
+   */
+  async analyzeVideoQuality(
+    framesBase64: string[],
+    imageMimeType: string,
+    contentType: 'story' | 'reel',
+    restaurantName?: string,
+    restaurantType?: string,
+    missionTitle?: string,
+    missionTheme?: string
+  ): Promise<MediaQualityResult> {
+    if (!this.claudeApiKey) {
+      return {
+        score: 'green',
+        feedback: 'Ta vidéo est prête !',
+        details: 'AI not configured',
+      }
+    }
+
+    const contentLabel = contentType === 'story' ? 'story' : 'reel'
+    const restaurantContext = restaurantName
+      ? `\nRESTAURANT : ${restaurantName}${restaurantType ? ` (${restaurantType})` : ''}`
+      : ''
+
+    const missionContext = missionTitle
+      ? `\nMISSION : "${missionTitle}"${missionTheme ? ` - Thème : "${missionTheme}"` : ''}`
+      : ''
+
+    const systemPrompt = `Tu es Popote, un ami qui donne son avis honnête avant qu'on poste sur Instagram.
+${restaurantContext}${missionContext}
+
+CONTEXTE TECHNIQUE (ne pas mentionner) :
+Tu reçois ${framesBase64.length} images extraites d'UNE SEULE VIDÉO ${contentLabel.toUpperCase()}.
+Parle de "ta vidéo", jamais de "captures" ou "images".
+
+CONTEXTE : C'est le compte Instagram d'un RESTAURANT.
+
+VÉRIFICATIONS À FAIRE (dans l'ordre) :
+
+1. QUALITÉ TECHNIQUE
+   - Floue, très sombre, incompréhensible → red
+   - Un peu sombre ou instable → yellow
+
+2. PERTINENCE RESTAURANT
+   - Pas de lien visible avec un resto (animaux seuls, paysages, vidéos perso) → yellow
+   - Contenu lié au resto (plats, cuisine, équipe, ambiance, service) → OK
+
+3. COHÉRENCE AVEC LA MISSION (si mission indiquée)
+   - Si la mission demande un type de contenu et la vidéo montre autre chose → yellow
+   - Exemple : mission "plat du jour" mais vidéo de l'extérieur → yellow
+
+TON STYLE :
+- Parle normalement, comme un pote calme
+- Pas de surexcitation
+- 1-2 phrases max, direct
+
+SCORING :
+- green : Qualité OK + pertinent resto + cohérent avec la mission
+- yellow : Problème de qualité OU pas lié au resto OU pas cohérent avec la mission
+- red : Qualité vraiment mauvaise
+
+EXEMPLES :
+- green: "C'est dynamique, on voit bien l'ambiance cuisine. Tu peux poster."
+- yellow: "C'est un peu sombre, on perd les détails."
+- yellow: "Je vois pas trop le rapport avec ton resto."
+- yellow: "La mission c'était le plat du jour, là c'est autre chose non ?"
+- red: "C'est trop flou, refais-la."
+
+FORMAT RÉPONSE (JSON uniquement) :
+{"score": "green|yellow|red", "feedback": "ton avis", "details": "note technique"}`
+
+    const userPrompt = missionTitle
+      ? `Je vais poster cette vidéo en ${contentLabel} sur l'Instagram de mon resto. La mission c'est "${missionTitle}". T'en penses quoi ?`
+      : `Je vais poster cette vidéo en ${contentLabel} sur l'Instagram de mon resto. T'en penses quoi ?`
+
+    try {
+      const result = await this.claudeMultiImageCompletion(
+        systemPrompt,
+        userPrompt,
+        framesBase64,
+        imageMimeType,
+        200
+      )
+
+      if (!result) {
+        return {
+          score: 'green',
+          feedback: 'Ta vidéo est prête !',
+          details: 'No API response',
+        }
+      }
+
+      try {
+        const jsonMatch = result.match(/\{[\s\S]*\}/)
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]) as {
+            score?: string
+            feedback?: string
+            details?: string
+          }
+
+          const validScores = ['green', 'yellow', 'red']
+          const score = validScores.includes(parsed.score || '')
+            ? (parsed.score as 'green' | 'yellow' | 'red')
+            : 'green'
+
+          return {
+            score,
+            feedback: parsed.feedback || 'Vidéo analysée.',
+            details: parsed.details,
+          }
+        }
+      } catch (parseError) {
+        console.error('AIService: Failed to parse video analysis JSON', parseError, result)
+      }
+
+      return {
+        score: 'green',
+        feedback: 'Ta vidéo est prête !',
+        details: `Raw: ${result}`,
+      }
+    } catch (error) {
+      console.error('AIService: Video analysis failed', error)
+      return {
+        score: 'green',
+        feedback: 'Ta vidéo est prête !',
         details: String(error),
       }
     }

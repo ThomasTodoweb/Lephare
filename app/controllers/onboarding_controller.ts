@@ -3,14 +3,19 @@ import Strategy from '#models/strategy'
 import { PUBLICATION_RHYTHMS } from '#models/restaurant'
 import { strategyValidator, rhythmValidator } from '#validators/onboarding'
 import LateService from '#services/late_service'
+import env from '#start/env'
 
-// Onboarding steps (5 total)
+// Onboarding steps (6 total)
 // 1. Restaurant type (handled by RestaurantsController)
-// 2. Strategy selection
-// 3. Publication rhythm
-// 4. Instagram connection
-// 5. PWA install (final step - completes onboarding)
+// 2. Welcome video (formation)
+// 3. Strategy selection
+// 4. Publication rhythm
+// 5. Instagram connection
+// 6. PWA install (final step - completes onboarding)
 // Note: Notifications are now handled via a banner on the dashboard (only for PWA users)
+
+// Configurable welcome video URL (can be set in .env)
+const WELCOME_VIDEO_URL = env.get('WELCOME_VIDEO_URL', 'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ')
 
 export default class OnboardingController {
   private lateService = new LateService()
@@ -18,20 +23,61 @@ export default class OnboardingController {
   /**
    * Get current onboarding step for a user
    */
-  private async getCurrentStep(user: { id: number }, restaurant: { strategyId: number | null; publicationRhythm: string | null; onboardingCompleted: boolean }) {
-    if (!restaurant.strategyId) return 2
-    if (!restaurant.publicationRhythm) return 3
+  private async getCurrentStep(user: { id: number }, restaurant: { strategyId: number | null; publicationRhythm: string | null; onboardingCompleted: boolean; welcomeVideoSeen?: boolean }) {
+    if (!restaurant.welcomeVideoSeen) return 2
+    if (!restaurant.strategyId) return 3
+    if (!restaurant.publicationRhythm) return 4
 
     // Check Instagram via Late API
     const instagramAccount = await this.lateService.getInstagramAccountForUser(user.id)
-    if (!instagramAccount) return 4
+    if (!instagramAccount) return 5
 
-    // Step 5 (PWA) is the final step
-    return 5
+    // Step 6 (PWA) is the final step
+    return 6
   }
 
   /**
-   * Show strategy selection page (Step 2)
+   * Show welcome video page (Step 2)
+   */
+  async showWelcome({ inertia, auth, response }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const restaurant = await user.related('restaurant').query().first()
+
+    if (!restaurant) {
+      return response.redirect().toRoute('restaurant.type')
+    }
+
+    if (restaurant.onboardingCompleted) {
+      return response.redirect().toRoute('dashboard')
+    }
+
+    return inertia.render('onboarding/welcome', {
+      step: 2,
+      totalSteps: 6,
+      videoUrl: WELCOME_VIDEO_URL,
+    })
+  }
+
+  /**
+   * Continue from welcome video
+   */
+  async continueWelcome({ response, auth }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const restaurant = await user.related('restaurant').query().first()
+
+    if (!restaurant) {
+      return response.redirect().toRoute('restaurant.type')
+    }
+
+    // Mark welcome video as seen
+    restaurant.welcomeVideoSeen = true
+    await restaurant.save()
+
+    return response.redirect().toRoute('onboarding.strategy')
+  }
+
+  /**
+   * Show strategy selection page (Step 3)
    */
   async showStrategy({ inertia, auth, response }: HttpContext) {
     const user = auth.getUserOrFail()
@@ -45,6 +91,11 @@ export default class OnboardingController {
       return response.redirect().toRoute('dashboard')
     }
 
+    // Redirect to welcome if not seen
+    if (!restaurant.welcomeVideoSeen) {
+      return response.redirect().toRoute('onboarding.welcome')
+    }
+
     const strategies = await Strategy.query().where('is_active', true)
 
     return inertia.render('onboarding/strategy', {
@@ -56,8 +107,8 @@ export default class OnboardingController {
         icon: s.icon,
       })),
       currentStrategyId: restaurant.strategyId,
-      step: 2,
-      totalSteps: 5,
+      step: 3,
+      totalSteps: 6,
     })
   }
 
@@ -83,7 +134,7 @@ export default class OnboardingController {
   }
 
   /**
-   * Show publication rhythm selection page (Step 3)
+   * Show publication rhythm selection page (Step 4)
    */
   async showRhythm({ inertia, auth, response }: HttpContext) {
     const user = auth.getUserOrFail()
@@ -104,8 +155,8 @@ export default class OnboardingController {
     return inertia.render('onboarding/rhythm', {
       rhythms: PUBLICATION_RHYTHMS,
       currentRhythm: restaurant.publicationRhythm,
-      step: 3,
-      totalSteps: 5,
+      step: 4,
+      totalSteps: 6,
     })
   }
 
@@ -163,8 +214,8 @@ export default class OnboardingController {
       isConnected: true,
       instagramUsername: instagramAccount.username,
       instagramProfilePicture: instagramAccount.profilePictureUrl || null,
-      step: 4,
-      totalSteps: 5,
+      step: 5,
+      totalSteps: 6,
     })
   }
 
@@ -187,8 +238,8 @@ export default class OnboardingController {
 
     return inertia.render('onboarding/instagram-error', {
       errorMessage,
-      step: 4,
-      totalSteps: 5,
+      step: 5,
+      totalSteps: 6,
     })
   }
 
@@ -222,7 +273,7 @@ export default class OnboardingController {
   }
 
   /**
-   * Show PWA install page (Step 5 - Final step)
+   * Show PWA install page (Step 6 - Final step)
    */
   async showPwa({ inertia, auth, response }: HttpContext) {
     const user = auth.getUserOrFail()
@@ -237,8 +288,8 @@ export default class OnboardingController {
     }
 
     return inertia.render('onboarding/pwa', {
-      step: 5,
-      totalSteps: 5,
+      step: 6,
+      totalSteps: 6,
     })
   }
 
@@ -292,15 +343,15 @@ export default class OnboardingController {
       return response.json({
         completed: false,
         currentStep: 1,
-        totalSteps: 5,
+        totalSteps: 6,
       })
     }
 
     if (restaurant.onboardingCompleted) {
       return response.json({
         completed: true,
-        currentStep: 5,
-        totalSteps: 5,
+        currentStep: 6,
+        totalSteps: 6,
       })
     }
 
@@ -309,7 +360,8 @@ export default class OnboardingController {
     return response.json({
       completed: false,
       currentStep,
-      totalSteps: 5,
+      totalSteps: 6,
+      hasWelcomeVideoSeen: !!restaurant.welcomeVideoSeen,
       hasStrategy: !!restaurant.strategyId,
       hasRhythm: !!restaurant.publicationRhythm,
     })

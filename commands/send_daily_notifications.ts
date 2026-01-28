@@ -44,10 +44,15 @@ export default class SendDailyNotifications extends BaseCommand {
         const mission = await missionService.getTodayMission(sub.userId)
 
         if (mission && mission.status === 'pending') {
+          // Note: createInApp is false because in-app notifications are now handled
+          // by the separate notifications:send-daily-in-app command
           const result = await pushService.sendToUser(sub.userId, {
             title: 'Mission du jour 🔥',
             body: mission.missionTemplate.title,
             url: '/missions',
+            type: 'mission_reminder',
+            data: { missionId: mission.id },
+            createInApp: false, // In-app handled by separate cron
           })
 
           sent += result.sent

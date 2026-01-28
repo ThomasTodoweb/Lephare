@@ -1,5 +1,7 @@
 import env from '#start/env'
 import PushSubscription from '#models/push_subscription'
+import InAppNotificationService from '#services/in_app_notification_service'
+import type { NotificationType } from '#models/in_app_notification'
 import webpush from 'web-push'
 
 interface PushPayload {
@@ -8,6 +10,9 @@ interface PushPayload {
   icon?: string
   url?: string
   tag?: string
+  type?: NotificationType
+  data?: Record<string, unknown>
+  createInApp?: boolean
 }
 
 export default class PushService {
@@ -92,8 +97,26 @@ export default class PushService {
 
   /**
    * Send push notification to a specific user
+   * Also creates an in-app notification by default
    */
   async sendToUser(userId: number, payload: PushPayload): Promise<{ sent: number; failed: number }> {
+    // Créer une notification in-app (par défaut true)
+    const shouldCreateInApp = payload.createInApp !== false
+    if (shouldCreateInApp) {
+      try {
+        const inAppService = new InAppNotificationService()
+        await inAppService.create({
+          userId,
+          title: payload.title,
+          body: payload.body,
+          type: payload.type || 'general',
+          data: payload.data || (payload.url ? { url: payload.url } : undefined),
+        })
+      } catch (error) {
+        console.error('PushService: Failed to create in-app notification', error)
+      }
+    }
+
     const subscriptions = await PushSubscription.query()
       .where('user_id', userId)
       .where('is_active', true)

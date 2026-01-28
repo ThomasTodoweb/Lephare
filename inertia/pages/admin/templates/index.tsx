@@ -7,7 +7,7 @@ interface Template {
   id: number
   strategyId: number
   strategyName: string
-  type: 'post' | 'story' | 'reel' | 'tuto'
+  type: 'post' | 'carousel' | 'story' | 'reel' | 'engagement'
   title: string
   contentIdea: string
   order: number
@@ -28,20 +28,33 @@ interface Props {
   templates: Template[]
   strategies: Strategy[]
   currentFilter: string | null
+  currentTypeFilter: string | null
 }
 
+// Les tutos sont gérés séparément dans /admin/tutorials
 const typeLabels: Record<string, { label: string; icon: string; color: string }> = {
   post: { label: 'Post', icon: '📸', color: 'bg-blue-100 text-blue-700' },
+  carousel: { label: 'Carrousel', icon: '🎠', color: 'bg-green-100 text-green-700' },
   story: { label: 'Story', icon: '📱', color: 'bg-purple-100 text-purple-700' },
   reel: { label: 'Reel', icon: '🎬', color: 'bg-red-100 text-red-700' },
-  tuto: { label: 'Tuto', icon: '📚', color: 'bg-green-100 text-green-700' },
+  engagement: { label: 'Engagement', icon: '💬', color: 'bg-amber-100 text-amber-700' },
 }
 
-export default function AdminTemplatesIndex({ templates, strategies, currentFilter }: Props) {
+export default function AdminTemplatesIndex({ templates, strategies, currentFilter, currentTypeFilter }: Props) {
   const [deleting, setDeleting] = useState<number | null>(null)
 
   const handleFilterChange = (strategyId: string) => {
-    router.get('/admin/templates', strategyId ? { strategy: strategyId } : {}, { preserveState: true })
+    const params: Record<string, string> = {}
+    if (strategyId) params.strategy = strategyId
+    if (currentTypeFilter) params.type = currentTypeFilter
+    router.get('/admin/templates', params, { preserveState: true })
+  }
+
+  const handleTypeFilterChange = (type: string) => {
+    const params: Record<string, string> = {}
+    if (currentFilter) params.strategy = currentFilter
+    if (type) params.type = type
+    router.get('/admin/templates', params, { preserveState: true })
   }
 
   const handleToggle = (id: number) => {
@@ -68,27 +81,55 @@ export default function AdminTemplatesIndex({ templates, strategies, currentFilt
       <Head title="Templates - Admin Le Phare" />
 
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-        {/* Filter */}
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-neutral-500">Filtrer par stratégie:</span>
-          <select
-            value={currentFilter || ''}
-            onChange={(e) => handleFilterChange(e.target.value)}
-            className="px-3 py-2 rounded-lg border border-neutral-200 text-sm"
-          >
-            <option value="">Toutes</option>
-            {strategies.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
         <Link href="/admin/templates/create">
           <Button>+ Nouveau template</Button>
         </Link>
+      </div>
+
+      {/* Type filter tabs */}
+      <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
+        <button
+          onClick={() => handleTypeFilterChange('')}
+          className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+            !currentTypeFilter
+              ? 'bg-primary text-white'
+              : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
+          }`}
+        >
+          Tous
+        </button>
+        {Object.entries(typeLabels).map(([type, { label, icon }]) => (
+          <button
+            key={type}
+            onClick={() => handleTypeFilterChange(type)}
+            className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 ${
+              currentTypeFilter === type
+                ? 'bg-primary text-white'
+                : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
+            }`}
+          >
+            <span>{icon}</span>
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {/* Strategy filter */}
+      <div className="flex items-center gap-2 mb-4">
+        <span className="text-sm text-neutral-500">Stratégie:</span>
+        <select
+          value={currentFilter || ''}
+          onChange={(e) => handleFilterChange(e.target.value)}
+          className="px-3 py-2 rounded-lg border border-neutral-200 text-sm"
+        >
+          <option value="">Toutes</option>
+          {strategies.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.name}
+            </option>
+          ))}
+        </select>
       </div>
 
       <p className="text-neutral-500 text-sm mb-4">{templates.length} template(s)</p>

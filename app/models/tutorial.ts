@@ -32,6 +32,9 @@ export default class Tutorial extends BaseModel {
   @column()
   declare isActive: boolean
 
+  @column()
+  declare requiredLevel: number
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 

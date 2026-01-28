@@ -2,15 +2,19 @@ import type { HttpContext } from '@adonisjs/core/http'
 import app from '@adonisjs/core/services/app'
 import { cuid } from '@adonisjs/core/helpers'
 import { DateTime } from 'luxon'
-import { readFile } from 'node:fs/promises'
+import { readFile, unlink, access } from 'node:fs/promises'
+import { exec } from 'node:child_process'
+import { promisify } from 'node:util'
 import Mission from '#models/mission'
 import Publication, { type ContentType, type PublicationMediaItem } from '#models/publication'
 import Restaurant from '#models/restaurant'
+import ContentIdea from '#models/content_idea'
 import MissionService from '#services/mission_service'
 import AIService from '#services/ai_service'
 import LateService, { type MediaItem } from '#services/late_service'
 
 const MAX_CAPTION_LENGTH = 2200 // Instagram's limit
+const execAsync = promisify(exec)
 
 // Map mission template type to content type
 const MISSION_TYPE_TO_CONTENT_TYPE: Record<string, ContentType> = {
@@ -35,9 +39,7 @@ export default class PublicationsController {
       .where('id', missionId)
       .where('user_id', user.id)
       .preload('missionTemplate', (query) => {
-        query.preload('contentIdeas', (ideaQuery) => {
-          ideaQuery.where('is_active', true)
-        })
+        query.preload('thematicCategory').preload('tutorial')
       })
       .first()
 
@@ -49,37 +51,96 @@ export default class PublicationsController {
     const restaurant = await Restaurant.query().where('user_id', user.id).first()
     const userRestaurantType = restaurant?.type || null
 
-    // Filter ideas by restaurant type
-    // Show ideas that either: have no tags (universal) OR include the user's restaurant type
-    const filteredIdeas = mission.missionTemplate.contentIdeas.filter((idea) => {
-      if (!idea.restaurantTags || idea.restaurantTags.length === 0) {
-        return true // No tags = visible to all
-      }
-      return userRestaurantType && idea.restaurantTags.includes(userRestaurantType)
-    })
-
     // Determine content type from mission template
     const contentType = MISSION_TYPE_TO_CONTENT_TYPE[mission.missionTemplate.type] || 'post'
 
-    return inertia.render('publications/media', {
+    // Get thematic category ID from mission template
+    const thematicCategoryId = mission.missionTemplate.thematicCategoryId
+
+    // Load all active ideas (new system: ideas are standalone, not linked to templates)
+    const allIdeas = await ContentIdea.query().where('is_active', true)
+
+    // Filter ideas by:
+    // 1. Content type (post, story, reel, carousel)
+    // 2. Thematic category (if mission template has one)
+    // 3. Restaurant type (if user has one)
+    const matchingIdeas = allIdeas.filter((idea) => {
+      // Check content type match
+      if (!idea.matchesContentType(mission.missionTemplate.type)) {
+        return false
+      }
+
+      // Check thematic category match
+      if (!idea.matchesThematicCategory(thematicCategoryId)) {
+        return false
+      }
+
+      // Check restaurant type match
+      if (!idea.matchesRestaurantType(userRestaurantType)) {
+        return false
+      }
+
+      return true
+    })
+
+    // Check if media files actually exist for each idea
+    const filteredIdeasWithFileCheck = await Promise.all(
+      matchingIdeas.map(async (idea) => {
+        // If idea has a media path, verify the file exists
+        if (idea.exampleMediaPath) {
+          try {
+            await access(app.makePath(idea.exampleMediaPath))
+            return { idea, mediaExists: true } // File exists
+          } catch {
+            // File doesn't exist
+            return { idea, mediaExists: false }
+          }
+        }
+        return { idea, mediaExists: false } // No media path
+      })
+    )
+
+    // Include ideas: those with valid media, OR those without media (text-only ideas)
+    const filteredIdeas = filteredIdeasWithFileCheck
+      .filter(({ idea, mediaExists }) => mediaExists || !idea.exampleMediaPath)
+      .map(({ idea }) => idea)
+
+    // Render the new mission page (step 1/3)
+    return inertia.render('publications/mission', {
       mission: {
         id: mission.id,
         template: {
           type: mission.missionTemplate.type,
           title: mission.missionTemplate.title,
           contentIdea: mission.missionTemplate.contentIdea,
+          thematicCategory: mission.missionTemplate.thematicCategory
+            ? {
+                id: mission.missionTemplate.thematicCategory.id,
+                name: mission.missionTemplate.thematicCategory.name,
+                icon: mission.missionTemplate.thematicCategory.icon,
+              }
+            : null,
           ideas: filteredIdeas.map((idea) => ({
             id: idea.id,
+            title: idea.title,
             suggestionText: idea.suggestionText,
             photoTips: idea.photoTips,
             exampleMediaPath: idea.exampleMediaPath,
             exampleMediaType: idea.exampleMediaType,
           })),
+          linkedTutorial: mission.missionTemplate.tutorial
+            ? {
+                id: mission.missionTemplate.tutorial.id,
+                title: mission.missionTemplate.tutorial.title,
+              }
+            : null,
         },
       },
       contentType,
       maxImages: contentType === 'carousel' ? 10 : 1,
       acceptVideo: contentType === 'reel' || contentType === 'story',
+      totalSteps: 3,
+      currentStep: 1,
     })
   }
 
@@ -266,6 +327,10 @@ export default class PublicationsController {
       return inertia.render('errors/not_found')
     }
 
+    // Stories have only 2 steps (no description step)
+    const isStory = publication.contentType === 'story'
+    const totalSteps = isStory ? 2 : 3
+
     return inertia.render('publications/analysis', {
       publication: {
         id: publication.id,
@@ -280,10 +345,14 @@ export default class PublicationsController {
             id: publication.mission.id,
             template: {
               title: publication.mission.missionTemplate.title,
+              type: publication.mission.missionTemplate.type,
               tutorialId: publication.mission.missionTemplate.tutorialId,
             },
           }
         : null,
+      totalSteps,
+      currentStep: 2,
+      skipDescription: isStory, // Tell frontend to skip description step
     })
   }
 
@@ -297,6 +366,9 @@ export default class PublicationsController {
     const publication = await Publication.query()
       .where('id', publicationId)
       .where('user_id', user.id)
+      .preload('mission', (query) => {
+        query.preload('missionTemplate')
+      })
       .first()
 
     if (!publication) {
@@ -311,42 +383,133 @@ export default class PublicationsController {
       })
     }
 
+    // Load restaurant info for relevance check
+    const restaurant = await Restaurant.query()
+      .where('user_id', user.id)
+      .first()
+
+    // Get mission context for coherence check
+    const missionTitle = publication.mission?.missionTemplate?.title
+    const missionTheme = publication.mission?.missionTemplate?.contentIdea
+
     // Read the image for analysis
     let imageBase64: string | undefined
     let imageMimeType: string | undefined
 
     try {
-      // For videos, we'd ideally extract a thumbnail - for now, skip analysis
       const isVideo = publication.mediaItems?.[0]?.type === 'video' ||
         publication.contentType === 'reel'
 
       if (isVideo) {
-        // For videos, we can't easily analyze - default to green
-        publication.qualityScore = 'green'
-        publication.qualityFeedback = 'Vidéo prête pour la publication.'
-        publication.qualityAnalyzedAt = DateTime.now()
-        await publication.save()
+        // For videos, extract multiple frames for better analysis
+        const thumbnailPaths: string[] = []
 
-        return response.json({
-          score: publication.qualityScore,
-          feedback: publication.qualityFeedback,
-        })
-      }
+        try {
+          const videoPath = app.makePath(publication.imagePath)
 
-      const imagePath = app.makePath(publication.imagePath)
-      const imageBuffer = await readFile(imagePath)
-      imageBase64 = imageBuffer.toString('base64')
+          // Get video duration
+          let duration = 5 // Default 5 seconds if we can't get duration
+          try {
+            const { stdout } = await execAsync(
+              `ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${videoPath}"`
+            )
+            duration = Math.max(1, parseFloat(stdout.trim()) || 5)
+          } catch {
+            // Use default duration
+          }
 
-      // Determine mime type from extension
-      const ext = publication.imagePath.split('.').pop()?.toLowerCase()
-      if (ext === 'jpg' || ext === 'jpeg') {
-        imageMimeType = 'image/jpeg'
-      } else if (ext === 'png') {
-        imageMimeType = 'image/png'
-      } else if (ext === 'webp') {
-        imageMimeType = 'image/webp'
+          // Extract 3 frames: start (10%), middle (50%), end (80%)
+          const framePositions = [
+            Math.max(0.5, duration * 0.1),
+            duration * 0.5,
+            Math.min(duration - 0.5, duration * 0.8),
+          ]
+
+          for (let i = 0; i < framePositions.length; i++) {
+            const pos = framePositions[i]
+            const thumbPath = app.makePath(`storage/uploads/thumb_${cuid()}_${i}.jpg`)
+            thumbnailPaths.push(thumbPath)
+
+            await execAsync(
+              `ffmpeg -i "${videoPath}" -ss ${pos.toFixed(2)} -vframes 1 -q:v 2 "${thumbPath}" -y 2>/dev/null || ` +
+                `ffmpeg -i "${videoPath}" -vframes 1 -q:v 2 "${thumbPath}" -y`
+            )
+          }
+
+          // Read all frames for analysis
+          const framesBase64: string[] = []
+          for (const thumbPath of thumbnailPaths) {
+            try {
+              const thumbBuffer = await readFile(thumbPath)
+              framesBase64.push(thumbBuffer.toString('base64'))
+            } catch {
+              // Skip failed frames
+            }
+          }
+
+          // Cleanup thumbnails
+          for (const thumbPath of thumbnailPaths) {
+            unlink(thumbPath).catch(() => {})
+          }
+
+          if (framesBase64.length === 0) {
+            throw new Error('No frames extracted')
+          }
+
+          // Use multiple frames for analysis
+          const aiService = new AIService()
+          const result = await aiService.analyzeVideoQuality(
+            framesBase64,
+            'image/jpeg',
+            publication.contentType === 'story' ? 'story' : 'reel',
+            restaurant?.name,
+            restaurant?.type,
+            missionTitle,
+            missionTheme
+          )
+
+          publication.qualityScore = result.score
+          publication.qualityFeedback = result.feedback
+          publication.qualityAnalyzedAt = DateTime.now()
+          await publication.save()
+
+          return response.json({
+            score: result.score,
+            feedback: result.feedback,
+          })
+        } catch (ffmpegError) {
+          console.error('Failed to extract video frames:', ffmpegError)
+          publication.qualityScore = 'green'
+          publication.qualityFeedback = 'Ta vidéo est prête !'
+          publication.qualityAnalyzedAt = DateTime.now()
+          await publication.save()
+
+          // Cleanup any partial thumbnails
+          for (const thumbPath of thumbnailPaths) {
+            unlink(thumbPath).catch(() => {})
+          }
+
+          return response.json({
+            score: publication.qualityScore,
+            feedback: publication.qualityFeedback,
+          })
+        }
       } else {
-        imageMimeType = 'image/jpeg' // Default
+        const imagePath = app.makePath(publication.imagePath)
+        const imageBuffer = await readFile(imagePath)
+        imageBase64 = imageBuffer.toString('base64')
+
+        // Determine mime type from extension
+        const ext = publication.imagePath.split('.').pop()?.toLowerCase()
+        if (ext === 'jpg' || ext === 'jpeg') {
+          imageMimeType = 'image/jpeg'
+        } else if (ext === 'png') {
+          imageMimeType = 'image/png'
+        } else if (ext === 'webp') {
+          imageMimeType = 'image/webp'
+        } else {
+          imageMimeType = 'image/jpeg' // Default
+        }
       }
     } catch (error) {
       console.error('Failed to read image for quality analysis:', error)
@@ -367,7 +530,11 @@ export default class PublicationsController {
     const result = await aiService.analyzeMediaQuality(
       imageBase64!,
       imageMimeType!,
-      publication.contentType || 'post'
+      publication.contentType || 'post',
+      restaurant?.name,
+      restaurant?.type,
+      missionTitle,
+      missionTheme
     )
 
     // Save result
@@ -409,26 +576,65 @@ export default class PublicationsController {
     if (!aiCaption && publication.mission?.missionTemplate) {
       const aiService = new AIService()
 
-      // Try to read the image for vision analysis
+      // Try to read the media for vision analysis
       let imageBase64: string | undefined
       let imageMimeType: string | undefined
 
-      try {
-        const imagePath = app.makePath(publication.imagePath)
-        const imageBuffer = await readFile(imagePath)
-        imageBase64 = imageBuffer.toString('base64')
+      const isVideo =
+        publication.contentType === 'reel' ||
+        publication.mediaItems?.[0]?.type === 'video'
 
-        // Determine mime type from extension
-        const ext = publication.imagePath.split('.').pop()?.toLowerCase()
-        if (ext === 'jpg' || ext === 'jpeg') {
-          imageMimeType = 'image/jpeg'
-        } else if (ext === 'png') {
-          imageMimeType = 'image/png'
-        } else if (ext === 'webp') {
-          imageMimeType = 'image/webp'
+      try {
+        if (isVideo) {
+          // For videos, extract a frame using ffmpeg
+          const videoPath = app.makePath(publication.imagePath)
+          const thumbPath = app.makePath(`storage/uploads/thumb_desc_${cuid()}.jpg`)
+
+          try {
+            // Get video duration and extract a frame at 30% to avoid intro
+            let position = 1
+            try {
+              const { stdout } = await execAsync(
+                `ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${videoPath}"`
+              )
+              const duration = parseFloat(stdout.trim()) || 5
+              position = Math.max(0.5, duration * 0.3)
+            } catch {
+              // Use default position
+            }
+
+            await execAsync(
+              `ffmpeg -i "${videoPath}" -ss ${position.toFixed(2)} -vframes 1 -q:v 2 "${thumbPath}" -y 2>/dev/null || ` +
+                `ffmpeg -i "${videoPath}" -vframes 1 -q:v 2 "${thumbPath}" -y`
+            )
+
+            const thumbBuffer = await readFile(thumbPath)
+            imageBase64 = thumbBuffer.toString('base64')
+            imageMimeType = 'image/jpeg'
+
+            // Cleanup thumbnail
+            unlink(thumbPath).catch(() => {})
+          } catch (ffmpegError) {
+            console.error('Failed to extract video frame for description:', ffmpegError)
+          }
+        } else {
+          // For images, read directly
+          const imagePath = app.makePath(publication.imagePath)
+          const imageBuffer = await readFile(imagePath)
+          imageBase64 = imageBuffer.toString('base64')
+
+          // Determine mime type from extension
+          const ext = publication.imagePath.split('.').pop()?.toLowerCase()
+          if (ext === 'jpg' || ext === 'jpeg') {
+            imageMimeType = 'image/jpeg'
+          } else if (ext === 'png') {
+            imageMimeType = 'image/png'
+          } else if (ext === 'webp') {
+            imageMimeType = 'image/webp'
+          }
         }
       } catch (error) {
-        console.error('Failed to read image for AI analysis:', error)
+        console.error('Failed to read media for AI analysis:', error)
       }
 
       aiCaption = await aiService.generateDescription({
@@ -469,6 +675,8 @@ export default class PublicationsController {
             },
           }
         : null,
+      totalSteps: 3,
+      currentStep: 3,
     })
   }
 

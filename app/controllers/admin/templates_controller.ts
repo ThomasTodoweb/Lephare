@@ -2,6 +2,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 import MissionTemplate from '#models/mission_template'
 import Strategy from '#models/strategy'
 import Tutorial from '#models/tutorial'
+import ThematicCategory from '#models/thematic_category'
 import { createTemplateValidator, updateTemplateValidator } from '#validators/admin'
 
 export default class TemplatesController {
@@ -10,12 +11,15 @@ export default class TemplatesController {
    */
   async index({ inertia, request }: HttpContext) {
     const strategyFilter = request.input('strategy')
+    const typeFilter = request.input('type')
 
     let query = MissionTemplate.query()
       .preload('strategy')
       .preload('tutorial')
       .preload('requiredTutorial')
+      .preload('thematicCategory')
       .withCount('missions')
+      .whereNot('type', 'tuto') // Les tutos sont gérés séparément dans /admin/tutorials
       .orderBy('strategy_id', 'asc')
       .orderBy('order', 'asc')
 
@@ -23,9 +27,14 @@ export default class TemplatesController {
       query = query.where('strategy_id', strategyFilter)
     }
 
+    if (typeFilter) {
+      query = query.where('type', typeFilter)
+    }
+
     const templates = await query
 
     const strategies = await Strategy.query().where('is_active', true).orderBy('name', 'asc')
+    const thematicCategories = await ThematicCategory.query().where('is_active', true).orderBy('name', 'asc')
 
     return inertia.render('admin/templates/index', {
       templates: templates.map((t) => ({
@@ -41,13 +50,22 @@ export default class TemplatesController {
         tutorialTitle: t.tutorial?.title || null,
         requiredTutorialId: t.requiredTutorialId,
         requiredTutorialTitle: t.requiredTutorial?.title || null,
+        thematicCategoryId: t.thematicCategoryId,
+        thematicCategoryName: t.thematicCategory?.name || null,
+        thematicCategoryIcon: t.thematicCategory?.icon || null,
         missionsCount: Number(t.$extras.missions_count || 0),
       })),
       strategies: strategies.map((s) => ({
         id: s.id,
         name: s.name,
       })),
+      thematicCategories: thematicCategories.map((c) => ({
+        id: c.id,
+        name: c.name,
+        icon: c.icon,
+      })),
       currentFilter: strategyFilter || null,
+      currentTypeFilter: typeFilter || null,
     })
   }
 
@@ -57,10 +75,12 @@ export default class TemplatesController {
   async create({ inertia }: HttpContext) {
     const strategies = await Strategy.query().where('is_active', true).orderBy('name', 'asc')
     const tutorials = await Tutorial.query().where('is_active', true).orderBy('title', 'asc')
+    const thematicCategories = await ThematicCategory.query().where('is_active', true).orderBy('name', 'asc')
 
     return inertia.render('admin/templates/create', {
       strategies: strategies.map((s) => ({ id: s.id, name: s.name })),
       tutorials: tutorials.map((t) => ({ id: t.id, title: t.title })),
+      thematicCategories: thematicCategories.map((c) => ({ id: c.id, name: c.name, icon: c.icon })),
     })
   }
 
@@ -89,6 +109,7 @@ export default class TemplatesController {
       isActive: data.isActive ?? true,
       tutorialId: data.tutorialId || null,
       requiredTutorialId: data.requiredTutorialId || null,
+      thematicCategoryId: data.thematicCategoryId || null,
     })
 
     return response.redirect('/admin/templates')
@@ -101,7 +122,9 @@ export default class TemplatesController {
     const template = await MissionTemplate.query()
       .where('id', params.id)
       .preload('strategy')
+      .preload('thematicCategory')
       .preload('contentIdeas')
+      .withCount('missions')
       .first()
 
     if (!template) {
@@ -110,6 +133,7 @@ export default class TemplatesController {
 
     const strategies = await Strategy.query().where('is_active', true).orderBy('name', 'asc')
     const tutorials = await Tutorial.query().where('is_active', true).orderBy('title', 'asc')
+    const thematicCategories = await ThematicCategory.query().where('is_active', true).orderBy('name', 'asc')
 
     return inertia.render('admin/templates/edit', {
       template: {
@@ -122,6 +146,8 @@ export default class TemplatesController {
         isActive: template.isActive,
         tutorialId: template.tutorialId,
         requiredTutorialId: template.requiredTutorialId,
+        thematicCategoryId: template.thematicCategoryId,
+        missionsCount: Number(template.$extras.missions_count || 0),
         ideas: template.contentIdeas.map((idea) => ({
           id: idea.id,
           suggestionText: idea.suggestionText,
@@ -134,6 +160,7 @@ export default class TemplatesController {
       },
       strategies: strategies.map((s) => ({ id: s.id, name: s.name })),
       tutorials: tutorials.map((t) => ({ id: t.id, title: t.title })),
+      thematicCategories: thematicCategories.map((c) => ({ id: c.id, name: c.name, icon: c.icon })),
     })
   }
 
@@ -163,6 +190,7 @@ export default class TemplatesController {
       isActive: data.isActive,
       tutorialId: data.tutorialId || null,
       requiredTutorialId: data.requiredTutorialId || null,
+      thematicCategoryId: data.thematicCategoryId || null,
     })
 
     await template.save()

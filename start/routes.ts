@@ -34,13 +34,18 @@ const AdminSubscriptionsController = () => import('#controllers/admin/subscripti
 const AdminEmailsController = () => import('#controllers/admin/emails_controller')
 const AdminEmailLogsController = () => import('#controllers/admin/email_logs_controller')
 const AdminContentIdeasController = () => import('#controllers/admin/content_ideas_controller')
+const AdminIdeasController = () => import('#controllers/admin/ideas_controller')
+const AdminThematicCategoriesController = () => import('#controllers/admin/thematic_categories_controller')
+const AdminLevelsController = () => import('#controllers/admin/levels_controller')
 const HomeController = () => import('#controllers/home_controller')
 const SocialAuthController = () => import('#controllers/social_auth_controller')
+const CalendarController = () => import('#controllers/calendar_controller')
 
 // Serve storage files (uploaded images and videos)
-router.get('/storage/*', async ({ params, response }) => {
+router.get('/storage/*', async ({ params, response, request }) => {
   const filePath = params['*'].join('/')
   const app = await import('@adonisjs/core/services/app')
+  const fs = await import('node:fs')
   const fullPath = app.default.makePath('storage', filePath)
 
   // Security: only allow specific file types
@@ -49,6 +54,52 @@ router.get('/storage/*', async ({ params, response }) => {
 
   if (!allowedExtensions.includes(ext)) {
     return response.notFound('File not found')
+  }
+
+  // Check if file exists
+  try {
+    await fs.promises.access(fullPath)
+  } catch {
+    return response.notFound('File not found')
+  }
+
+  // For video files, support range requests (needed for iOS video playback)
+  const videoExtensions = ['.mp4', '.mov', '.webm']
+  if (videoExtensions.includes(ext)) {
+    const stat = await fs.promises.stat(fullPath)
+    const fileSize = stat.size
+    const range = request.header('range')
+
+    // MIME types for videos
+    const mimeTypes: Record<string, string> = {
+      '.mp4': 'video/mp4',
+      '.mov': 'video/quicktime',
+      '.webm': 'video/webm',
+    }
+    const contentType = mimeTypes[ext] || 'video/mp4'
+
+    if (range) {
+      // Parse range header
+      const parts = range.replace(/bytes=/, '').split('-')
+      const start = parseInt(parts[0], 10)
+      const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1
+      const chunkSize = end - start + 1
+
+      response.header('Content-Range', `bytes ${start}-${end}/${fileSize}`)
+      response.header('Accept-Ranges', 'bytes')
+      response.header('Content-Length', String(chunkSize))
+      response.header('Content-Type', contentType)
+      response.status(206)
+
+      const stream = fs.createReadStream(fullPath, { start, end })
+      return response.stream(stream)
+    } else {
+      // No range requested - send full file
+      response.header('Content-Length', String(fileSize))
+      response.header('Content-Type', contentType)
+      response.header('Accept-Ranges', 'bytes')
+      return response.download(fullPath)
+    }
   }
 
   return response.download(fullPath)
@@ -99,6 +150,8 @@ router.group(() => {
   router.post('/restaurant/type', [RestaurantsController, 'storeType'])
 
   // Onboarding flow - must be free to complete setup
+  router.get('/onboarding/welcome', [OnboardingController, 'showWelcome']).as('onboarding.welcome')
+  router.post('/onboarding/welcome/continue', [OnboardingController, 'continueWelcome']).as('onboarding.welcome.continue')
   router.get('/onboarding/strategy', [OnboardingController, 'showStrategy']).as('onboarding.strategy')
   router.post('/onboarding/strategy', [OnboardingController, 'storeStrategy'])
   router.get('/onboarding/rhythm', [OnboardingController, 'showRhythm']).as('onboarding.rhythm')
@@ -118,6 +171,7 @@ router.group(() => {
   router.post('/profile/restaurant/name', [ProfileController, 'updateRestaurantName']).as('profile.updateRestaurantName')
   router.post('/profile/restaurant/type', [ProfileController, 'updateRestaurantType']).as('profile.updateRestaurantType')
   router.post('/profile/restaurant/rhythm', [ProfileController, 'updatePublicationRhythm']).as('profile.updatePublicationRhythm')
+  router.post('/profile/restaurant/strategy', [ProfileController, 'updateStrategy']).as('profile.updateStrategy')
   router.post('/profile/email-preferences', [ProfileController, 'updateEmailPreferences']).as('profile.updateEmailPreferences')
   router.post('/profile/instagram/disconnect', [ProfileController, 'disconnectInstagram']).as('profile.instagram.disconnect')
   router.post('/profile/restart-onboarding', [ProfileController, 'restartOnboarding']).as('profile.restart.onboarding')
@@ -132,6 +186,10 @@ router.group(() => {
 
   // Notifications page & API - accessible to manage notifications
   router.get('/notifications', [NotificationsController, 'index']).as('notifications.index')
+  router.get('/notifications/list', [NotificationsController, 'list']).as('notifications.list')
+  router.post('/notifications/:id/read', [NotificationsController, 'markAsRead']).as('notifications.markAsRead')
+  router.post('/notifications/read-all', [NotificationsController, 'markAllAsRead']).as('notifications.markAllAsRead')
+  router.delete('/notifications/:id', [NotificationsController, 'deleteNotification']).as('notifications.delete')
   router.get('/notifications/public-key', [NotificationsController, 'publicKey']).as('notifications.publicKey')
   router.post('/notifications/subscribe', [NotificationsController, 'subscribe']).as('notifications.subscribe')
   router.post('/notifications/unsubscribe', [NotificationsController, 'unsubscribe']).as('notifications.unsubscribe')
@@ -195,6 +253,10 @@ router.group(() => {
   router.get('/statistics/summary', [StatisticsController, 'summary']).as('statistics.summary')
   router.get('/statistics/interpretation', [StatisticsController, 'interpretation']).as('statistics.interpretation')
   router.post('/statistics/instagram/refresh', [StatisticsController, 'refreshInstagram']).as('statistics.instagram.refresh')
+
+  // Calendar - premium feature
+  router.get('/calendar', [CalendarController, 'index']).as('calendar.index')
+  router.get('/calendar/day/:date', [CalendarController, 'day']).as('calendar.day')
 }).middleware([middleware.auth(), middleware.subscription()])
 
 // Stripe webhook (no auth, uses signature verification + rate limiting)
@@ -236,12 +298,29 @@ router.group(() => {
   router.post('/templates/:id/toggle', [AdminTemplatesController, 'toggleActive']).as('admin.templates.toggle')
   router.delete('/templates/:id', [AdminTemplatesController, 'destroy']).as('admin.templates.destroy')
 
-  // Content Ideas CRUD (nested under templates)
-  router.get('/templates/:templateId/ideas', [AdminContentIdeasController, 'index']).as('admin.ideas.index')
-  router.post('/templates/:templateId/ideas', [AdminContentIdeasController, 'store']).as('admin.ideas.store')
-  router.put('/ideas/:id', [AdminContentIdeasController, 'update']).as('admin.ideas.update')
-  router.post('/ideas/:id/toggle', [AdminContentIdeasController, 'toggleActive']).as('admin.ideas.toggle')
-  router.delete('/ideas/:id', [AdminContentIdeasController, 'destroy']).as('admin.ideas.destroy')
+  // Content Ideas CRUD (nested under templates - LEGACY)
+  router.get('/templates/:templateId/ideas', [AdminContentIdeasController, 'index']).as('admin.template-ideas.index')
+  router.post('/templates/:templateId/ideas', [AdminContentIdeasController, 'store']).as('admin.template-ideas.store')
+  router.put('/template-ideas/:id', [AdminContentIdeasController, 'update']).as('admin.template-ideas.update')
+  router.post('/template-ideas/:id/toggle', [AdminContentIdeasController, 'toggleActive']).as('admin.template-ideas.toggle')
+  router.delete('/template-ideas/:id', [AdminContentIdeasController, 'destroy']).as('admin.template-ideas.destroy')
+
+  // Standalone Ideas CRUD (new system)
+  router.get('/ideas', [AdminIdeasController, 'index']).as('admin.ideas.index')
+  router.get('/ideas/create', [AdminIdeasController, 'create']).as('admin.ideas.create')
+  router.post('/ideas', [AdminIdeasController, 'store']).as('admin.ideas.store')
+  router.get('/ideas/:id/edit', [AdminIdeasController, 'edit']).as('admin.ideas.edit')
+  router.put('/ideas/:id', [AdminIdeasController, 'update']).as('admin.ideas.update')
+  router.post('/ideas/:id/toggle', [AdminIdeasController, 'toggleActive']).as('admin.ideas.toggle')
+  router.delete('/ideas/:id', [AdminIdeasController, 'destroy']).as('admin.ideas.destroy')
+
+  // Thematic Categories CRUD
+  router.get('/categories', [AdminThematicCategoriesController, 'index']).as('admin.categories.index')
+  router.post('/categories', [AdminThematicCategoriesController, 'store']).as('admin.categories.store')
+  router.put('/categories/:id', [AdminThematicCategoriesController, 'update']).as('admin.categories.update')
+  router.post('/categories/:id/toggle', [AdminThematicCategoriesController, 'toggleActive']).as('admin.categories.toggle')
+  router.delete('/categories/:id', [AdminThematicCategoriesController, 'destroy']).as('admin.categories.destroy')
+  router.post('/categories/seed', [AdminThematicCategoriesController, 'seed']).as('admin.categories.seed')
 
   // Tutorials CRUD (FR46)
   router.get('/tutorials', [AdminTutorialsController, 'index']).as('admin.tutorials.index')
@@ -282,4 +361,11 @@ router.group(() => {
   router.get('/email-logs/:id', [AdminEmailLogsController, 'show']).as('admin.email-logs.show')
   router.post('/email-logs/:id/status', [AdminEmailLogsController, 'updateStatus']).as('admin.email-logs.updateStatus')
   router.post('/email-logs/cleanup', [AdminEmailLogsController, 'cleanup']).as('admin.email-logs.cleanup')
+
+  // Gamification - Levels & XP
+  router.get('/levels', [AdminLevelsController, 'index']).as('admin.levels.index')
+  router.put('/levels/:id', [AdminLevelsController, 'updateLevel']).as('admin.levels.update')
+  router.post('/levels', [AdminLevelsController, 'storeLevel']).as('admin.levels.store')
+  router.delete('/levels/:id', [AdminLevelsController, 'destroyLevel']).as('admin.levels.destroy')
+  router.put('/xp-actions/:id', [AdminLevelsController, 'updateXpAction']).as('admin.xp-actions.update')
 }).prefix('/admin').middleware([middleware.auth(), middleware.admin()])

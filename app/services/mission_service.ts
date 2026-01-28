@@ -4,6 +4,8 @@ import MissionTemplate from '#models/mission_template'
 import TutorialCompletion from '#models/tutorial_completion'
 import User from '#models/user'
 import GamificationService from '#services/gamification_service'
+import StatisticsService from '#services/statistics_service'
+import LevelService from '#services/level_service'
 
 export default class MissionService {
   /**
@@ -338,6 +340,7 @@ export default class MissionService {
     const mission = await Mission.query()
       .where('id', missionId)
       .where('user_id', userId)
+      .preload('missionTemplate')
       .first()
 
     if (!mission) {
@@ -354,8 +357,63 @@ export default class MissionService {
 
     // Update user's streak and check badges
     const gamificationService = new GamificationService()
-    await gamificationService.updateStreak(userId)
-    await gamificationService.checkBadgeUnlocks(userId)
+    const streakResult = await gamificationService.updateStreak(userId)
+    const newBadges = await gamificationService.checkBadgeUnlocks(userId)
+
+    // Create in-app notification for mission completed
+    const InAppNotificationService = (await import('#services/in_app_notification_service')).default
+    const inAppService = new InAppNotificationService()
+
+    await inAppService.create({
+      userId,
+      title: 'Mission accomplie ! 🎉',
+      body: `Bravo ! Tu as terminé la mission "${mission.missionTemplate?.title || 'du jour'}"`,
+      type: 'mission_completed',
+      data: { missionId: mission.id, url: '/missions' },
+    })
+
+    // Create streak milestone notification if applicable (every 7 days)
+    if (streakResult && streakResult.currentStreak > 0 && streakResult.currentStreak % 7 === 0) {
+      await inAppService.create({
+        userId,
+        title: `${streakResult.currentStreak} jours de suite ! 🔥`,
+        body: `Incroyable ! Tu as maintenu ta série pendant ${streakResult.currentStreak} jours consécutifs.`,
+        type: 'streak_milestone',
+        data: { streak: streakResult.currentStreak },
+      })
+    }
+
+    // Create notification for each newly unlocked badge
+    for (const badge of newBadges) {
+      await inAppService.create({
+        userId,
+        title: `Badge débloqué : ${badge.name} 🏆`,
+        body: badge.description || `Tu as débloqué le badge "${badge.name}" !`,
+        type: 'badge_earned',
+        data: { badgeId: badge.id, badgeSlug: badge.slug },
+      })
+    }
+
+    // Update daily statistics for evolution tracking
+    const statisticsService = new StatisticsService()
+    await statisticsService.calculateDailyStats(userId)
+
+    // Add XP for mission completion
+    const levelService = new LevelService()
+    await levelService.addXp(userId, 'mission_completed')
+
+    // Award extra XP for streak milestones
+    if (streakResult && streakResult.currentStreak > 0) {
+      await levelService.addXp(userId, 'streak_day')
+      if (streakResult.currentStreak % 7 === 0) {
+        await levelService.addXp(userId, 'weekly_streak')
+      }
+    }
+
+    // Award XP for badges earned
+    for (const _badge of newBadges) {
+      await levelService.addXp(userId, 'badge_earned')
+    }
 
     return { success: true }
   }
@@ -451,6 +509,10 @@ export default class MissionService {
       const gamificationService = new GamificationService()
       await gamificationService.updateStreak(userId)
       await gamificationService.checkBadgeUnlocks(userId)
+
+      // Update daily statistics for evolution tracking
+      const statisticsService = new StatisticsService()
+      await statisticsService.calculateDailyStats(userId)
 
       return { success: true, missionId: mission.id }
     }

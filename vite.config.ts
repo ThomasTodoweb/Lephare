@@ -22,4 +22,41 @@ export default defineConfig({
       '~/': `${getDirname(import.meta.url)}/inertia/`,
     },
   },
+
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: (id) => {
+          // Vendor chunk: React ecosystem
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom') || id.includes('scheduler')) {
+              return 'vendor-react'
+            }
+            if (id.includes('@inertiajs')) {
+              return 'vendor-inertia'
+            }
+            // lucide-react bundled with components that use it (layout, admin)
+            // Other node_modules in a shared vendor chunk
+            return 'vendor'
+          }
+
+          // UI Components chunk
+          if (id.includes('/inertia/components/ui/')) {
+            return 'ui-components'
+          }
+
+          // Layout components chunk
+          if (id.includes('/inertia/components/layout/')) {
+            return 'layout'
+          }
+
+          // Admin pages in separate chunk
+          if (id.includes('/inertia/pages/admin/')) {
+            return 'admin'
+          }
+        },
+      },
+    },
+    chunkSizeWarningLimit: 500, // React 19 + react-dom + scheduler = ~430KB
+  },
 })

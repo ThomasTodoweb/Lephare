@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { AppLayout } from '~/components/layout'
 import { Button, Card } from '~/components/ui'
 
@@ -53,26 +53,41 @@ export default function SubscriptionIndex({ subscription, trialInfo, pricing, is
   const isActive = subscription?.status === 'active'
   const isTrialing = subscription?.status === 'trialing'
   const isCanceled = subscription?.status === 'canceled'
+  const abortControllerRef = useRef<AbortController | null>(null)
 
   // Load invoices when component mounts
   useEffect(() => {
     if (isActive || isCanceled) {
       loadInvoices()
     }
+
+    return () => {
+      abortControllerRef.current?.abort()
+    }
   }, [isActive, isCanceled])
 
   const loadInvoices = async () => {
+    // Abort any previous request
+    abortControllerRef.current?.abort()
+    abortControllerRef.current = new AbortController()
+    const signal = abortControllerRef.current.signal
+
     setLoadingInvoices(true)
     try {
-      const response = await fetch('/subscription/invoices')
-      if (response.ok) {
+      const response = await fetch('/subscription/invoices', { signal })
+      if (response.ok && !signal.aborted) {
         const data = await response.json()
         setInvoices(data.invoices || [])
       }
     } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        return // Request was aborted, ignore silently
+      }
       console.error('Failed to load invoices:', error)
     } finally {
-      setLoadingInvoices(false)
+      if (!signal.aborted) {
+        setLoadingInvoices(false)
+      }
     }
   }
 

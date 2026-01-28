@@ -50,18 +50,20 @@ updateStrategyValidator.messagesProvider = messages
 
 /**
  * Mission Template validation (FR44)
- * Type must match MissionType: 'post' | 'story' | 'reel' | 'tuto' | 'engagement'
+ * Type must match MissionType: 'post' | 'carousel' | 'story' | 'reel' | 'engagement'
+ * Note: 'tuto' type is excluded - tutorials are managed separately via /admin/tutorials
  */
 export const createTemplateValidator = vine.compile(
   vine.object({
     strategyId: vine.number().positive(),
-    type: vine.enum(['reel', 'story', 'post', 'tuto', 'engagement'] as const),
+    type: vine.enum(['post', 'carousel', 'story', 'reel', 'engagement'] as const),
     title: vine.string().minLength(3).maxLength(200).trim(),
     contentIdea: vine.string().maxLength(1000).trim().optional(),
     order: vine.number().positive().optional(),
     isActive: vine.boolean().optional(),
     tutorialId: vine.number().positive().optional().nullable(),
     requiredTutorialId: vine.number().positive().optional().nullable(),
+    thematicCategoryId: vine.number().positive().optional().nullable(),
   })
 )
 createTemplateValidator.messagesProvider = messages
@@ -69,13 +71,14 @@ createTemplateValidator.messagesProvider = messages
 export const updateTemplateValidator = vine.compile(
   vine.object({
     strategyId: vine.number().positive(),
-    type: vine.enum(['reel', 'story', 'post', 'tuto', 'engagement'] as const),
+    type: vine.enum(['post', 'carousel', 'story', 'reel', 'engagement'] as const),
     title: vine.string().minLength(3).maxLength(200).trim(),
     contentIdea: vine.string().maxLength(1000).trim().optional().nullable(),
     order: vine.number().positive().optional(),
     isActive: vine.boolean().optional(),
     tutorialId: vine.number().positive().optional().nullable(),
     requiredTutorialId: vine.number().positive().optional().nullable(),
+    thematicCategoryId: vine.number().positive().optional().nullable(),
   })
 )
 updateTemplateValidator.messagesProvider = messages

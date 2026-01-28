@@ -86,3 +86,13 @@ export const updatePublicationRhythmValidator = vine.compile(
   })
 )
 updatePublicationRhythmValidator.messagesProvider = messages
+
+/**
+ * Validator for updating strategy (objective)
+ */
+export const updateStrategyValidator = vine.compile(
+  vine.object({
+    strategy_id: vine.number().positive(),
+  })
+)
+updateStrategyValidator.messagesProvider = messages

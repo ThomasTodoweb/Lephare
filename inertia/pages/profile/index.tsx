@@ -19,6 +19,13 @@ interface PublicationRhythm {
   description: string
 }
 
+interface StrategyOption {
+  id: number
+  name: string
+  icon: string
+  description: string
+}
+
 interface Props {
   user: {
     email: string
@@ -51,6 +58,7 @@ interface Props {
   }
   restaurantTypes: RestaurantType[]
   publicationRhythms: PublicationRhythm[]
+  strategies: StrategyOption[]
   notificationReminderTime: string
   emailPreferences: {
     dailyMission: boolean
@@ -59,7 +67,7 @@ interface Props {
   }
 }
 
-type EditingField = 'email' | 'name' | 'type' | 'rhythm' | null
+type EditingField = 'email' | 'name' | 'type' | 'rhythm' | 'strategy' | null
 
 export default function Profile({
   user,
@@ -70,6 +78,7 @@ export default function Profile({
   streak,
   restaurantTypes,
   publicationRhythms,
+  strategies,
   notificationReminderTime,
   emailPreferences,
 }: Props) {
@@ -78,12 +87,12 @@ export default function Profile({
 
   const disconnectForm = useForm({})
   const logoutForm = useForm({})
-  const restartOnboardingForm = useForm({})
 
   const emailForm = useForm({ email: user.email })
   const nameForm = useForm({ name: restaurant?.name || '' })
   const typeForm = useForm({ type: restaurant?.type || '' })
   const rhythmForm = useForm({ publication_rhythm: restaurant?.publicationRhythm || '' })
+  const strategyForm = useForm({ strategy_id: strategy?.id || 0 })
 
   const [selectedTime, setSelectedTime] = useState(notificationReminderTime || '10:00')
   const {
@@ -152,10 +161,6 @@ export default function Profile({
     }
   }
 
-  const handleRestartOnboarding = () => {
-    restartOnboardingForm.post('/profile/restart-onboarding')
-  }
-
   const handleEmailSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     emailForm.post('/profile/email', {
@@ -184,12 +189,20 @@ export default function Profile({
     })
   }
 
+  const handleStrategySubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    strategyForm.post('/profile/restaurant/strategy', {
+      onSuccess: () => setEditingField(null),
+    })
+  }
+
   const cancelEdit = () => {
     setEditingField(null)
     emailForm.reset()
     nameForm.reset()
     typeForm.reset()
     rhythmForm.reset()
+    strategyForm.reset()
   }
 
   return (
@@ -235,19 +248,6 @@ export default function Profile({
             </div>
           </Card>
         </Link>
-
-        {/* Streak Info */}
-        {streak && streak.currentStreak > 0 && (
-          <Card className="bg-primary/5 border-primary">
-            <div className="flex items-center gap-3">
-              <span className="text-3xl">🔥</span>
-              <div>
-                <p className="font-bold text-primary">{streak.currentStreak} jours de suite !</p>
-                <p className="text-sm text-neutral-600">Record : {streak.longestStreak} jours</p>
-              </div>
-            </div>
-          </Card>
-        )}
 
         {/* Account info */}
         <Card>
@@ -445,38 +445,73 @@ export default function Profile({
           </Card>
         )}
 
-        {/* Configuration / Onboarding */}
+        {/* Strategy / Objectif */}
         {restaurant && (
           <Card>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-bold text-lg text-neutral-900">Stratégie</h2>
+              <h2 className="font-bold text-lg text-neutral-900">Objectif</h2>
               {restaurant.onboardingCompleted && (
                 <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
-                  Configurée
+                  Configuré
                 </span>
               )}
             </div>
-            <div className="space-y-3 text-sm mb-4">
-              <div className="flex items-center justify-between">
-                <span className="text-neutral-600">Stratégie actuelle</span>
-                {strategy ? (
-                  <span className="font-medium flex items-center gap-1">
-                    <span>{strategy.icon}</span>
-                    {strategy.name}
-                  </span>
-                ) : (
-                  <span className="text-neutral-400 italic">Non définie</span>
+            {editingField === 'strategy' ? (
+              <form onSubmit={handleStrategySubmit} className="space-y-3">
+                <label className="block">
+                  <span className="text-sm text-neutral-600">Choisir un objectif</span>
+                  <select
+                    value={strategyForm.data.strategy_id}
+                    onChange={(e) => strategyForm.setData('strategy_id', Number(e.target.value))}
+                    className="w-full mt-1 px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                  >
+                    <option value={0} disabled>Sélectionner un objectif</option>
+                    {strategies.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.icon} {s.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                {strategyForm.errors.strategy_id && (
+                  <p className="text-sm text-red-500">{strategyForm.errors.strategy_id}</p>
                 )}
+                <div className="flex gap-2">
+                  <Button type="submit" size="sm" disabled={strategyForm.processing || strategyForm.data.strategy_id === 0}>
+                    {strategyForm.processing ? 'Enregistrement...' : 'Enregistrer'}
+                  </Button>
+                  <Button type="button" variant="outlined" size="sm" onClick={cancelEdit}>
+                    Annuler
+                  </Button>
+                </div>
+              </form>
+            ) : (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-sm text-neutral-600 block">Objectif actuel</span>
+                    {strategy ? (
+                      <span className="font-medium flex items-center gap-1">
+                        <span>{strategy.icon}</span>
+                        {strategy.name}
+                      </span>
+                    ) : (
+                      <span className="text-neutral-400 italic">Non défini</span>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      strategyForm.setData('strategy_id', strategy?.id || 0)
+                      setEditingField('strategy')
+                    }}
+                    className="text-primary text-sm font-medium hover:underline"
+                  >
+                    Modifier
+                  </button>
+                </div>
               </div>
-            </div>
-            <Button
-              variant="outlined"
-              onClick={handleRestartOnboarding}
-              disabled={restartOnboardingForm.processing}
-              className="w-full"
-            >
-              {restartOnboardingForm.processing ? 'Chargement...' : 'Changer de stratégie'}
-            </Button>
+            )}
           </Card>
         )}
 

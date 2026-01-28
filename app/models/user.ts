@@ -82,6 +82,13 @@ export default class User extends compose(BaseModel, AuthFinder) {
   @column()
   declare notificationBannerDismissed: boolean
 
+  // Leveling system
+  @column()
+  declare xpTotal: number
+
+  @column()
+  declare currentLevel: number
+
   /**
    * Cached AI interpretation (text + sentiment)
    */

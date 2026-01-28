@@ -1,5 +1,5 @@
 import { Head, router } from '@inertiajs/react'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { Button, PopoteMessage } from '~/components/ui'
 import { CheckCircle, AlertTriangle, XCircle, Loader2, HelpCircle, RotateCcw, ArrowLeft } from 'lucide-react'
 
@@ -28,6 +28,7 @@ interface Props {
   } | null
   totalSteps?: number
   currentStep?: number
+  skipDescription?: boolean
 }
 
 const CONTENT_TYPE_LABELS: Record<string, string> = {
@@ -64,20 +65,32 @@ const SCORE_CONFIG = {
   },
 }
 
-export default function MediaAnalysis({ publication, mission, totalSteps = 3, currentStep = 2 }: Props) {
+export default function MediaAnalysis({ publication, mission, totalSteps = 3, currentStep = 2, skipDescription = false }: Props) {
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [score, setScore] = useState<'green' | 'yellow' | 'red' | null>(publication.qualityScore)
   const [feedback, setFeedback] = useState<string | null>(publication.qualityFeedback)
   const [error, setError] = useState<string | null>(null)
+  const [isPublishing, setIsPublishing] = useState(false)
+  const abortControllerRef = useRef<AbortController | null>(null)
 
   // Run analysis on mount if not already done
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- Intentionally run only on mount
   useEffect(() => {
     if (!score && !isAnalyzing) {
       runAnalysis()
     }
+
+    return () => {
+      abortControllerRef.current?.abort()
+    }
   }, [])
 
   const runAnalysis = async () => {
+    // Abort any previous request
+    abortControllerRef.current?.abort()
+    abortControllerRef.current = new AbortController()
+    const signal = abortControllerRef.current.signal
+
     setIsAnalyzing(true)
     setError(null)
 
@@ -95,6 +108,7 @@ export default function MediaAnalysis({ publication, mission, totalSteps = 3, cu
           'Content-Type': 'application/json',
           'X-XSRF-TOKEN': xsrfToken,
         },
+        signal,
       })
 
       if (!response.ok) {
@@ -102,21 +116,40 @@ export default function MediaAnalysis({ publication, mission, totalSteps = 3, cu
       }
 
       const data = await response.json()
-      setScore(data.score)
-      setFeedback(data.feedback)
+      if (!signal.aborted) {
+        setScore(data.score)
+        setFeedback(data.feedback)
+      }
     } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') {
+        return // Request was aborted, ignore silently
+      }
       console.error('Analysis error:', err)
-      setError('Impossible d\'analyser le média. Veuillez réessayer.')
-      // Default to green to not block the user
-      setScore('green')
-      setFeedback('Analyse non disponible, vous pouvez continuer.')
+      if (!signal.aborted) {
+        setError('Impossible d\'analyser le média. Veuillez réessayer.')
+        // Default to green to not block the user
+        setScore('green')
+        setFeedback('Analyse non disponible, vous pouvez continuer.')
+      }
     } finally {
-      setIsAnalyzing(false)
+      if (!signal.aborted) {
+        setIsAnalyzing(false)
+      }
     }
   }
 
   const handleContinue = () => {
-    router.visit(`/publications/${publication.id}/description`)
+    if (skipDescription) {
+      // For stories, publish directly without description step
+      handlePublish()
+    } else {
+      router.visit(`/publications/${publication.id}/description`)
+    }
+  }
+
+  const handlePublish = () => {
+    setIsPublishing(true)
+    router.post(`/publications/${publication.id}/publish`)
   }
 
   const handleRetake = () => {
@@ -150,7 +183,7 @@ export default function MediaAnalysis({ publication, mission, totalSteps = 3, cu
       <Head title="Analyse du média - Le Phare" />
       <div className="min-h-screen bg-background flex flex-col">
         {/* Header */}
-        <div className="px-6 pt-6 pb-4">
+        <div className="px-6 pt-6 pb-4 pwa-safe-area-top">
           <div className="flex items-center justify-between mb-4">
             <button
               onClick={() => mission ? router.visit(`/missions/${mission.id}/photo`) : router.visit('/dashboard')}
@@ -263,13 +296,13 @@ export default function MediaAnalysis({ publication, mission, totalSteps = 3, cu
 
         {/* Fixed bottom buttons */}
         <div className="fixed bottom-0 left-0 right-0 p-6 bg-white border-t border-neutral-100 space-y-3">
-          {isAnalyzing ? (
+          {isAnalyzing || isPublishing ? (
             <p className="text-center text-sm text-neutral-500 py-3">
-              Veuillez patienter...
+              {isPublishing ? 'Publication en cours...' : 'Veuillez patienter...'}
             </p>
           ) : canContinue ? (
-            <Button onClick={handleContinue} className="w-full">
-              Continuer
+            <Button onClick={handleContinue} disabled={isPublishing} className="w-full">
+              {skipDescription ? 'Publier la story' : 'Continuer'}
             </Button>
           ) : (
             <>

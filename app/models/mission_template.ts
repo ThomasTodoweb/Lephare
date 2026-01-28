@@ -5,6 +5,7 @@ import Strategy from './strategy.js'
 import Mission from './mission.js'
 import ContentIdea from './content_idea.js'
 import Tutorial from './tutorial.js'
+import ThematicCategory from './thematic_category.js'
 
 export type MissionType = 'post' | 'carousel' | 'story' | 'reel' | 'tuto' | 'engagement'
 
@@ -36,6 +37,9 @@ export default class MissionTemplate extends BaseModel {
   @column()
   declare requiredTutorialId: number | null
 
+  @column()
+  declare thematicCategoryId: number | null
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 
@@ -56,4 +60,7 @@ export default class MissionTemplate extends BaseModel {
 
   @belongsTo(() => Tutorial, { foreignKey: 'requiredTutorialId' })
   declare requiredTutorial: BelongsTo<typeof Tutorial>
+
+  @belongsTo(() => ThematicCategory)
+  declare thematicCategory: BelongsTo<typeof ThematicCategory>
 }

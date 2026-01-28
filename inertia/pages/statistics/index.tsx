@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { AppLayout } from '~/components/layout'
 import { Card, PopoteMessage } from '~/components/ui'
 
@@ -81,6 +81,9 @@ interface Props {
   instagramComparison: InstagramComparison | null
 }
 
+/** Number of data points to display in the evolution chart */
+const CHART_DISPLAY_DAYS = 14
+
 function getXsrfToken(): string | null {
   const match = document.cookie.match(/XSRF-TOKEN=([^;]+)/)
   return match ? decodeURIComponent(match[1]) : null
@@ -96,7 +99,19 @@ export default function StatisticsIndex({ keyMetrics, summary, comparison, insta
   const [instagramComparison, setInstagramComparison] = useState<InstagramComparison | null>(initialInstagramComparison)
   const [isRefreshingInstagram, setIsRefreshingInstagram] = useState(false)
 
-  const refreshInstagramStats = async () => {
+  // ─── useMemo hooks ────────────────────────────────────────────────────────────
+  // Memoize chart data to avoid recalculating on every render
+  const chartData = useMemo(() => evolution.slice(-CHART_DISPLAY_DAYS), [evolution])
+
+  // Memoize maxValue - was previously calculated inside map() loop (14 iterations per render)
+  const maxValue = useMemo(() => {
+    if (evolution.length === 0) return 1
+    return Math.max(...evolution.map((p) => p.value), 1)
+  }, [evolution])
+
+  // ─── useCallback hooks ────────────────────────────────────────────────────────
+  // Memoized handler - state setters are stable, no dependencies needed
+  const refreshInstagramStats = useCallback(async () => {
     setIsRefreshingInstagram(true)
     try {
       const response = await fetch('/statistics/instagram/refresh', {
@@ -116,45 +131,72 @@ export default function StatisticsIndex({ keyMetrics, summary, comparison, insta
     } finally {
       setIsRefreshingInstagram(false)
     }
-  }
+  }, [])
 
+  // ─── useEffect hooks ──────────────────────────────────────────────────────────
   // Fetch AI interpretation on mount
   useEffect(() => {
+    const controller = new AbortController()
+
     const fetchInterpretation = async () => {
       setIsLoadingInterpretation(true)
       try {
-        const response = await fetch('/statistics/interpretation')
-        if (response.ok) {
+        const response = await fetch('/statistics/interpretation', {
+          signal: controller.signal,
+        })
+        if (response.ok && !controller.signal.aborted) {
           const data = await response.json()
           setInterpretation(data.interpretation)
         }
       } catch (error) {
+        if (error instanceof Error && error.name === 'AbortError') {
+          return // Request was aborted, ignore silently
+        }
         console.error('Failed to fetch interpretation:', error)
       } finally {
-        setIsLoadingInterpretation(false)
+        if (!controller.signal.aborted) {
+          setIsLoadingInterpretation(false)
+        }
       }
     }
 
     fetchInterpretation()
+
+    return () => {
+      controller.abort()
+    }
   }, [])
 
   useEffect(() => {
+    const controller = new AbortController()
+
     const fetchEvolution = async () => {
       setIsLoadingEvolution(true)
       try {
-        const response = await fetch(`/statistics/evolution?days=${selectedPeriod}&metric=missions_completed`)
-        if (response.ok) {
+        const response = await fetch(`/statistics/evolution?days=${selectedPeriod}&metric=missions_completed`, {
+          signal: controller.signal,
+        })
+        if (response.ok && !controller.signal.aborted) {
           const data = await response.json()
           setEvolution(data.evolution || [])
         }
       } catch (error) {
+        if (error instanceof Error && error.name === 'AbortError') {
+          return // Request was aborted, ignore silently
+        }
         console.error('Failed to fetch evolution:', error)
       } finally {
-        setIsLoadingEvolution(false)
+        if (!controller.signal.aborted) {
+          setIsLoadingEvolution(false)
+        }
       }
     }
 
     fetchEvolution()
+
+    return () => {
+      controller.abort()
+    }
   }, [selectedPeriod])
 
   return (
@@ -444,8 +486,7 @@ export default function StatisticsIndex({ keyMetrics, summary, comparison, insta
             ) : evolution.length > 0 ? (
               <div>
                 <div className="flex justify-between items-end h-24 gap-1 mb-2">
-                  {evolution.slice(-14).map((point, index) => {
-                    const maxValue = Math.max(...evolution.map(p => p.value), 1)
+                  {chartData.map((point, index) => {
                     const height = (point.value / maxValue) * 100
                     return (
                       <div
