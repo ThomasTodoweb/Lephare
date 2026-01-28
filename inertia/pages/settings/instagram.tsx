@@ -33,7 +33,7 @@ export default function InstagramSettings({ isConfigured, account }: Props) {
       <Head title="Instagram - Parametres - Le Phare" />
       <div className="min-h-screen bg-background">
         {/* Header */}
-        <div className="px-6 pt-8 pb-4">
+        <div className="px-6 pt-8 pb-6">
           <Link
             href="/profile"
             className="inline-flex items-center text-neutral-500 hover:text-neutral-700 mb-4"
@@ -49,7 +49,7 @@ export default function InstagramSettings({ isConfigured, account }: Props) {
         </div>
 
         {/* Content */}
-        <div className="px-6 pb-32 space-y-6">
+        <div className="px-6 pt-6 pb-32 space-y-6">
           {!isConfigured ? (
             <Card className="text-center py-8">
               <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 rounded-2xl flex items-center justify-center">

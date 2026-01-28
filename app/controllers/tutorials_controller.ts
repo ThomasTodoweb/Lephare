@@ -11,6 +11,7 @@ export default class TutorialsController {
    */
   async index({ inertia, auth }: HttpContext) {
     const user = auth.getUserOrFail()
+    const userLevel = user.currentLevel || 1
 
     const categories = await TutorialCategory.query()
       .where('is_active', true)
@@ -27,6 +28,7 @@ export default class TutorialsController {
     const completedIds = completedTutorials.map((c) => c.tutorialId)
 
     return inertia.render('tutorials/index', {
+      userLevel,
       categories: categories.map((cat) => ({
         id: cat.id,
         name: cat.name,
@@ -37,7 +39,9 @@ export default class TutorialsController {
           title: tut.title,
           description: tut.description,
           durationMinutes: tut.durationMinutes,
+          requiredLevel: tut.requiredLevel || 1,
           isCompleted: completedIds.includes(tut.id),
+          isLocked: (tut.requiredLevel || 1) > userLevel,
         })),
       })),
     })
@@ -55,6 +59,7 @@ export default class TutorialsController {
    */
   async search({ request, inertia, auth }: HttpContext) {
     const user = auth.getUserOrFail()
+    const userLevel = user.currentLevel || 1
     const query = request.input('q', '').trim()
 
     let tutorials: Tutorial[] = []
@@ -82,13 +87,16 @@ export default class TutorialsController {
 
     return inertia.render('tutorials/search', {
       query,
+      userLevel,
       tutorials: tutorials.map((tut) => ({
         id: tut.id,
         title: tut.title,
         description: tut.description,
         durationMinutes: tut.durationMinutes,
         categoryName: tut.category?.name,
+        requiredLevel: tut.requiredLevel || 1,
         isCompleted: completedIds.includes(tut.id),
+        isLocked: (tut.requiredLevel || 1) > userLevel,
       })),
     })
   }
@@ -98,6 +106,7 @@ export default class TutorialsController {
    */
   async show({ inertia, auth, params }: HttpContext) {
     const user = auth.getUserOrFail()
+    const userLevel = user.currentLevel || 1
     const tutorialId = Number(params.id)
 
     if (Number.isNaN(tutorialId)) {
@@ -112,6 +121,16 @@ export default class TutorialsController {
 
     if (!tutorial) {
       return inertia.render('errors/not_found')
+    }
+
+    // Check if tutorial is locked by level
+    const requiredLevel = tutorial.requiredLevel || 1
+    const isLocked = requiredLevel > userLevel
+    if (isLocked) {
+      return inertia.render('tutorials/locked', {
+        tutorial: { id: tutorial.id, title: tutorial.title, requiredLevel },
+        userLevel,
+      })
     }
 
     // Check if user completed this tutorial
