@@ -21,7 +21,7 @@ export const NavItem = memo(function NavItem({
     <Link
       href={href}
       className={`
-        flex items-center justify-center gap-2 px-5 h-16 rounded-2xl
+        flex items-center justify-center gap-1.5 px-3 h-11 rounded-xl
         transition-all duration-200 ease-out
         active:scale-[0.92] active:opacity-80
         ${
@@ -33,12 +33,12 @@ export const NavItem = memo(function NavItem({
       aria-label={label}
       aria-current={isActive ? 'page' : undefined}
     >
-      <Icon size={32} strokeWidth={isActive ? 2.5 : 2} className="transition-transform duration-150" />
+      <Icon size={20} strokeWidth={isActive ? 2.5 : 1.8} className="transition-transform duration-150" />
       {showLabel && (
         <span
           key={href}
           aria-hidden="true"
-          className="animate-fadeSlideIn bg-primary text-white rounded-full px-3.5 py-1.5 text-xs font-semibold whitespace-nowrap shadow-md"
+          className="animate-fadeSlideIn bg-primary text-white rounded-full px-2.5 py-1 text-[11px] font-semibold whitespace-nowrap shadow-md"
         >
           {label}
         </span>

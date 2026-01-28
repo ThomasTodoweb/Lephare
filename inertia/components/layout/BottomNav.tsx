@@ -20,7 +20,7 @@ export function BottomNav() {
       className="fixed bottom-4 left-[8%] right-[8%] bg-white/95 backdrop-blur-md rounded-[32px] shadow-[0_4px_24px_rgba(0,0,0,0.12)] border border-white/50 z-50"
       aria-label="Navigation principale"
     >
-      <div className="flex justify-around items-center h-[72px] px-2">
+      <div className="flex justify-around items-center h-[56px] px-2">
         {NAV_ITEMS.map((item) => {
           const isActive = url === item.href || url.startsWith(`${item.href}/`)
 
