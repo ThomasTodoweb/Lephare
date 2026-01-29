@@ -185,6 +185,14 @@ bash deploy.sh
 - **Après avoir poussé** : Informer l'autre de faire `git pull`
 - **En cas de doute** : Toujours faire `git pull` avant de commencer
 
+### Notification automatique (pour Claude Code)
+
+**IMPORTANT pour Claude** : Après chaque `git pull`, si des commits d'un autre développeur ont été récupérés, **prévenir l'utilisateur** avec un message du type :
+
+> "⚠️ Attention : ton collègue a poussé X commits depuis ta dernière session. Voici les modifications : [résumé des commits]"
+
+Cela permet d'éviter les surprises et de savoir ce qui a changé avant de commencer à travailler.
+
 ### Server Info
 
 | Property | Value |
