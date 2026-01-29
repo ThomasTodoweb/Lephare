@@ -102,11 +102,6 @@ export default function Dashboard({ user, restaurant, mission, todayMissions, st
             currentStreak={streak.current}
             longestStreak={streak.longest}
           />
-          {streak.isAtRisk && (
-            <p className="mt-2 text-sm text-orange-600 font-medium text-center">
-              {streak.message}
-            </p>
-          )}
         </div>
 
         {/* Missions du jour - Carousel swipable */}
