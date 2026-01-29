@@ -16,13 +16,13 @@ export interface MissionCardProps {
 }
 
 // Map mission type to icon and label
-const missionTypeConfig: Record<string, { icon: React.ReactNode; label: string; emoji: string }> = {
-  post: { icon: <Camera className="w-5 h-5" />, label: 'Post', emoji: '📸' },
-  story: { icon: <Smartphone className="w-5 h-5" />, label: 'Story', emoji: '📱' },
-  reel: { icon: <Film className="w-5 h-5" />, label: 'Reel', emoji: '🎬' },
-  tuto: { icon: <BookOpen className="w-5 h-5" />, label: 'Tutoriel', emoji: '📚' },
-  engagement: { icon: <MessageCircle className="w-5 h-5" />, label: 'Engagement', emoji: '💬' },
-  carousel: { icon: <Images className="w-5 h-5" />, label: 'Carrousel', emoji: '🖼️' },
+const missionTypeConfig: Record<string, { icon: React.ReactNode; label: string }> = {
+  post: { icon: <Camera className="w-5 h-5" />, label: 'Post' },
+  story: { icon: <Smartphone className="w-5 h-5" />, label: 'Story' },
+  reel: { icon: <Film className="w-5 h-5" />, label: 'Reel' },
+  tuto: { icon: <BookOpen className="w-5 h-5" />, label: 'Tutoriel' },
+  engagement: { icon: <MessageCircle className="w-5 h-5" />, label: 'Engagement' },
+  carousel: { icon: <Images className="w-5 h-5" />, label: 'Carrousel' },
 }
 
 export function MissionCard({ mission, onStart, isActive = true }: MissionCardProps) {
@@ -55,7 +55,7 @@ export function MissionCard({ mission, onStart, isActive = true }: MissionCardPr
       <div className="absolute top-4 left-4 right-4 flex justify-between items-start">
         {/* Type de contenu */}
         <div className="bg-white/95 backdrop-blur-sm text-neutral-900 px-3 py-2 rounded-xl flex items-center gap-2 shadow-lg">
-          <span className="text-xl">{typeConfig.emoji}</span>
+          {typeConfig.icon}
           <span className="font-semibold text-sm">{typeConfig.label}</span>
         </div>
 
