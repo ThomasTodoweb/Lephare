@@ -40,6 +40,9 @@ export default class MissionTemplate extends BaseModel {
   @column()
   declare thematicCategoryId: number | null
 
+  @column()
+  declare coverImagePath: string | null
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 

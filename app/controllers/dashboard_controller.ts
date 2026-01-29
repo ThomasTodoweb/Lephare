@@ -9,9 +9,16 @@ import Mission from '#models/mission'
 
 export default class DashboardController {
   /**
-   * Get a cover image URL based on mission type
+   * Get a cover image URL based on mission template
+   * Uses template's custom cover image if available, otherwise falls back to default
    */
-  private getCoverImage(type: string): string {
+  private getCoverImage(type: string, coverImagePath: string | null): string {
+    // Use template's custom cover image if available
+    if (coverImagePath) {
+      return `/${coverImagePath}`
+    }
+
+    // Fallback to default placeholder images
     const images: Record<string, string> = {
       post: 'https://picsum.photos/seed/post/400/500',
       story: 'https://picsum.photos/seed/story/400/500',
@@ -81,7 +88,7 @@ export default class DashboardController {
       id: m.id,
       title: m.missionTemplate.title,
       description: m.missionTemplate.contentIdea,
-      coverImageUrl: this.getCoverImage(m.missionTemplate.type),
+      coverImageUrl: this.getCoverImage(m.missionTemplate.type, m.missionTemplate.coverImagePath),
       type: m.missionTemplate.type,
       status: m.status,
       isRecommended: m.isRecommended,

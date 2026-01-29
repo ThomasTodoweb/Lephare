@@ -35,6 +35,7 @@ interface Template {
   isActive: boolean
   tutorialId: number | null
   requiredTutorialId: number | null
+  coverImagePath: string | null
   missionsCount: number
   ideas?: ContentIdea[]
 }
@@ -84,6 +85,12 @@ export default function AdminTemplatesEdit({ template, strategies, tutorials }: 
   const newMediaInputRef = useRef<HTMLInputElement>(null)
   const editMediaInputRef = useRef<HTMLInputElement>(null)
 
+  // Cover image state
+  const [coverImagePath, setCoverImagePath] = useState<string | null>(template.coverImagePath)
+  const [coverImagePreview, setCoverImagePreview] = useState<string | null>(null)
+  const [coverImageLoading, setCoverImageLoading] = useState(false)
+  const coverImageInputRef = useRef<HTMLInputElement>(null)
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     put(`/admin/templates/${template.id}`)
@@ -96,6 +103,76 @@ export default function AdminTemplatesEdit({ template, strategies, tutorials }: 
       .find((row) => row.startsWith('XSRF-TOKEN='))
       ?.split('=')[1]
     return xsrfCookie ? decodeURIComponent(xsrfCookie) : ''
+  }
+
+  // Handle cover image upload
+  const handleCoverImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setCoverImageLoading(true)
+    const previewUrl = URL.createObjectURL(file)
+    setCoverImagePreview(previewUrl)
+
+    try {
+      const formData = new FormData()
+      formData.append('coverImage', file)
+
+      const response = await fetch(`/admin/templates/${template.id}/cover-image`, {
+        method: 'POST',
+        headers: {
+          'X-XSRF-TOKEN': getXsrfToken(),
+        },
+        body: formData,
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        setCoverImagePath(result.coverImagePath)
+        setCoverImagePreview(null)
+        URL.revokeObjectURL(previewUrl)
+      } else {
+        const error = await response.json()
+        alert(error.error || 'Erreur lors de l\'upload')
+        setCoverImagePreview(null)
+        URL.revokeObjectURL(previewUrl)
+      }
+    } catch (err) {
+      console.error('Error uploading cover image:', err)
+      setCoverImagePreview(null)
+      URL.revokeObjectURL(previewUrl)
+    } finally {
+      setCoverImageLoading(false)
+      if (coverImageInputRef.current) {
+        coverImageInputRef.current.value = ''
+      }
+    }
+  }
+
+  // Remove cover image
+  const handleRemoveCoverImage = async () => {
+    if (!coverImagePath) return
+
+    setCoverImageLoading(true)
+    try {
+      const response = await fetch(`/admin/templates/${template.id}/cover-image`, {
+        method: 'DELETE',
+        headers: {
+          'X-XSRF-TOKEN': getXsrfToken(),
+        },
+      })
+
+      if (response.ok) {
+        setCoverImagePath(null)
+      } else {
+        const error = await response.json()
+        alert(error.error || 'Erreur lors de la suppression')
+      }
+    } catch (err) {
+      console.error('Error removing cover image:', err)
+    } finally {
+      setCoverImageLoading(false)
+    }
   }
 
   // Handle media file selection for new idea
@@ -327,6 +404,76 @@ export default function AdminTemplatesEdit({ template, strategies, tutorials }: 
           </div>
         </div>
       </div>
+
+      {/* Cover Image Section */}
+      <Card className="mb-4">
+        <div className="flex items-center gap-2 mb-4">
+          <Image className="w-5 h-5 text-primary" />
+          <h2 className="text-lg font-semibold text-neutral-900">Image de couverture</h2>
+        </div>
+        <p className="text-sm text-neutral-500 mb-4">
+          Cette image sera affichee sur la carte de mission dans l'application.
+          <br />
+          <strong>Dimensions recommandees: 400x500 pixels (ratio 4:5)</strong>
+        </p>
+
+        <input
+          ref={coverImageInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          onChange={handleCoverImageSelect}
+          className="hidden"
+          disabled={coverImageLoading}
+        />
+
+        {coverImagePreview ? (
+          <div className="relative inline-block">
+            <img
+              src={coverImagePreview}
+              alt="Preview"
+              className="w-48 h-60 object-cover rounded-lg opacity-50"
+            />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          </div>
+        ) : coverImagePath ? (
+          <div className="relative inline-block">
+            <img
+              src={`/${coverImagePath}`}
+              alt="Cover"
+              className="w-48 h-60 object-cover rounded-lg"
+            />
+            <button
+              type="button"
+              onClick={handleRemoveCoverImage}
+              disabled={coverImageLoading}
+              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1.5 hover:bg-red-600 disabled:opacity-50"
+            >
+              <X className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => coverImageInputRef.current?.click()}
+              disabled={coverImageLoading}
+              className="absolute bottom-2 right-2 bg-white text-neutral-700 rounded-lg px-3 py-1 text-sm font-medium shadow hover:bg-neutral-50 disabled:opacity-50"
+            >
+              Changer
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => coverImageInputRef.current?.click()}
+            disabled={coverImageLoading}
+            className="w-48 h-60 border-2 border-dashed border-neutral-300 rounded-lg flex flex-col items-center justify-center text-neutral-400 hover:border-primary hover:text-primary transition-colors disabled:opacity-50"
+          >
+            <Upload className="w-10 h-10 mb-2" />
+            <span className="text-sm font-medium">Ajouter une image</span>
+            <span className="text-xs mt-1">400x500px recommande</span>
+          </button>
+        )}
+      </Card>
 
       <Card>
         <form onSubmit={handleSubmit} className="space-y-6">

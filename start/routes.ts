@@ -297,6 +297,8 @@ router.group(() => {
   router.put('/templates/:id', [AdminTemplatesController, 'update']).as('admin.templates.update')
   router.post('/templates/:id/toggle', [AdminTemplatesController, 'toggleActive']).as('admin.templates.toggle')
   router.delete('/templates/:id', [AdminTemplatesController, 'destroy']).as('admin.templates.destroy')
+  router.post('/templates/:id/cover-image', [AdminTemplatesController, 'uploadCoverImage']).as('admin.templates.uploadCoverImage')
+  router.delete('/templates/:id/cover-image', [AdminTemplatesController, 'removeCoverImage']).as('admin.templates.removeCoverImage')
 
   // Content Ideas CRUD (nested under templates - LEGACY)
   router.get('/templates/:templateId/ideas', [AdminContentIdeasController, 'index']).as('admin.template-ideas.index')

@@ -4,6 +4,9 @@ import Strategy from '#models/strategy'
 import Tutorial from '#models/tutorial'
 import ThematicCategory from '#models/thematic_category'
 import { createTemplateValidator, updateTemplateValidator } from '#validators/admin'
+import { cuid } from '@adonisjs/core/helpers'
+import app from '@adonisjs/core/services/app'
+import { promises as fs } from 'node:fs'
 
 export default class TemplatesController {
   /**
@@ -147,6 +150,7 @@ export default class TemplatesController {
         tutorialId: template.tutorialId,
         requiredTutorialId: template.requiredTutorialId,
         thematicCategoryId: template.thematicCategoryId,
+        coverImagePath: template.coverImagePath,
         missionsCount: Number(template.$extras.missions_count || 0),
         ideas: template.contentIdeas.map((idea) => ({
           id: idea.id,
@@ -235,6 +239,87 @@ export default class TemplatesController {
     }
 
     await template.delete()
+
+    return response.json({ success: true })
+  }
+
+  /**
+   * Upload cover image for template
+   */
+  async uploadCoverImage({ request, response, params }: HttpContext) {
+    const templateId = Number(params.id)
+    if (Number.isNaN(templateId) || templateId <= 0) {
+      return response.badRequest({ error: 'ID invalide' })
+    }
+
+    const template = await MissionTemplate.find(templateId)
+    if (!template) {
+      return response.notFound({ error: 'Template non trouvé' })
+    }
+
+    const coverImage = request.file('coverImage', {
+      size: '10mb',
+      extnames: ['jpg', 'jpeg', 'png', 'webp'],
+    })
+
+    if (!coverImage || !coverImage.isValid) {
+      return response.badRequest({
+        error: coverImage?.errors?.[0]?.message || 'Image invalide',
+      })
+    }
+
+    // Delete old cover image if exists
+    if (template.coverImagePath) {
+      try {
+        const oldPath = app.makePath(template.coverImagePath)
+        await fs.unlink(oldPath)
+      } catch {
+        // Ignore error if file doesn't exist
+      }
+    }
+
+    // Save new cover image
+    const fileName = `template_${template.id}_${cuid()}.${coverImage.extname}`
+    const uploadPath = app.makePath('storage/uploads/templates')
+
+    await fs.mkdir(uploadPath, { recursive: true })
+    await coverImage.move(uploadPath, { name: fileName })
+    template.coverImagePath = `storage/uploads/templates/${fileName}`
+
+    await template.save()
+
+    return response.json({
+      success: true,
+      coverImagePath: template.coverImagePath,
+    })
+  }
+
+  /**
+   * Remove cover image from template
+   */
+  async removeCoverImage({ response, params }: HttpContext) {
+    const templateId = Number(params.id)
+    if (Number.isNaN(templateId) || templateId <= 0) {
+      return response.badRequest({ error: 'ID invalide' })
+    }
+
+    const template = await MissionTemplate.find(templateId)
+    if (!template) {
+      return response.notFound({ error: 'Template non trouvé' })
+    }
+
+    // Delete cover image file if exists
+    if (template.coverImagePath) {
+      try {
+        const oldPath = app.makePath(template.coverImagePath)
+        await fs.unlink(oldPath)
+      } catch {
+        // Ignore error if file doesn't exist
+      }
+    }
+
+    template.coverImagePath = null
+    await template.save()
 
     return response.json({ success: true })
   }
