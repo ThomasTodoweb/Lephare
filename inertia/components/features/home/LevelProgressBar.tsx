@@ -25,12 +25,9 @@ export function LevelProgressBar({
     <div className="bg-white rounded-2xl p-4 shadow-sm border border-neutral-100">
       {/* Level header */}
       <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <span className="text-2xl">{levelIcon}</span>
-          <div>
-            <p className="text-sm font-bold text-neutral-900">Niveau {currentLevel}</p>
-            <p className="text-xs text-neutral-500">{levelName}</p>
-          </div>
+        <div>
+          <p className="text-sm font-bold text-neutral-900">Niveau {currentLevel}</p>
+          <p className="text-xs text-neutral-500">{levelName}</p>
         </div>
         <div className="flex items-center gap-1 bg-amber-50 px-2 py-1 rounded-full">
           <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
