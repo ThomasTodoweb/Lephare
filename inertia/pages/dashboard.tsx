@@ -2,7 +2,7 @@ import { Head, router, usePage } from '@inertiajs/react'
 import { AppLayout } from '~/components/layout'
 import { Card, Heading } from '~/components/ui'
 import { NotificationBanner } from '~/components/NotificationBanner'
-import { StreakRestaurantBar, MissionCarousel } from '~/components/features/home'
+import { WelcomeMessage, StreakRestaurantBar, MissionCarousel } from '~/components/features/home'
 
 interface Mission {
   id: number
@@ -59,8 +59,12 @@ interface Props {
   }
 }
 
-export default function Dashboard({ user, restaurant, todayMissions, streak, notifications }: Props) {
+export default function Dashboard({ user, restaurant, mission, todayMissions, streak, notifications, calendarMissions, plannedFutureDays }: Props) {
   const { flash } = usePage<{ flash?: { success?: string } }>().props
+
+  function handleLogout() {
+    router.post('/logout')
+  }
 
   // Navigate to mission when clicking
   function handleMissionStart(missionId: number) {
@@ -68,7 +72,7 @@ export default function Dashboard({ user, restaurant, todayMissions, streak, not
   }
 
   return (
-    <AppLayout>
+    <AppLayout >
       <Head title="Accueil" />
 
       {flash?.success && (
@@ -85,7 +89,12 @@ export default function Dashboard({ user, restaurant, todayMissions, streak, not
       />
 
       <div className="py-4">
-        {/* Streak & Restaurant Bar - En haut */}
+        {/* Welcome header */}
+        <div className="mb-6">
+          <WelcomeMessage firstName={user.fullName?.split(' ')[0] || 'Chef'} />
+        </div>
+
+        {/* Streak & Restaurant Bar */}
         <div className="mb-6">
           <StreakRestaurantBar
             restaurantName={restaurant.name}
@@ -94,13 +103,11 @@ export default function Dashboard({ user, restaurant, todayMissions, streak, not
           />
         </div>
 
-        {/* Titre Mission du jour - Centré et plus petit */}
-        <p className="text-center text-neutral-500 text-sm mb-4">
-          Mission du jour
-        </p>
-
         {/* Missions du jour - Carousel swipable */}
         <div className="mb-6">
+          <Heading level={2} className="mb-3 text-neutral-900">
+            Tes missions du jour
+          </Heading>
           {todayMissions.length > 0 ? (
             <MissionCarousel
               missions={todayMissions}
@@ -108,7 +115,7 @@ export default function Dashboard({ user, restaurant, todayMissions, streak, not
             />
           ) : (
             <Card>
-              <div className="text-center py-8">
+              <div className="text-center py-4">
                 <span className="text-5xl mb-4 block">😴</span>
                 <Heading level={3} className="mb-2">
                   Pas de mission aujourd'hui
@@ -120,6 +127,7 @@ export default function Dashboard({ user, restaurant, todayMissions, streak, not
             </Card>
           )}
         </div>
+
       </div>
     </AppLayout>
   )
