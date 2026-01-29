@@ -204,15 +204,4 @@ pm2 logs lephare --err --lines 50  # Error logs only
 pm2 restart lephare                 # Restart
 ```
 
-Production runs from `/var/www/lephare/build/`, not the project root. The `.env` file must be copied to `build/.env` after each build.
-
-### Script server-deploy.sh (alternative)
-
-Le script `server-deploy.sh` peut aussi être utilisé. Il effectue :
-- Sauvegarde `.env` et `storage/` depuis `build/`
-- `git fetch origin` + `git reset --hard origin/main`
-- `npm ci` + `npm run build`
-- Restaure `.env` et `storage/` dans `build/`
-- `cd build && npm ci --omit=dev`
-- `pm2 restart lephare`
-- **⚠️ Les migrations ne sont PAS exécutées automatiquement** par ce script.
+Production runs from `/var/www/lephare/build/`, not the project root.
