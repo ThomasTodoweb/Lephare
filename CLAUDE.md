@@ -111,47 +111,79 @@ The `subscription` middleware checks for active subscription (trial or paid). Re
 
 Validated in `start/env.ts`. Key groups: App (PORT, HOST, APP_KEY), Database (DB_*), Stripe (STRIPE_*), Late API (LATE_API_KEY), OpenAI (OPENAI_API_KEY), VAPID (push notifications), Google/Apple OAuth.
 
-## Workflow de développement et déploiement
+## Workflow de développement en équipe avec Claude Code
 
-**On développe directement sur le serveur de production** (`/var/www/lephare`).
-Après chaque modification, proposer à l'utilisateur de commit et push vers GitHub pour garder l'historique et pouvoir revenir en arrière.
+**IMPORTANT** : Plusieurs développeurs utilisent Claude Code sur ce projet. Pour éviter les conflits de version, suivre ces règles strictement.
+
+### Règle d'or : TOUJOURS synchroniser avec GitHub
+
+```bash
+# AVANT de commencer à coder
+git pull origin main
+
+# APRÈS chaque modification
+git add -A && git commit -m "description" && git push origin main
+```
 
 ### GitHub
 
-- **Repo**: `git@github.com:ThomasTodoweb/Lephare.git`
-- **Branch**: `main`
+- **Repo** : `git@github.com:ThomasTodoweb/Lephare.git`
+- **Branch** : `main`
 
-### Après chaque modification de code
+### Workflow complet pour chaque session de dev
 
-**1. Commit et push vers GitHub**
+**1. Récupérer la dernière version (OBLIGATOIRE)**
 ```bash
-cd /var/www/lephare
+cd /Users/.../le-phare  # ou le chemin local du projet
+git pull origin main
+```
+
+**2. Faire les modifications demandées**
+
+**3. Commit et push**
+```bash
 git add -A
-git commit -m "description des changements"
+git commit -m "description claire des changements"
 git push origin main
 ```
 
-**2. Build et redémarrage**
+**4. Déployer en production**
 ```bash
-npm run build
-cp .env build/.env
-cd build && npm ci --omit=dev
-pm2 restart lephare
+bash deploy.sh
 ```
 
-**3. Si nouvelles migrations**
+### Script deploy.sh
+
+Le script `deploy.sh` effectue :
+1. Build local (`npm run build`)
+2. Rsync vers le serveur (`/var/www/lephare/build/`)
+3. Installation des dépendances prod sur le serveur
+4. Copie du `.env` dans `build/`
+5. Redémarrage PM2
+6. Exécution des migrations
+
+### En cas de conflit ou version cassée
+
+Si quelqu'un a poussé une version qui casse le site :
 ```bash
-cd /var/www/lephare/build && node ace migration:run --force
+# Voir les derniers commits
+git log --oneline -10
+
+# Revenir à un commit spécifique
+git reset --hard <commit-hash>
+
+# Forcer la mise à jour sur GitHub
+git push origin main --force
+
+# Redéployer
+bash deploy.sh
 ```
 
-**4. Vérification**
-```bash
-pm2 status && pm2 logs lephare --lines 10
-```
+### Communication entre développeurs
 
-### Rappel important
-
-Toujours demander à l'utilisateur : **"On push sur GitHub ?"** après avoir effectué des modifications, pour s'assurer que chaque changement est versionné et réversible.
+- **Avant de bosser** : Prévenir l'autre pour éviter de modifier les mêmes fichiers
+- **Après avoir poussé** : Informer l'autre de faire `git pull`
+- **En cas de doute** : Toujours faire `git pull` avant de commencer
 
 ### Server Info
 
