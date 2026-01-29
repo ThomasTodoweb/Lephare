@@ -50,10 +50,8 @@ export default defineConfig({
             return 'layout'
           }
 
-          // Admin pages in separate chunk
-          if (id.includes('/inertia/pages/admin/')) {
-            return 'admin'
-          }
+          // Don't use manualChunks for pages - let Vite handle them naturally
+          // so each page gets its own manifest entry for Inertia to resolve
         },
       },
     },
