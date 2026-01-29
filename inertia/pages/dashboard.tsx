@@ -98,7 +98,6 @@ export default function Dashboard({ user, restaurant, mission, todayMissions, st
         <div className="mb-6">
           <StreakRestaurantBar
             restaurantName={restaurant.name}
-            restaurantType={restaurant.type}
             currentStreak={streak.current}
             longestStreak={streak.longest}
           />
