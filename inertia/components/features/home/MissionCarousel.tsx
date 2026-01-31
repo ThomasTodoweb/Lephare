@@ -80,27 +80,6 @@ export function MissionCarousel({ missions, onMissionStart }: MissionCarouselPro
           ))}
         </div>
       </div>
-
-      {/* Pagination dots - star for required, circle for bonus */}
-      {sortedMissions.length > 1 && (
-        <div className="flex justify-center items-center gap-2 mt-4 px-4">
-          {sortedMissions.map((mission, index) => (
-            <button
-              key={mission.id}
-              type="button"
-              onClick={() => scrollTo(index)}
-              className={`
-                h-2.5 rounded-full transition-all duration-300
-                ${index === selectedIndex
-                  ? mission.isRecommended ? 'bg-primary w-6' : 'bg-neutral-500 w-6'
-                  : mission.isRecommended ? 'bg-primary/40 w-2.5' : 'bg-neutral w-2.5'
-                }
-              `}
-              aria-label={`${mission.isRecommended ? 'Objectif' : 'Bonus'} - ${mission.title}`}
-            />
-          ))}
-        </div>
-      )}
     </div>
   )
 }
