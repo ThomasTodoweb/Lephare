@@ -1,8 +1,7 @@
 import { Head, router, usePage } from '@inertiajs/react'
 import { AppLayout } from '~/components/layout'
 import { Card, Heading } from '~/components/ui'
-import { NotificationBanner } from '~/components/NotificationBanner'
-import { WelcomeMessage, StreakRestaurantBar, MissionCarousel } from '~/components/features/home'
+import { StreakRestaurantBar, MissionCarousel } from '~/components/features/home'
 
 interface Mission {
   id: number
@@ -81,19 +80,7 @@ export default function Dashboard({ user, restaurant, mission, todayMissions, st
         </div>
       )}
 
-      {/* Notification banner - only shows for PWA users who haven't subscribed */}
-      <NotificationBanner
-        isConfigured={notifications.isConfigured}
-        hasSubscription={notifications.hasSubscription}
-        bannerDismissed={user.notificationBannerDismissed || false}
-      />
-
-      <div className="py-4">
-        {/* Welcome header */}
-        <div className="mb-6">
-          <WelcomeMessage firstName={user.fullName?.split(' ')[0] || 'Chef'} />
-        </div>
-
+      <div className="py-2">
         {/* Streak & Restaurant Bar */}
         <div className="mb-6">
           <StreakRestaurantBar

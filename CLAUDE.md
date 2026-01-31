@@ -213,3 +213,20 @@ pm2 restart lephare                 # Restart
 ```
 
 Production runs from `/var/www/lephare/build/`, not the project root.
+
+## Features désactivées (à supprimer si non réactivées)
+
+### Notifications in-app (désactivée le 31/01/2026)
+
+La feature de notifications in-app a été désactivée :
+- Le header avec le logo "Le Phare" et la cloche de notifications a été retiré du layout
+- Le `NotificationBanner` sur le dashboard a été supprimé
+- Le composant `Header.tsx` existe toujours dans `inertia/components/layout/` mais n'est plus utilisé
+
+**Fichiers concernés :**
+- `inertia/components/layout/AppLayout.tsx` - Header retiré
+- `inertia/components/layout/Header.tsx` - Non supprimé, juste inutilisé
+- `inertia/components/NotificationBanner.tsx` - Non supprimé, juste inutilisé
+- `inertia/pages/dashboard.tsx` - Import et utilisation retirés
+
+**TODO :** Si la feature n'est pas réactivée d'ici 3 mois, supprimer les fichiers `Header.tsx` et `NotificationBanner.tsx` ainsi que les routes `/notifications/*` dans `start/routes.ts`.

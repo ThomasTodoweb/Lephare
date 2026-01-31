@@ -29,9 +29,9 @@ export function MissionCarousel({ missions, onMissionStart }: MissionCarouselPro
   }, [missions])
 
   const [emblaRef, emblaApi] = useEmblaCarousel({
-    loop: sortedMissions.length > 1,
-    align: 'center',
-    containScroll: false,
+    loop: false,
+    align: 'start',
+    containScroll: 'trimSnaps',
   })
 
   const [selectedIndex, setSelectedIndex] = useState(0)
@@ -64,12 +64,12 @@ export function MissionCarousel({ missions, onMissionStart }: MissionCarouselPro
   return (
     <div className="w-[calc(100%+2rem)] -mx-4">
       {/* Embla carousel container */}
-      <div className="overflow-hidden px-4" ref={emblaRef}>
-        <div className="flex -mx-2">
+      <div className="overflow-hidden" ref={emblaRef}>
+        <div className="flex">
           {sortedMissions.map((mission, index) => (
             <div
               key={mission.id}
-              className="flex-[0_0_80%] min-w-0 px-2"
+              className="flex-[0_0_92%] min-w-0 pl-4 first:pl-4 last:pr-4"
             >
               <MissionCard
                 mission={mission}
