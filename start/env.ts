@@ -91,4 +91,18 @@ export default await Env.create(new URL('../', import.meta.url), {
   APPLE_KEY_ID: Env.schema.string.optional(),
   APPLE_PRIVATE_KEY: Env.schema.string.optional(),
   APPLE_CALLBACK_URL: Env.schema.string.optional(),
+
+  /*
+  |----------------------------------------------------------
+  | Variables for Notion API (Content import)
+  |----------------------------------------------------------
+  */
+  NOTION_API_KEY: Env.schema.string.optional(),
+
+  /*
+  |----------------------------------------------------------
+  | Variables for Anthropic API (AI title generation)
+  |----------------------------------------------------------
+  */
+  ANTHROPIC_API_KEY: Env.schema.string.optional(),
 })

@@ -37,6 +37,7 @@ const AdminContentIdeasController = () => import('#controllers/admin/content_ide
 const AdminIdeasController = () => import('#controllers/admin/ideas_controller')
 const AdminThematicCategoriesController = () => import('#controllers/admin/thematic_categories_controller')
 const AdminLevelsController = () => import('#controllers/admin/levels_controller')
+const AdminNotionIdeasController = () => import('#controllers/admin/notion_ideas_controller')
 const HomeController = () => import('#controllers/home_controller')
 const SocialAuthController = () => import('#controllers/social_auth_controller')
 const CalendarController = () => import('#controllers/calendar_controller')
@@ -370,4 +371,15 @@ router.group(() => {
   router.post('/levels', [AdminLevelsController, 'storeLevel']).as('admin.levels.store')
   router.delete('/levels/:id', [AdminLevelsController, 'destroyLevel']).as('admin.levels.destroy')
   router.put('/xp-actions/:id', [AdminLevelsController, 'updateXpAction']).as('admin.xp-actions.update')
+
+  // Notion Ideas Import
+  router.get('/notion', [AdminNotionIdeasController, 'index']).as('admin.notion.index')
+  router.get('/notion/list', [AdminNotionIdeasController, 'list']).as('admin.notion.list')
+  router.get('/notion/clients', [AdminNotionIdeasController, 'clients']).as('admin.notion.clients')
+  router.post('/notion/import', [AdminNotionIdeasController, 'import']).as('admin.notion.import')
+  router.put('/notion/:id/status', [AdminNotionIdeasController, 'updateStatus']).as('admin.notion.updateStatus')
+  router.put('/notion/:id', [AdminNotionIdeasController, 'update']).as('admin.notion.update')
+  router.delete('/notion/:id', [AdminNotionIdeasController, 'destroy']).as('admin.notion.destroy')
+  router.post('/notion/bulk-delete', [AdminNotionIdeasController, 'bulkDelete']).as('admin.notion.bulkDelete')
+  router.post('/notion/bulk-status', [AdminNotionIdeasController, 'bulkUpdateStatus']).as('admin.notion.bulkUpdateStatus')
 }).prefix('/admin').middleware([middleware.auth(), middleware.admin()])
