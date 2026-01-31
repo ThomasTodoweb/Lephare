@@ -11,7 +11,7 @@ interface AppLayoutProps {
 // NOTE: Header removed - notifications feature disabled (see CLAUDE.md)
 export function AppLayout({ children, showBottomNav = true }: AppLayoutProps) {
   return (
-    <div className="min-h-screen bg-background pt-[env(safe-area-inset-top)]">
+    <div className="min-h-screen bg-background pt-[calc(env(safe-area-inset-top)*0.5)]">
       <main className={showBottomNav ? 'pb-24' : ''}>
         <div className="max-w-[428px] mx-auto px-4 py-4">
           {children}

@@ -37,7 +37,7 @@ export function MissionCard({ mission, onStart, isActive = true }: MissionCardPr
         transition-all duration-300 ease-out
         ${isCompleted ? 'ring-4 ring-green-500' : 'ring-2 ring-neutral-200'}
         ${isActive ? 'scale-100 opacity-100' : 'scale-95 opacity-80'}
-        w-full min-h-[70vh]
+        w-full min-h-[65vh]
       `}
     >
       {/* Image de fond */}
