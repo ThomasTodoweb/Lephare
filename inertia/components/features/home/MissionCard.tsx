@@ -32,8 +32,9 @@ export function MissionCard({ mission, onStart, isActive = true }: MissionCardPr
 
   return (
     <div
+      onClick={onStart}
       className={`
-        relative overflow-hidden rounded-2xl
+        relative overflow-hidden rounded-2xl cursor-pointer
         transition-all duration-300 ease-out
         ${isCompleted ? 'ring-4 ring-green-500' : 'ring-2 ring-neutral-200'}
         scale-100 opacity-100
@@ -81,23 +82,20 @@ export function MissionCard({ mission, onStart, isActive = true }: MissionCardPr
         <Heading level={2} className="text-white mb-2 text-xl font-bold drop-shadow-lg">
           {mission.title}
         </Heading>
-        <p className="text-white/90 text-sm mb-5 line-clamp-2 drop-shadow-md">
+        <p className="text-white/90 text-sm mb-4 line-clamp-2 drop-shadow-md">
           {mission.description}
         </p>
-        <button
-          type="button"
-          onClick={onStart}
+        <div
           className={`
-            w-full rounded-xl px-6 py-4 font-bold text-base tracking-wide transition-all
-            shadow-lg active:scale-[0.98]
+            inline-block rounded-lg px-4 py-2 text-sm font-medium transition-all
             ${isCompleted
-              ? 'bg-green-500 text-white hover:bg-green-600'
-              : 'bg-white text-neutral-900 hover:bg-neutral-100'
+              ? 'bg-green-500/80 text-white'
+              : 'bg-white/20 backdrop-blur-sm text-white border border-white/30'
             }
           `}
         >
-          {isCompleted ? 'Voir les details' : "C'est parti !"}
-        </button>
+          {isCompleted ? 'Voir les détails' : "C'est parti !"}
+        </div>
       </div>
     </div>
   )
