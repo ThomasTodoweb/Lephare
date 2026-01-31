@@ -73,6 +73,13 @@ const STATUS_CONFIG: Record<IdeaStatus, { label: string; icon: typeof Clock; col
   converted: { label: 'Converti', icon: CheckCircle, color: 'bg-purple-100 text-purple-700' },
 }
 
+interface ImportProgress {
+  current: number
+  total: number
+  message: string
+  phase: 'fetching' | 'downloading' | 'saving' | 'done' | 'error'
+}
+
 export default function NotionIdeasIndex({ ideas, stats, isNotionConfigured }: Props) {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('')
@@ -80,6 +87,7 @@ export default function NotionIdeasIndex({ ideas, stats, isNotionConfigured }: P
   const [selectedIds, setSelectedIds] = useState<number[]>([])
   const [isImporting, setIsImporting] = useState(false)
   const [importMessage, setImportMessage] = useState<string | null>(null)
+  const [importProgress, setImportProgress] = useState<ImportProgress | null>(null)
 
   const filteredIdeas = ideas.filter((idea) => {
     if (statusFilter && idea.status !== statusFilter) return false
@@ -103,6 +111,7 @@ export default function NotionIdeasIndex({ ideas, stats, isNotionConfigured }: P
 
     setIsImporting(true)
     setImportMessage(null)
+    setImportProgress({ current: 0, total: 0, message: 'Connexion à Notion...', phase: 'fetching' })
 
     try {
       const response = await fetch('/admin/notion/import', {
@@ -114,17 +123,75 @@ export default function NotionIdeasIndex({ ideas, stats, isNotionConfigured }: P
             .find((row) => row.startsWith('XSRF-TOKEN='))
             ?.split('=')[1] || '',
         },
-        body: JSON.stringify({ generateAiTitles: true }),
+        body: JSON.stringify({ generateAiTitles: false }),
       })
 
-      const data = await response.json()
-      if (data.success) {
-        setImportMessage(data.message)
-        router.reload()
-      } else {
-        setImportMessage(`Erreur: ${data.error}`)
+      // Handle Server-Sent Events stream
+      const reader = response.body?.getReader()
+      const decoder = new TextDecoder()
+
+      if (!reader) {
+        throw new Error('No response body')
+      }
+
+      let buffer = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        buffer += decoder.decode(value, { stream: true })
+
+        // Process complete SSE events (lines ending with \n\n)
+        const lines = buffer.split('\n\n')
+        buffer = lines.pop() || '' // Keep incomplete last line in buffer
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6))
+
+              switch (data.type) {
+                case 'start':
+                  setImportProgress({ current: 0, total: 0, message: data.message, phase: 'fetching' })
+                  break
+                case 'progress':
+                  setImportProgress({
+                    current: data.current,
+                    total: data.total,
+                    message: data.message,
+                    phase: 'downloading',
+                  })
+                  break
+                case 'saving':
+                case 'db_progress':
+                  setImportProgress({
+                    current: data.current || 0,
+                    total: data.total || 0,
+                    message: data.message,
+                    phase: 'saving',
+                  })
+                  break
+                case 'complete':
+                  setImportProgress({ current: 100, total: 100, message: data.message, phase: 'done' })
+                  setImportMessage(data.message)
+                  setTimeout(() => {
+                    router.reload()
+                  }, 1500)
+                  break
+                case 'error':
+                  setImportProgress({ current: 0, total: 0, message: data.error, phase: 'error' })
+                  setImportMessage(`Erreur: ${data.error}`)
+                  break
+              }
+            } catch (e) {
+              console.error('Error parsing SSE data:', e)
+            }
+          }
+        }
       }
     } catch (error) {
+      setImportProgress({ current: 0, total: 0, message: 'Erreur de connexion', phase: 'error' })
       setImportMessage('Erreur lors de l\'import')
     } finally {
       setIsImporting(false)
@@ -255,8 +322,43 @@ export default function NotionIdeasIndex({ ideas, stats, isNotionConfigured }: P
           </button>
         </div>
 
-        {/* Import Message */}
-        {importMessage && (
+        {/* Import Progress */}
+        {isImporting && importProgress && (
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center gap-4 mb-4">
+              <RefreshCw className="h-6 w-6 text-blue-600 animate-spin" />
+              <div className="flex-1">
+                <p className="font-medium text-gray-900">{importProgress.message}</p>
+                {importProgress.phase === 'downloading' && importProgress.total > 0 && (
+                  <p className="text-sm text-gray-500">
+                    {importProgress.current} / {importProgress.total} pages traitées
+                  </p>
+                )}
+              </div>
+            </div>
+            {importProgress.total > 0 && (
+              <div className="w-full bg-gray-200 rounded-full h-3">
+                <div
+                  className={`h-3 rounded-full transition-all duration-300 ${
+                    importProgress.phase === 'error' ? 'bg-red-600' :
+                    importProgress.phase === 'done' ? 'bg-green-600' : 'bg-blue-600'
+                  }`}
+                  style={{
+                    width: `${Math.min(100, (importProgress.current / importProgress.total) * 100)}%`,
+                  }}
+                />
+              </div>
+            )}
+            {importProgress.phase === 'downloading' && (
+              <p className="text-xs text-gray-400 mt-2">
+                Téléchargement des médias en cours... Cela peut prendre plusieurs minutes.
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Import Message (after completion) */}
+        {!isImporting && importMessage && (
           <div
             className={`p-4 rounded-lg ${
               importMessage.startsWith('Erreur')

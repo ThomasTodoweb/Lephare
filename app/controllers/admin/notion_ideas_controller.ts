@@ -61,7 +61,7 @@ export default class NotionIdeasController {
   }
 
   /**
-   * Start a Notion import
+   * Start a Notion import with Server-Sent Events for progress
    */
   async import({ request, response }: HttpContext) {
     const notionService = new NotionService()
@@ -73,18 +73,37 @@ export default class NotionIdeasController {
     const generateAiTitles = request.input('generateAiTitles', false)
     const limit = request.input('limit') ? Number(request.input('limit')) : undefined
 
+    // Set up Server-Sent Events
+    response.response.setHeader('Content-Type', 'text/event-stream')
+    response.response.setHeader('Cache-Control', 'no-cache')
+    response.response.setHeader('Connection', 'keep-alive')
+    response.response.setHeader('X-Accel-Buffering', 'no')
+
+    const sendEvent = (data: object) => {
+      response.response.write(`data: ${JSON.stringify(data)}\n\n`)
+    }
+
     try {
+      sendEvent({ type: 'start', message: 'Démarrage de l\'import...' })
+
       const importedIdeas = await notionService.importIdeas({
         generateAiTitles,
         limit,
         downloadMedia: true,
+        onProgress: (current, total, message) => {
+          sendEvent({ type: 'progress', current, total, message })
+        },
       })
+
+      sendEvent({ type: 'saving', message: 'Enregistrement en base de données...' })
 
       // Save to database, skip duplicates
       let created = 0
       let skipped = 0
 
-      for (const idea of importedIdeas) {
+      for (let i = 0; i < importedIdeas.length; i++) {
+        const idea = importedIdeas[i]
+
         // Check if already exists
         const existing = await NotionIdea.findBy('notion_page_id', idea.notionPageId)
         if (existing) {
@@ -107,21 +126,36 @@ export default class NotionIdeasController {
           status: 'pending',
         })
         created++
+
+        // Send progress every 10 ideas
+        if ((i + 1) % 10 === 0) {
+          sendEvent({
+            type: 'db_progress',
+            current: i + 1,
+            total: importedIdeas.length,
+            message: `Enregistrement ${i + 1}/${importedIdeas.length}`,
+          })
+        }
       }
 
-      return response.json({
+      sendEvent({
+        type: 'complete',
         success: true,
         message: `Import terminé: ${created} idées créées, ${skipped} doublons ignorés`,
         created,
         skipped,
         total: importedIdeas.length,
       })
+
+      response.response.end()
     } catch (error) {
       console.error('NotionIdeasController: Import failed', error)
-      return response.internalServerError({
+      sendEvent({
+        type: 'error',
         error: 'Erreur lors de l\'import',
         details: error instanceof Error ? error.message : 'Unknown error',
       })
+      response.response.end()
     }
   }
 
