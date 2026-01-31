@@ -92,9 +92,6 @@ export default function Dashboard({ user, restaurant, mission, todayMissions, st
 
         {/* Missions du jour - Carousel swipable */}
         <div className="mb-6">
-          <Heading level={2} className="mb-3 text-neutral-900">
-            Tes missions du jour
-          </Heading>
           {todayMissions.length > 0 ? (
             <MissionCarousel
               missions={todayMissions}
