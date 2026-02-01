@@ -425,20 +425,22 @@ export default class NotionIdeasController {
         const sourcePath = notionIdea.mediaPaths[0]
         const mediaType = notionIdea.mediaTypes[0] as 'image' | 'video'
 
-        // Create content_ideas directory if needed
-        const contentIdeasDir = app.makePath('storage/uploads/content_ideas')
+        // Create content_ideas directory if needed (inside storage folder)
+        const contentIdeasDir = app.makePath('storage', 'uploads', 'content_ideas')
         await mkdir(contentIdeasDir, { recursive: true })
 
         // Generate new filename
         const ext = path.extname(sourcePath)
         const newFilename = `notion_${notionIdea.id}_${Date.now()}${ext}`
-        const destRelativePath = `/uploads/content_ideas/${newFilename}`
-        const destFullPath = app.makePath('storage', destRelativePath)
+        const destRelativePath = `storage/uploads/content_ideas/${newFilename}`
+        const destFullPath = app.makePath(destRelativePath)
 
-        // Copy file
-        const sourceFullPath = app.makePath('storage', sourcePath)
+        // Copy file - remove leading slash from source path if present
+        const cleanSourcePath = sourcePath.startsWith('/') ? sourcePath.slice(1) : sourcePath
+        const sourceFullPath = app.makePath('storage', cleanSourcePath)
         await copyFile(sourceFullPath, destFullPath)
 
+        // Store path matching other ideas format (storage/uploads/...)
         exampleMediaPath = destRelativePath
         exampleMediaType = mediaType
       }
@@ -512,17 +514,20 @@ export default class NotionIdeasController {
           const sourcePath = notionIdea.mediaPaths[0]
           const mediaType = notionIdea.mediaTypes[0] as 'image' | 'video'
 
-          const contentIdeasDir = app.makePath('storage/uploads/content_ideas')
+          const contentIdeasDir = app.makePath('storage', 'uploads', 'content_ideas')
           await mkdir(contentIdeasDir, { recursive: true })
 
           const ext = path.extname(sourcePath)
           const newFilename = `notion_${notionIdea.id}_${Date.now()}${ext}`
-          const destRelativePath = `/uploads/content_ideas/${newFilename}`
-          const destFullPath = app.makePath('storage', destRelativePath)
+          const destRelativePath = `storage/uploads/content_ideas/${newFilename}`
+          const destFullPath = app.makePath(destRelativePath)
 
-          const sourceFullPath = app.makePath('storage', sourcePath)
+          // Remove leading slash from source path if present
+          const cleanSourcePath = sourcePath.startsWith('/') ? sourcePath.slice(1) : sourcePath
+          const sourceFullPath = app.makePath('storage', cleanSourcePath)
           await copyFile(sourceFullPath, destFullPath)
 
+          // Store path matching other ideas format (storage/uploads/...)
           exampleMediaPath = destRelativePath
           exampleMediaType = mediaType
         }
