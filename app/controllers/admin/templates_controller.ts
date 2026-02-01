@@ -151,6 +151,7 @@ export default class TemplatesController {
         requiredTutorialId: template.requiredTutorialId,
         thematicCategoryId: template.thematicCategoryId,
         coverImagePath: template.coverImagePath,
+        useRandomIdeaBackground: template.useRandomIdeaBackground,
         missionsCount: Number(template.$extras.missions_count || 0),
         ideas: template.contentIdeas.map((idea) => ({
           id: idea.id,
@@ -195,6 +196,7 @@ export default class TemplatesController {
       tutorialId: data.tutorialId || null,
       requiredTutorialId: data.requiredTutorialId || null,
       thematicCategoryId: data.thematicCategoryId || null,
+      useRandomIdeaBackground: data.useRandomIdeaBackground ?? false,
     })
 
     await template.save()

@@ -43,6 +43,9 @@ export default class MissionTemplate extends BaseModel {
   @column()
   declare coverImagePath: string | null
 
+  @column()
+  declare useRandomIdeaBackground: boolean
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 

@@ -79,6 +79,7 @@ export const updateTemplateValidator = vine.compile(
     tutorialId: vine.number().positive().optional().nullable(),
     requiredTutorialId: vine.number().positive().optional().nullable(),
     thematicCategoryId: vine.number().positive().optional().nullable(),
+    useRandomIdeaBackground: vine.boolean().optional(),
   })
 )
 updateTemplateValidator.messagesProvider = messages

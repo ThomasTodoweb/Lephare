@@ -36,6 +36,7 @@ interface Template {
   tutorialId: number | null
   requiredTutorialId: number | null
   coverImagePath: string | null
+  useRandomIdeaBackground: boolean
   missionsCount: number
   ideas?: ContentIdea[]
 }
@@ -66,6 +67,7 @@ export default function AdminTemplatesEdit({ template, strategies, tutorials }: 
     isActive: template.isActive,
     tutorialId: template.tutorialId,
     requiredTutorialId: template.requiredTutorialId,
+    useRandomIdeaBackground: template.useRandomIdeaBackground,
   })
 
   // Ideas state management
@@ -610,6 +612,29 @@ export default function AdminTemplatesEdit({ template, strategies, tutorials }: 
               Template actif
             </label>
           </div>
+
+          {/* Use Random Idea Background */}
+          {['post', 'carousel', 'story', 'reel'].includes(data.type) && (
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  id="useRandomIdeaBackground"
+                  checked={data.useRandomIdeaBackground}
+                  onChange={(e) => setData('useRandomIdeaBackground', e.target.checked)}
+                  className="w-5 h-5 rounded border-amber-300 text-amber-600 focus:ring-amber-500 mt-0.5"
+                />
+                <div>
+                  <label htmlFor="useRandomIdeaBackground" className="text-sm font-medium text-amber-900">
+                    Utiliser une idee aleatoire comme fond
+                  </label>
+                  <p className="text-xs text-amber-700 mt-1">
+                    Le fond de la mission affichera une photo/video aleatoire parmi les idees de contenu correspondantes (meme type et categorie).
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Submit */}
           <div className="flex gap-3 pt-4">
