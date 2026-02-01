@@ -425,20 +425,53 @@ Réponds UNIQUEMENT avec le titre, rien d'autre.`
     }
 
     progress(0, 0, 'Fetching pages from Notion...')
-    const pages = await this.fetchAllPages()
-    const totalPages = pages.length
-    progress(0, totalPages, `Found ${totalPages} pages`)
+    let pages = await this.fetchAllPages()
+    progress(0, pages.length, `Found ${pages.length} pages`)
 
-    progress(0, totalPages, 'Fetching client names...')
-    const clientMap = await this.fetchClients(pages)
-    progress(0, totalPages, `Found ${clientMap.size} clients`)
+    // Sort pages by creation date (most recent first) BEFORE processing
+    pages.sort((a, b) => {
+      const dateA = new Date(a.properties['Date de création']?.created_time || 0).getTime()
+      const dateB = new Date(b.properties['Date de création']?.created_time || 0).getTime()
+      return dateB - dateA
+    })
 
-    const ideas: ImportedIdea[] = []
-    let processed = 0
+    // Filter pages with media only
+    const pagesWithMedia = pages.filter(
+      (page) => (page.properties['Fichiers et médias']?.files || []).length > 0
+    )
+    progress(0, pagesWithMedia.length, `${pagesWithMedia.length} pages with media`)
 
-    for (const page of pages) {
+    // Get client IDs from limited pages only
+    const clientIds = new Set<string>()
+    const pagesToProcess = limit && limit > 0 ? pagesWithMedia.slice(0, limit * 2) : pagesWithMedia
+    for (const page of pagesToProcess) {
+      const clientId = page.properties.Clients?.relation?.[0]?.id
+      if (clientId) clientIds.add(clientId)
+    }
+
+    progress(0, pagesToProcess.length, 'Fetching client names...')
+    const clientMap = new Map<string, string>()
+    for (const clientId of clientIds) {
+      const name = await this.getClientName(clientId)
+      if (name) clientMap.set(clientId, name)
+    }
+    progress(0, pagesToProcess.length, `Found ${clientMap.size} clients`)
+
+    // First pass: collect metadata WITHOUT downloading media
+    interface PageMetadata {
+      page: NotionPage
+      title: string
+      contentType: 'post' | 'story' | 'reel' | 'carousel'
+      clientNotionId?: string
+      clientName?: string
+      publicationDate?: string
+      createdAt: string
+      files: NotionFile[]
+    }
+
+    const metadata: PageMetadata[] = []
+    for (const page of pagesToProcess) {
       const files = page.properties['Fichiers et médias']?.files || []
-
       if (files.length === 0) continue
 
       const title = page.properties.Nom?.title?.[0]?.plain_text || 'Sans titre'
@@ -448,18 +481,68 @@ Réponds UNIQUEMENT avec le titre, rien d'autre.`
       const publicationDate = page.properties['Ma Date']?.date?.start
       const createdAt = page.properties['Date de création']?.created_time
 
+      metadata.push({
+        page,
+        title,
+        contentType: this.determineContentType(selectionName, files.length),
+        clientNotionId: clientId,
+        clientName,
+        publicationDate,
+        createdAt,
+        files,
+      })
+    }
+
+    // Distribute across clients BEFORE downloading
+    const distributeMetadata = (items: PageMetadata[]): PageMetadata[] => {
+      const byClient = new Map<string, PageMetadata[]>()
+      for (const item of items) {
+        const key = item.clientNotionId || 'unknown'
+        if (!byClient.has(key)) byClient.set(key, [])
+        byClient.get(key)!.push(item)
+      }
+
+      const distributed: PageMetadata[] = []
+      const iterators = Array.from(byClient.values()).map((arr) => ({ arr, idx: 0 }))
+
+      while (distributed.length < items.length) {
+        for (const iter of iterators) {
+          if (iter.idx < iter.arr.length) {
+            distributed.push(iter.arr[iter.idx])
+            iter.idx++
+          }
+        }
+      }
+      return distributed
+    }
+
+    let selectedMetadata = distributeMetadata(metadata)
+
+    // Apply limit BEFORE downloading media
+    if (limit && limit > 0) {
+      selectedMetadata = selectedMetadata.slice(0, limit)
+    }
+
+    const totalToProcess = selectedMetadata.length
+    progress(0, totalToProcess, `Processing ${totalToProcess} ideas...`)
+
+    // Now download media only for selected pages
+    const ideas: ImportedIdea[] = []
+    let processed = 0
+
+    for (const meta of selectedMetadata) {
       const mediaUrls: string[] = []
       const mediaPaths: string[] = []
       const mediaTypes: string[] = []
 
-      for (const file of files) {
+      for (const file of meta.files) {
         const url = file.file?.url || file.external?.url
         if (url) {
           mediaUrls.push(url)
           mediaTypes.push(this.getMediaType(file.name))
 
           if (downloadMedia) {
-            const saved = await this.downloadAndSaveMedia(url, file.name, page.id)
+            const saved = await this.downloadAndSaveMedia(url, file.name, meta.page.id)
             if (saved) {
               mediaPaths.push(saved.relativePath)
             }
@@ -468,70 +551,31 @@ Réponds UNIQUEMENT avec le titre, rien d'autre.`
       }
 
       if (downloadMedia && mediaPaths.length === 0) {
-        console.log(`NotionService: Skipping ${page.id} - no media downloaded`)
+        console.log(`NotionService: Skipping ${meta.page.id} - no media downloaded`)
         continue
       }
 
-      const contentType = this.determineContentType(selectionName, mediaUrls.length)
-
       ideas.push({
-        notionPageId: page.id,
-        title,
-        type: contentType,
+        notionPageId: meta.page.id,
+        title: meta.title,
+        type: meta.contentType,
         mediaUrls,
         mediaPaths: downloadMedia ? mediaPaths : [],
         mediaTypes,
-        clientNotionId: clientId,
-        clientName,
-        publicationDate,
-        createdAt,
+        clientNotionId: meta.clientNotionId,
+        clientName: meta.clientName,
+        publicationDate: meta.publicationDate,
+        createdAt: meta.createdAt,
       })
 
       processed++
-      if (processed % 10 === 0) {
-        progress(processed, totalPages, `Processed ${processed} ideas`)
-      }
-    }
-
-    // Sort by creation date (most recent first)
-    ideas.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-
-    // Distribute ideas across clients
-    const distributeAcrossClients = (ideasList: ImportedIdea[]): ImportedIdea[] => {
-      const byClient = new Map<string, ImportedIdea[]>()
-      for (const idea of ideasList) {
-        const key = idea.clientNotionId || 'unknown'
-        if (!byClient.has(key)) {
-          byClient.set(key, [])
-        }
-        byClient.get(key)!.push(idea)
-      }
-
-      const distributed: ImportedIdea[] = []
-      const iterators = Array.from(byClient.values()).map((arr) => ({ arr, idx: 0 }))
-
-      while (distributed.length < ideasList.length) {
-        for (const iter of iterators) {
-          if (iter.idx < iter.arr.length) {
-            distributed.push(iter.arr[iter.idx])
-            iter.idx++
-          }
-        }
-      }
-
-      return distributed
-    }
-
-    let distributedIdeas = distributeAcrossClients(ideas)
-
-    if (limit && limit > 0) {
-      distributedIdeas = distributedIdeas.slice(0, limit)
+      progress(processed, totalToProcess, `Processed ${processed}/${totalToProcess} ideas`)
     }
 
     if (generateAiTitles) {
-      progress(0, distributedIdeas.length, 'Generating AI titles...')
+      progress(0, ideas.length, 'Generating AI titles...')
       let aiProcessed = 0
-      for (const idea of distributedIdeas) {
+      for (const idea of ideas) {
         const aiTitle = await this.generateTitleFromMedia(
           idea.mediaUrls,
           idea.mediaTypes,
@@ -542,13 +586,13 @@ Réponds UNIQUEMENT avec le titre, rien d'autre.`
         }
         aiProcessed++
         if (aiProcessed % 5 === 0) {
-          progress(aiProcessed, distributedIdeas.length, `AI titles: ${aiProcessed}/${distributedIdeas.length}`)
+          progress(aiProcessed, ideas.length, `AI titles: ${aiProcessed}/${ideas.length}`)
         }
       }
     }
 
-    progress(distributedIdeas.length, distributedIdeas.length, 'Import complete')
-    return distributedIdeas
+    progress(ideas.length, ideas.length, 'Import complete')
+    return ideas
   }
 
   /**
