@@ -1,7 +1,11 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import NotionIdea from '#models/notion_idea'
+import ContentIdea from '#models/content_idea'
 import NotionService from '#services/notion_service'
 import { DateTime } from 'luxon'
+import { copyFile, mkdir } from 'node:fs/promises'
+import path from 'node:path'
+import app from '@adonisjs/core/services/app'
 
 export default class NotionIdeasController {
   /**
@@ -391,6 +395,167 @@ export default class NotionIdeasController {
 
     return response.json({
       clients: clients.map((c) => c.clientName).filter(Boolean),
+    })
+  }
+
+  /**
+   * Convert a NotionIdea to a ContentIdea (for use in missions)
+   */
+  async convertToContentIdea({ params, request, response }: HttpContext) {
+    const ideaId = Number(params.id)
+    if (Number.isNaN(ideaId) || ideaId <= 0) {
+      return response.badRequest({ error: 'ID invalide' })
+    }
+
+    const notionIdea = await NotionIdea.find(ideaId)
+    if (!notionIdea) {
+      return response.notFound({ error: 'Idée Notion non trouvée' })
+    }
+
+    // Get optional overrides from request
+    const suggestionText = request.input('suggestionText') || notionIdea.displayTitle
+    const photoTips = request.input('photoTips') || null
+
+    try {
+      // Copy the first media file to content_ideas folder
+      let exampleMediaPath: string | null = null
+      let exampleMediaType: 'image' | 'video' | null = null
+
+      if (notionIdea.mediaPaths.length > 0 && notionIdea.mediaTypes.length > 0) {
+        const sourcePath = notionIdea.mediaPaths[0]
+        const mediaType = notionIdea.mediaTypes[0] as 'image' | 'video'
+
+        // Create content_ideas directory if needed
+        const contentIdeasDir = app.makePath('storage/uploads/content_ideas')
+        await mkdir(contentIdeasDir, { recursive: true })
+
+        // Generate new filename
+        const ext = path.extname(sourcePath)
+        const newFilename = `notion_${notionIdea.id}_${Date.now()}${ext}`
+        const destRelativePath = `/uploads/content_ideas/${newFilename}`
+        const destFullPath = app.makePath('storage', destRelativePath)
+
+        // Copy file
+        const sourceFullPath = app.makePath('storage', sourcePath)
+        await copyFile(sourceFullPath, destFullPath)
+
+        exampleMediaPath = destRelativePath
+        exampleMediaType = mediaType
+      }
+
+      // Map Notion content type to ContentIdea contentTypes array
+      const contentTypes = notionIdea.contentType === 'carousel'
+        ? ['carousel' as const]
+        : [notionIdea.contentType as 'post' | 'story' | 'reel']
+
+      // Create the ContentIdea
+      const contentIdea = await ContentIdea.create({
+        title: notionIdea.displayTitle,
+        suggestionText,
+        photoTips,
+        isActive: true,
+        contentTypes,
+        exampleMediaPath,
+        exampleMediaType,
+        restaurantTags: null, // Applies to all restaurant types
+        thematicCategoryIds: null, // Applies to all categories
+      })
+
+      // Mark the NotionIdea as converted
+      notionIdea.status = 'converted'
+      await notionIdea.save()
+
+      return response.json({
+        success: true,
+        message: 'Idée convertie avec succès',
+        contentIdeaId: contentIdea.id,
+      })
+    } catch (error) {
+      console.error('NotionIdeasController: Convert failed', error)
+      return response.internalServerError({
+        error: 'Erreur lors de la conversion',
+        details: error instanceof Error ? error.message : 'Unknown error',
+      })
+    }
+  }
+
+  /**
+   * Bulk convert NotionIdeas to ContentIdeas
+   */
+  async bulkConvert({ request, response }: HttpContext) {
+    const ids = request.input('ids')
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return response.badRequest({ error: 'IDs requis' })
+    }
+
+    let converted = 0
+    const errors: string[] = []
+
+    for (const id of ids) {
+      const notionIdea = await NotionIdea.find(Number(id))
+      if (!notionIdea) {
+        errors.push(`ID ${id}: non trouvé`)
+        continue
+      }
+
+      if (notionIdea.status === 'converted') {
+        errors.push(`ID ${id}: déjà converti`)
+        continue
+      }
+
+      try {
+        // Copy media
+        let exampleMediaPath: string | null = null
+        let exampleMediaType: 'image' | 'video' | null = null
+
+        if (notionIdea.mediaPaths.length > 0 && notionIdea.mediaTypes.length > 0) {
+          const sourcePath = notionIdea.mediaPaths[0]
+          const mediaType = notionIdea.mediaTypes[0] as 'image' | 'video'
+
+          const contentIdeasDir = app.makePath('storage/uploads/content_ideas')
+          await mkdir(contentIdeasDir, { recursive: true })
+
+          const ext = path.extname(sourcePath)
+          const newFilename = `notion_${notionIdea.id}_${Date.now()}${ext}`
+          const destRelativePath = `/uploads/content_ideas/${newFilename}`
+          const destFullPath = app.makePath('storage', destRelativePath)
+
+          const sourceFullPath = app.makePath('storage', sourcePath)
+          await copyFile(sourceFullPath, destFullPath)
+
+          exampleMediaPath = destRelativePath
+          exampleMediaType = mediaType
+        }
+
+        const contentTypes = notionIdea.contentType === 'carousel'
+          ? ['carousel' as const]
+          : [notionIdea.contentType as 'post' | 'story' | 'reel']
+
+        await ContentIdea.create({
+          title: notionIdea.displayTitle,
+          suggestionText: notionIdea.displayTitle,
+          photoTips: null,
+          isActive: true,
+          contentTypes,
+          exampleMediaPath,
+          exampleMediaType,
+          restaurantTags: null,
+          thematicCategoryIds: null,
+        })
+
+        notionIdea.status = 'converted'
+        await notionIdea.save()
+        converted++
+      } catch (error) {
+        errors.push(`ID ${id}: ${error instanceof Error ? error.message : 'erreur'}`)
+      }
+    }
+
+    return response.json({
+      success: true,
+      converted,
+      errors: errors.length > 0 ? errors : undefined,
+      message: `${converted} idée(s) convertie(s)${errors.length > 0 ? `, ${errors.length} erreur(s)` : ''}`,
     })
   }
 }

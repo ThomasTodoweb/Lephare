@@ -382,4 +382,6 @@ router.group(() => {
   router.delete('/notion/:id', [AdminNotionIdeasController, 'destroy']).as('admin.notion.destroy')
   router.post('/notion/bulk-delete', [AdminNotionIdeasController, 'bulkDelete']).as('admin.notion.bulkDelete')
   router.post('/notion/bulk-status', [AdminNotionIdeasController, 'bulkUpdateStatus']).as('admin.notion.bulkUpdateStatus')
+  router.post('/notion/:id/convert', [AdminNotionIdeasController, 'convertToContentIdea']).as('admin.notion.convert')
+  router.post('/notion/bulk-convert', [AdminNotionIdeasController, 'bulkConvert']).as('admin.notion.bulkConvert')
 }).prefix('/admin').middleware([middleware.auth(), middleware.admin()])

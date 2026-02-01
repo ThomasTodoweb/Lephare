@@ -42,6 +42,7 @@ const navGroups: NavGroup[] = [
       { href: '/admin/strategies', label: 'Stratégies', icon: '🎯' },
       { href: '/admin/templates', label: 'Templates', icon: '📝' },
       { href: '/admin/tutorials', label: 'Tutoriels', icon: '📚' },
+      { href: '/admin/notion', label: 'Import Notion', icon: '📥' },
     ],
   },
   {

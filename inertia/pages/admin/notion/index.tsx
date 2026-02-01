@@ -11,12 +11,12 @@ import {
   CheckCircle,
   Clock,
   XCircle,
-  Filter,
   RefreshCw,
   Images,
   Film,
   Camera,
   Smartphone,
+  ArrowRight,
 } from 'lucide-react'
 
 type ContentType = 'post' | 'story' | 'reel' | 'carousel'
@@ -123,7 +123,7 @@ export default function NotionIdeasIndex({ ideas, stats, isNotionConfigured }: P
             .find((row) => row.startsWith('XSRF-TOKEN='))
             ?.split('=')[1] || '',
         },
-        body: JSON.stringify({ generateAiTitles: false }),
+        body: JSON.stringify({ generateAiTitles: false, limit: 100 }),
       })
 
       // Handle Server-Sent Events stream
@@ -278,6 +278,55 @@ export default function NotionIdeasIndex({ ideas, stats, isNotionConfigured }: P
       router.reload()
     } catch (error) {
       console.error('Error bulk updating status:', error)
+    }
+  }
+
+  const handleConvert = async (id: number) => {
+    try {
+      const response = await fetch(`/admin/notion/${id}/convert`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-XSRF-TOKEN': document.cookie
+            .split('; ')
+            .find((row) => row.startsWith('XSRF-TOKEN='))
+            ?.split('=')[1] || '',
+        },
+      })
+      const data = await response.json()
+      if (data.success) {
+        setImportMessage(data.message)
+        router.reload()
+      } else {
+        alert(`Erreur: ${data.error}`)
+      }
+    } catch (error) {
+      console.error('Error converting idea:', error)
+    }
+  }
+
+  const handleBulkConvert = async () => {
+    if (selectedIds.length === 0) return
+    if (!confirm(`Convertir ${selectedIds.length} idées en ContentIdeas ?`)) return
+
+    try {
+      const response = await fetch('/admin/notion/bulk-convert', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-XSRF-TOKEN': document.cookie
+            .split('; ')
+            .find((row) => row.startsWith('XSRF-TOKEN='))
+            ?.split('=')[1] || '',
+        },
+        body: JSON.stringify({ ids: selectedIds }),
+      })
+      const data = await response.json()
+      setImportMessage(data.message)
+      setSelectedIds([])
+      router.reload()
+    } catch (error) {
+      console.error('Error bulk converting:', error)
     }
   }
 
@@ -462,6 +511,13 @@ export default function NotionIdeasIndex({ ideas, stats, isNotionConfigured }: P
             </span>
             <div className="flex gap-2">
               <button
+                onClick={handleBulkConvert}
+                className="px-3 py-1.5 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 flex items-center gap-1"
+              >
+                <ArrowRight className="h-4 w-4" />
+                Convertir en Idées
+              </button>
+              <button
                 onClick={() => handleBulkStatus('approved')}
                 className="px-3 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700"
               >
@@ -514,6 +570,7 @@ export default function NotionIdeasIndex({ ideas, stats, isNotionConfigured }: P
               onSelect={() => toggleSelect(idea.id)}
               onUpdateStatus={handleUpdateStatus}
               onDelete={() => handleDelete(idea.id)}
+              onConvert={() => handleConvert(idea.id)}
             />
           ))}
         </div>
@@ -566,9 +623,10 @@ interface IdeaCardProps {
   onSelect: () => void
   onUpdateStatus: (id: number, status: IdeaStatus) => void
   onDelete: () => void
+  onConvert: () => void
 }
 
-function IdeaCard({ idea, isSelected, onSelect, onUpdateStatus, onDelete }: IdeaCardProps) {
+function IdeaCard({ idea, isSelected, onSelect, onUpdateStatus, onDelete, onConvert }: IdeaCardProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const isVideo = idea.primaryMediaType === 'video'
   const typeConfig = CONTENT_TYPE_CONFIG[idea.contentType]
@@ -672,6 +730,15 @@ function IdeaCard({ idea, isSelected, onSelect, onUpdateStatus, onDelete }: Idea
         <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
           {/* Status Buttons */}
           <div className="flex gap-1">
+            {idea.status !== 'converted' && (
+              <button
+                onClick={onConvert}
+                className="p-1.5 rounded-lg transition-colors text-purple-600 hover:bg-purple-50"
+                title="Convertir en Idée de contenu"
+              >
+                <ArrowRight className="h-5 w-5" />
+              </button>
+            )}
             <button
               onClick={() => onUpdateStatus(idea.id, 'approved')}
               className={`p-1.5 rounded-lg transition-colors ${
