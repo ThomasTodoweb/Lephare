@@ -271,6 +271,60 @@ export default class AIService {
   }
 
   /**
+   * Validate user context from speech recognition
+   * Checks if the text is comprehensible, coherent with the mission, and relevant for a restaurant
+   * Returns cleaned context if valid, null if invalid
+   */
+  async validateUserContext(
+    userContext: string,
+    missionTitle: string,
+    missionTheme?: string,
+    restaurantName?: string
+  ): Promise<{ isValid: boolean; cleanedContext: string | null }> {
+    if (!this.isConfigured()) {
+      // If AI not configured, pass through as-is
+      return { isValid: true, cleanedContext: userContext }
+    }
+
+    const systemPrompt = `Tu es un validateur de contexte pour une app de publication Instagram pour restaurants.
+L'utilisateur a dicté du contexte par reconnaissance vocale. Tu dois vérifier :
+
+1. COMPRÉHENSIBILITÉ : Le texte est-il lisible et compréhensible ? (pas du charabia, pas de mots sans sens)
+2. COHÉRENCE MISSION : Le contexte correspond-il à la mission "${missionTitle}"${missionTheme ? ` (thème : "${missionTheme}")` : ''} ?
+3. PERTINENCE RESTAURANT : Le contexte fait-il sens pour un restaurant${restaurantName ? ` ("${restaurantName}")` : ''} ?
+
+RÈGLES :
+- Si le texte est du charabia incompréhensible (reconnaissance vocale ratée) → invalide
+- Si le texte n'a aucun rapport avec la mission ou le restaurant → invalide
+- Si le texte est compréhensible et pertinent, nettoie-le (corrige les fautes de reconnaissance vocale évidentes)
+- Sois tolérant : même un contexte minimal ("burger", "Marie la cheffe") est valide s'il fait sens
+
+FORMAT RÉPONSE (JSON uniquement) :
+{"isValid": true, "cleanedContext": "texte nettoyé"} ou {"isValid": false, "cleanedContext": null}`
+
+    const userPrompt = `Contexte dicté par l'utilisateur : "${userContext}"`
+
+    try {
+      const result = await this.chatCompletion(systemPrompt, userPrompt, 100)
+      if (result) {
+        const jsonMatch = result.match(/\{[\s\S]*\}/)
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]) as { isValid?: boolean; cleanedContext?: string | null }
+          return {
+            isValid: parsed.isValid === true,
+            cleanedContext: parsed.isValid ? (parsed.cleanedContext || userContext) : null,
+          }
+        }
+      }
+    } catch (error) {
+      console.error('AIService: Context validation failed', error)
+    }
+
+    // Fallback: pass through as valid
+    return { isValid: true, cleanedContext: userContext }
+  }
+
+  /**
    * Generate a description for an Instagram post
    * If an image is provided, Claude will analyze it for better context
    */
@@ -494,7 +548,8 @@ Donne un feedback personnalisé et 1-2 conseils pour la semaine suivante.`
     restaurantName?: string,
     restaurantType?: string,
     missionTitle?: string,
-    missionTheme?: string
+    missionTheme?: string,
+    userContext?: string
   ): Promise<MediaQualityResult> {
     // Default response if AI is not configured
     if (!this.claudeApiKey) {
@@ -514,8 +569,12 @@ Donne un feedback personnalisé et 1-2 conseils pour la semaine suivante.`
       ? `\nMISSION : "${missionTitle}"${missionTheme ? ` - Thème : "${missionTheme}"` : ''}`
       : ''
 
+    const userContextBlock = userContext
+      ? `\nCONTEXTE DE L'UTILISATEUR : "${userContext}"\nL'utilisateur a décrit son contenu. Intègre cette info dans ton avis : si le contexte mentionne un plat et que l'image montre bien ce plat, mentionne-le. Si le contexte ne correspond pas à l'image, signale-le.`
+      : ''
+
     const systemPrompt = `Tu es Popote, un ami qui donne son avis honnête avant qu'on poste sur Instagram.
-${restaurantContext}${missionContext}
+${restaurantContext}${missionContext}${userContextBlock}
 
 CONTEXTE : C'est le compte Instagram d'un RESTAURANT.
 
@@ -568,9 +627,13 @@ FORMAT RÉPONSE (JSON uniquement) :
   "matchesMission": true|false
 }`
 
-    const userPrompt = missionTitle
+    let userPrompt = missionTitle
       ? `Je vais poster cette photo sur l'Instagram de mon resto. La mission c'est "${missionTitle}". T'en penses quoi ?`
       : `Je vais poster cette photo sur l'Instagram de mon resto. T'en penses quoi ?`
+
+    if (userContext) {
+      userPrompt += ` J'ai précisé : "${userContext}".`
+    }
 
     try {
       const result = await this.claudeVisionCompletion(
@@ -654,7 +717,8 @@ FORMAT RÉPONSE (JSON uniquement) :
     restaurantName?: string,
     restaurantType?: string,
     missionTitle?: string,
-    missionTheme?: string
+    missionTheme?: string,
+    userContext?: string
   ): Promise<MediaQualityResult> {
     if (!this.claudeApiKey) {
       return {
@@ -673,8 +737,12 @@ FORMAT RÉPONSE (JSON uniquement) :
       ? `\nMISSION : "${missionTitle}"${missionTheme ? ` - Thème : "${missionTheme}"` : ''}`
       : ''
 
+    const userContextBlock = userContext
+      ? `\nCONTEXTE DE L'UTILISATEUR : "${userContext}"\nL'utilisateur a décrit son contenu. Intègre cette info dans ton avis.`
+      : ''
+
     const systemPrompt = `Tu es Popote, un ami qui donne son avis honnête avant qu'on poste sur Instagram.
-${restaurantContext}${missionContext}
+${restaurantContext}${missionContext}${userContextBlock}
 
 CONTEXTE TECHNIQUE (ne pas mentionner) :
 Tu reçois ${framesBase64.length} images extraites d'UNE SEULE VIDÉO ${contentLabel.toUpperCase()}.
@@ -716,9 +784,13 @@ EXEMPLES :
 FORMAT RÉPONSE (JSON uniquement) :
 {"score": "green|yellow|red", "feedback": "ton avis", "details": "note technique"}`
 
-    const userPrompt = missionTitle
+    let userPrompt = missionTitle
       ? `Je vais poster cette vidéo en ${contentLabel} sur l'Instagram de mon resto. La mission c'est "${missionTitle}". T'en penses quoi ?`
       : `Je vais poster cette vidéo en ${contentLabel} sur l'Instagram de mon resto. T'en penses quoi ?`
+
+    if (userContext) {
+      userPrompt += ` J'ai précisé : "${userContext}".`
+    }
 
     try {
       const result = await this.claudeMultiImageCompletion(

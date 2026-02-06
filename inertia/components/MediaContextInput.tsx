@@ -260,67 +260,67 @@ export function MediaContextInput({
   const hasAnyAnswer = Object.values(answers).some((v) => v?.trim())
 
   return (
-    <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-2xl overflow-hidden shadow-sm">
-      {/* Main mic button - prominent */}
+    <div className="bg-neutral-50 border border-neutral-200 rounded-2xl overflow-hidden">
+      {/* Main mic button */}
       <div className="p-4">
-        <div className="flex items-start gap-4">
-          {/* Big mic button */}
+        <div className="flex items-start gap-3">
+          {/* Mic button */}
           {isSupported && (
             <button
               type="button"
               onClick={toggleListening}
               disabled={disabled}
               className={`
-                flex-shrink-0 w-16 h-16 rounded-2xl flex items-center justify-center
-                transition-all duration-200 shadow-md
+                flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center
+                transition-all duration-200
                 ${isListening
-                  ? 'bg-red-500 text-white animate-pulse scale-105'
-                  : 'bg-white text-amber-600 hover:bg-amber-100 hover:scale-105 active:scale-95'
+                  ? 'bg-red-500 text-white animate-pulse'
+                  : 'bg-neutral-900 text-white hover:bg-neutral-800 active:scale-95'
                 }
                 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
               `}
             >
               {isListening ? (
-                <MicOff className="w-7 h-7" />
+                <MicOff className="w-5 h-5" />
               ) : (
-                <Mic className="w-7 h-7" />
+                <Mic className="w-5 h-5" />
               )}
             </button>
           )}
 
           {/* Instructions / status */}
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <p className="text-base font-semibold text-amber-900">
+            <div className="flex items-center gap-2 mb-0.5">
+              <p className="text-sm font-semibold text-neutral-800">
                 {hasAnyAnswer ? 'Contexte ajouté' : 'Ajouter du contexte'}
               </p>
               {hasAnyAnswer && <Check className="w-4 h-4 text-green-600" />}
             </div>
 
             {isListening ? (
-              <p className="text-sm text-red-600 font-medium">
+              <p className="text-xs text-red-600 font-medium">
                 Parle maintenant... Appuie pour arrêter
               </p>
             ) : isSupported ? (
-              <p className="text-sm text-amber-700">
+              <p className="text-xs text-neutral-500">
                 Appuie sur le micro et décris ton contenu
               </p>
             ) : (
-              <p className="text-sm text-amber-700">
+              <p className="text-xs text-neutral-500">
                 Remplis les champs ci-dessous
               </p>
             )}
 
             {/* Show transcript while listening */}
             {isListening && transcript && (
-              <p className="mt-2 text-sm text-neutral-600 bg-white/60 rounded-lg px-3 py-2 italic">
+              <p className="mt-2 text-sm text-neutral-600 bg-white rounded-lg px-3 py-2 italic">
                 "{transcript}"
               </p>
             )}
 
             {/* Error message */}
             {error && (
-              <p className="mt-2 text-sm text-red-600">
+              <p className="mt-2 text-xs text-red-600">
                 {error}
               </p>
             )}
@@ -329,13 +329,13 @@ export function MediaContextInput({
       </div>
 
       {/* Editable fields - always visible */}
-      <div className="px-4 pb-4 space-y-3 border-t border-amber-200/50 pt-3">
-        <p className="text-xs text-amber-600 font-medium uppercase tracking-wide">
+      <div className="px-4 pb-4 space-y-3 border-t border-neutral-100 pt-3">
+        <p className="text-xs text-neutral-500 font-medium uppercase tracking-wide">
           {isSupported ? 'Ou remplis manuellement :' : 'Informations :'}
         </p>
         {questions.map((question) => (
           <div key={question.id}>
-            <label className="block text-xs font-medium text-amber-800 mb-1">
+            <label className="block text-xs font-medium text-neutral-600 mb-1">
               {question.label}
             </label>
             <input
@@ -343,7 +343,7 @@ export function MediaContextInput({
               value={answers[question.id] || ''}
               onChange={(e) => handleAnswerChange(question.id, e.target.value)}
               placeholder={question.placeholder}
-              className="w-full px-3 py-2.5 text-sm border border-amber-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent bg-white"
+              className="w-full px-3 py-2.5 text-sm border border-neutral-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white"
               disabled={disabled}
             />
           </div>

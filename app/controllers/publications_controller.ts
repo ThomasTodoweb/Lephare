@@ -487,7 +487,8 @@ export default class PublicationsController {
             restaurant?.name,
             restaurant?.type,
             missionTitle,
-            missionTheme
+            missionTheme,
+            publication.userContext || undefined
           )
 
           publication.qualityScore = result.score
@@ -556,7 +557,8 @@ export default class PublicationsController {
       restaurant?.name,
       restaurant?.type,
       missionTitle,
-      missionTheme
+      missionTheme,
+      publication.userContext || undefined
     )
 
     // Save result
@@ -661,6 +663,20 @@ export default class PublicationsController {
         console.error('Failed to read media for AI analysis:', error)
       }
 
+      // Validate user context before using it in description
+      let validatedContext: string | undefined = undefined
+      if (publication.userContext) {
+        const validation = await aiService.validateUserContext(
+          publication.userContext,
+          publication.mission.missionTemplate.title,
+          publication.mission.missionTemplate.contentIdea,
+          restaurant?.name
+        )
+        if (validation.isValid && validation.cleanedContext) {
+          validatedContext = validation.cleanedContext
+        }
+      }
+
       aiCaption = await aiService.generateDescription({
         missionTitle: publication.mission.missionTemplate.title,
         missionType: publication.mission.missionTemplate.type,
@@ -670,7 +686,7 @@ export default class PublicationsController {
         restaurantCity: restaurant?.city || undefined,
         imageBase64,
         imageMimeType,
-        userContext: publication.userContext || undefined,
+        userContext: validatedContext,
       })
 
       if (aiCaption) {
