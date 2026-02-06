@@ -38,6 +38,7 @@ const AdminIdeasController = () => import('#controllers/admin/ideas_controller')
 const AdminThematicCategoriesController = () => import('#controllers/admin/thematic_categories_controller')
 const AdminLevelsController = () => import('#controllers/admin/levels_controller')
 const AdminNotionIdeasController = () => import('#controllers/admin/notion_ideas_controller')
+const AdminMediaOptimizationController = () => import('#controllers/admin/media_optimization_controller')
 const HomeController = () => import('#controllers/home_controller')
 const SocialAuthController = () => import('#controllers/social_auth_controller')
 const CalendarController = () => import('#controllers/calendar_controller')
@@ -58,16 +59,28 @@ router.get('/storage/*', async ({ params, response, request }) => {
   }
 
   // Check if file exists
+  let stat: Awaited<ReturnType<typeof fs.promises.stat>>
   try {
-    await fs.promises.access(fullPath)
+    stat = await fs.promises.stat(fullPath)
   } catch {
     return response.notFound('File not found')
+  }
+
+  // Cache headers - use ETag based on file modification time for cache validation
+  // When file is updated, URL has cache-buster (?v=timestamp), so old cache is bypassed
+  const etag = `"${stat.mtime.getTime()}-${stat.size}"`
+  response.header('ETag', etag)
+  response.header('Cache-Control', 'public, max-age=31536000, immutable') // 1 year - URL changes when file changes
+
+  // Check if client has valid cached version
+  const ifNoneMatch = request.header('If-None-Match')
+  if (ifNoneMatch === etag) {
+    return response.status(304).send('')
   }
 
   // For video files, support range requests (needed for iOS video playback)
   const videoExtensions = ['.mp4', '.mov', '.webm']
   if (videoExtensions.includes(ext)) {
-    const stat = await fs.promises.stat(fullPath)
     const fileSize = stat.size
     const range = request.header('range')
 
@@ -219,14 +232,13 @@ router.group(() => {
   router.get('/missions/history', [MissionsController, 'history']).as('missions.history')
   router.get('/missions/:id', [MissionsController, 'show']).as('missions.show')
   router.post('/missions/:id/accept', [MissionsController, 'accept']).as('missions.accept')
-  router.post('/missions/:id/skip', [MissionsController, 'skip']).as('missions.skip')
-  router.post('/missions/:id/reload', [MissionsController, 'reload']).as('missions.reload')
 
   // Publication flow - premium feature
   router.get('/missions/:id/photo', [PublicationsController, 'photo']).as('missions.photo')
   router.post('/missions/:id/photo', [PublicationsController, 'uploadPhoto']).as('missions.photo.upload')
   router.get('/publications/:id/analysis', [PublicationsController, 'analysis']).as('publications.analysis')
   router.post('/publications/:id/analysis', [PublicationsController, 'runAnalysis']).as('publications.runAnalysis')
+  router.post('/publications/:id/context', [PublicationsController, 'saveContext']).as('publications.context')
   router.get('/publications/:id/description', [PublicationsController, 'description']).as('publications.description')
   router.post('/publications/:id/caption', [PublicationsController, 'updateCaption']).as('publications.caption')
   router.post('/publications/:id/publish', [PublicationsController, 'publish']).as('publications.publish')
@@ -300,6 +312,8 @@ router.group(() => {
   router.delete('/templates/:id', [AdminTemplatesController, 'destroy']).as('admin.templates.destroy')
   router.post('/templates/:id/cover-image', [AdminTemplatesController, 'uploadCoverImage']).as('admin.templates.uploadCoverImage')
   router.delete('/templates/:id/cover-image', [AdminTemplatesController, 'removeCoverImage']).as('admin.templates.removeCoverImage')
+  router.post('/templates/:id/link-idea', [AdminTemplatesController, 'linkIdea']).as('admin.templates.linkIdea')
+  router.delete('/templates/:id/ideas/:ideaId', [AdminTemplatesController, 'unlinkIdea']).as('admin.templates.unlinkIdea')
 
   // Content Ideas CRUD (nested under templates - LEGACY)
   router.get('/templates/:templateId/ideas', [AdminContentIdeasController, 'index']).as('admin.template-ideas.index')
@@ -316,6 +330,11 @@ router.group(() => {
   router.put('/ideas/:id', [AdminIdeasController, 'update']).as('admin.ideas.update')
   router.post('/ideas/:id/toggle', [AdminIdeasController, 'toggleActive']).as('admin.ideas.toggle')
   router.delete('/ideas/:id', [AdminIdeasController, 'destroy']).as('admin.ideas.destroy')
+
+  // Media Optimization
+  router.get('/ideas/optimization/status', [AdminMediaOptimizationController, 'status']).as('admin.ideas.optimization.status')
+  router.post('/ideas/optimization/all', [AdminMediaOptimizationController, 'optimizeAll']).as('admin.ideas.optimization.all')
+  router.post('/ideas/:id/optimize', [AdminMediaOptimizationController, 'optimizeOne']).as('admin.ideas.optimization.one')
 
   // Thematic Categories CRUD
   router.get('/categories', [AdminThematicCategoriesController, 'index']).as('admin.categories.index')

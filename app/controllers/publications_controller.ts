@@ -57,31 +57,44 @@ export default class PublicationsController {
     // Get thematic category ID from mission template
     const thematicCategoryId = mission.missionTemplate.thematicCategoryId
 
-    // Load all active ideas (new system: ideas are standalone, not linked to templates)
+    // Load all active ideas
     const allIdeas = await ContentIdea.query().where('is_active', true)
 
-    // Filter ideas by:
-    // 1. Content type (post, story, reel, carousel)
-    // 2. Thematic category (if mission template has one)
-    // 3. Restaurant type (if user has one)
-    const matchingIdeas = allIdeas.filter((idea) => {
-      // Check content type match
-      if (!idea.matchesContentType(mission.missionTemplate.type)) {
-        return false
-      }
+    // Prioritize ideas explicitly linked to this mission template
+    // Then fallback to generic matching based on content type, category, restaurant
+    const templateId = mission.missionTemplate.id
+    const linkedIdeas = allIdeas.filter((idea) => idea.missionTemplateId === templateId)
 
-      // Check thematic category match
-      if (!idea.matchesThematicCategory(thematicCategoryId)) {
-        return false
-      }
+    let matchingIdeas: ContentIdea[]
+    if (linkedIdeas.length > 0) {
+      // Use only ideas explicitly linked to this template
+      matchingIdeas = linkedIdeas
+    } else {
+      // Fallback: Filter ideas by generic criteria
+      matchingIdeas = allIdeas.filter((idea) => {
+        // Skip ideas linked to OTHER templates
+        if (idea.missionTemplateId !== null && idea.missionTemplateId !== templateId) {
+          return false
+        }
 
-      // Check restaurant type match
-      if (!idea.matchesRestaurantType(userRestaurantType)) {
-        return false
-      }
+        // Check content type match
+        if (!idea.matchesContentType(mission.missionTemplate.type)) {
+          return false
+        }
 
-      return true
-    })
+        // Check thematic category match
+        if (!idea.matchesThematicCategory(thematicCategoryId)) {
+          return false
+        }
+
+        // Check restaurant type match
+        if (!idea.matchesRestaurantType(userRestaurantType)) {
+          return false
+        }
+
+        return true
+      })
+    }
 
     // Check if media files actually exist for each idea
     const filteredIdeasWithFileCheck = await Promise.all(
@@ -127,6 +140,8 @@ export default class PublicationsController {
             photoTips: idea.photoTips,
             exampleMediaPath: idea.exampleMediaPath,
             exampleMediaType: idea.exampleMediaType,
+            // Cache-buster: timestamp to force browser refresh when image changes
+            updatedAt: idea.updatedAt?.toISO() || null,
           })),
           linkedTutorial: mission.missionTemplate.tutorial
             ? {
@@ -179,6 +194,10 @@ export default class PublicationsController {
     const contentIdeaIdInput = request.input('contentIdeaId')
     const contentIdeaId = contentIdeaIdInput ? Number(contentIdeaIdInput) : null
 
+    // Get user context if provided (from MediaContextInput component)
+    const userContextInput = request.input('userContext')
+    const userContext = userContextInput && userContextInput.length <= 1000 ? userContextInput : null
+
     // Handle video upload for reels and stories with video
     if (isReel || (isStory && hasVideo)) {
       // Use the already validated video file
@@ -219,6 +238,7 @@ export default class PublicationsController {
         caption: '',
         status: 'draft',
         contentIdeaId,
+        userContext,
       })
 
       return response.redirect().toRoute('publications.analysis', { id: publication.id })
@@ -271,6 +291,7 @@ export default class PublicationsController {
         caption: '',
         status: 'draft',
         contentIdeaId,
+        userContext,
       })
 
       return response.redirect().toRoute('publications.analysis', { id: publication.id })
@@ -303,6 +324,7 @@ export default class PublicationsController {
       caption: '',
       status: 'draft',
       contentIdeaId,
+      userContext,
     })
 
     return response.redirect().toRoute('publications.analysis', { id: publication.id })
@@ -546,6 +568,8 @@ export default class PublicationsController {
     return response.json({
       score: result.score,
       feedback: result.feedback,
+      detectedContent: result.detectedContent,
+      matchesMission: result.matchesMission,
     })
   }
 
@@ -646,6 +670,7 @@ export default class PublicationsController {
         restaurantCity: restaurant?.city || undefined,
         imageBase64,
         imageMimeType,
+        userContext: publication.userContext || undefined,
       })
 
       if (aiCaption) {
@@ -654,6 +679,10 @@ export default class PublicationsController {
         await publication.save()
       }
     }
+
+    // Fetch Instagram account for preview
+    const lateService = new LateService()
+    const instagramAccount = await lateService.getInstagramAccountForUser(user.id)
 
     return inertia.render('publications/description', {
       publication: {
@@ -673,6 +702,12 @@ export default class PublicationsController {
               title: publication.mission.missionTemplate.title,
               type: publication.mission.missionTemplate.type,
             },
+          }
+        : null,
+      instagramAccount: instagramAccount
+        ? {
+            username: instagramAccount.username,
+            profilePictureUrl: instagramAccount.profilePictureUrl || null,
           }
         : null,
       totalSteps: 3,
@@ -819,5 +854,35 @@ export default class PublicationsController {
         imagePath: publication.imagePath,
       },
     })
+  }
+
+  /**
+   * Save user voice context (transcribed text)
+   * Called from analysis page before proceeding to description
+   */
+  async saveContext({ request, response, auth, params }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const publicationId = params.id
+
+    const publication = await Publication.query()
+      .where('id', publicationId)
+      .where('user_id', user.id)
+      .first()
+
+    if (!publication) {
+      return response.status(404).json({ error: 'Publication introuvable' })
+    }
+
+    const userContext = request.input('userContext')
+
+    // Limit characters to prevent abuse
+    if (userContext && userContext.length > 1000) {
+      return response.status(400).json({ error: 'Contexte trop long (max 1000 caractères)' })
+    }
+
+    publication.userContext = userContext || null
+    await publication.save()
+
+    return response.json({ success: true })
   }
 }

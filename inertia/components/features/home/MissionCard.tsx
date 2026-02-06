@@ -1,4 +1,5 @@
-import { Check, Camera, Smartphone, Film, BookOpen, MessageCircle, Images } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { Check, Camera, Smartphone, Film, BookOpen, MessageCircle, Images, Loader2 } from 'lucide-react'
 import { Heading } from '~/components/ui'
 
 export interface MissionCardProps {
@@ -7,6 +8,8 @@ export interface MissionCardProps {
     title: string
     description: string
     coverImageUrl: string
+    mediaType?: 'image' | 'video'
+    carouselImages?: string[]
     type?: 'post' | 'story' | 'reel' | 'tuto' | 'engagement' | 'carousel'
     status?: 'pending' | 'completed' | 'skipped'
     isRecommended?: boolean
@@ -30,24 +33,129 @@ export function MissionCard({ mission, onStart, isActive = true }: MissionCardPr
   const isSkipped = mission.status === 'skipped'
   const typeConfig = missionTypeConfig[mission.type || 'post'] || missionTypeConfig.post
 
+  // For carousel: track current image index
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const carouselImages = mission.carouselImages || []
+  const hasCarousel = carouselImages.length > 1
+
+  // Video ref for autoplay control
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const isVideo = mission.mediaType === 'video'
+
+  // Video loading state
+  const [videoLoaded, setVideoLoaded] = useState(false)
+  const [videoError, setVideoError] = useState(false)
+
+  // Carousel auto-advance every 2 seconds
+  useEffect(() => {
+    if (!hasCarousel || !isActive) return
+
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % carouselImages.length)
+    }, 2000)
+
+    return () => clearInterval(interval)
+  }, [hasCarousel, carouselImages.length, isActive])
+
+  // Video autoplay when active
+  useEffect(() => {
+    if (!isVideo || !videoRef.current) return
+
+    if (isActive) {
+      videoRef.current.play().catch(() => {
+        // Autoplay might be blocked, that's OK
+      })
+    } else {
+      videoRef.current.pause()
+    }
+  }, [isVideo, isActive])
+
+  // Reset video state when URL changes
+  useEffect(() => {
+    if (isVideo) {
+      setVideoLoaded(false)
+      setVideoError(false)
+    }
+  }, [mission.coverImageUrl, isVideo])
+
   return (
     <div
       onClick={onStart}
       className={`
         relative overflow-hidden rounded-2xl cursor-pointer
         transition-all duration-300 ease-out
-        ${isCompleted ? 'ring-4 ring-green-500' : 'ring-2 ring-neutral-200'}
+        ring-2 ring-neutral-200
         scale-100 opacity-100
         w-full min-h-[72vh]
       `}
     >
-      {/* Image de fond */}
-      <img
-        src={mission.coverImageUrl}
-        alt={mission.title}
-        loading="lazy"
-        className="absolute inset-0 w-full h-full object-cover"
-      />
+      {/* Background Media */}
+      {isVideo ? (
+        // Video background with autoplay and loading placeholder
+        <>
+          {/* Loading placeholder - shown while video loads */}
+          {!videoLoaded && !videoError && (
+            <div className="absolute inset-0 w-full h-full bg-neutral-800 flex items-center justify-center">
+              <Loader2 className="w-8 h-8 text-white/50 animate-spin" />
+            </div>
+          )}
+          {/* Error placeholder - shown if video fails to load */}
+          {videoError && (
+            <div className="absolute inset-0 w-full h-full bg-neutral-800 flex items-center justify-center">
+              <Film className="w-12 h-12 text-white/30" />
+            </div>
+          )}
+          {/* Video element */}
+          <video
+            ref={videoRef}
+            src={mission.coverImageUrl}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload={isActive ? "auto" : "metadata"}
+            onLoadedData={() => setVideoLoaded(true)}
+            onError={() => setVideoError(true)}
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${videoLoaded ? 'opacity-100' : 'opacity-0'}`}
+          />
+        </>
+      ) : hasCarousel ? (
+        // Carousel background with sliding images
+        <div className="absolute inset-0 w-full h-full">
+          {carouselImages.map((img, index) => (
+            <img
+              key={img}
+              src={img}
+              alt={`${mission.title} ${index + 1}`}
+              className={`
+                absolute inset-0 w-full h-full object-cover
+                transition-opacity duration-500 ease-in-out
+                ${index === currentImageIndex ? 'opacity-100' : 'opacity-0'}
+              `}
+            />
+          ))}
+          {/* Carousel indicators */}
+          <div className="absolute bottom-20 left-0 right-0 flex justify-center gap-1.5 z-10">
+            {carouselImages.map((_, index) => (
+              <div
+                key={index}
+                className={`
+                  w-1.5 h-1.5 rounded-full transition-all duration-300
+                  ${index === currentImageIndex ? 'bg-white w-4' : 'bg-white/50'}
+                `}
+              />
+            ))}
+          </div>
+        </div>
+      ) : (
+        // Single image background
+        <img
+          src={mission.coverImageUrl}
+          alt={mission.title}
+          loading="lazy"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+      )}
 
       {/* Overlay gradient */}
       <div className={`absolute inset-0 ${isCompleted ? 'bg-black/50' : 'bg-gradient-to-t from-black/90 via-black/40 to-black/20'}`} />

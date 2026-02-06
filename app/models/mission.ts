@@ -27,12 +27,6 @@ export default class Mission extends BaseModel {
   declare completedAt: DateTime | null
 
   @column()
-  declare usedPass: boolean
-
-  @column()
-  declare usedReload: boolean
-
-  @column()
   declare slotNumber: number
 
   @column()
@@ -61,10 +55,4 @@ export default class Mission extends BaseModel {
     return this.assignedAt.toUTC().startOf('day').equals(today)
   }
 
-  /**
-   * Check if pass/reload can still be used today
-   */
-  canUsePassOrReload(): boolean {
-    return this.isToday() && !this.usedPass && !this.usedReload && this.status === 'pending'
-  }
 }

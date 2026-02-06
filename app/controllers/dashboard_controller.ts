@@ -12,25 +12,22 @@ import type { RestaurantType } from '#models/restaurant'
 
 export default class DashboardController {
   /**
-   * Cache for random idea backgrounds to ensure consistency within a session
-   */
-  private randomIdeaCache = new Map<number, string>()
-
-  /**
    * Get a random content idea's media for use as mission background
+   * For carousels, returns multiple images
+   * Note: No caching - controllers are instantiated per request in AdonisJS 6
    */
   private async getRandomIdeaMedia(
     template: MissionTemplate,
     restaurantType: RestaurantType | null
-  ): Promise<string | null> {
+  ): Promise<{ url: string; type: 'image' | 'video'; carouselImages?: string[] } | null> {
     // Only for content types (not tuto/engagement)
     if (['tuto', 'engagement'].includes(template.type)) {
       return null
     }
 
-    // Check cache first to ensure consistency within session
-    if (this.randomIdeaCache.has(template.id)) {
-      return this.randomIdeaCache.get(template.id) || null
+    // If template has a custom cover image, don't use random idea media
+    if (template.coverImagePath) {
+      return null
     }
 
     // Find matching ideas with media
@@ -53,26 +50,49 @@ export default class DashboardController {
       return null
     }
 
-    // Pick a random one
-    const randomIdea = matchingIdeas[Math.floor(Math.random() * matchingIdeas.length)]
-    const mediaPath = randomIdea.exampleMediaPath ? `/${randomIdea.exampleMediaPath}` : null
-
-    // Cache it for this session
-    if (mediaPath) {
-      this.randomIdeaCache.set(template.id, mediaPath)
+    // Helper to add cache-buster
+    const withCacheBuster = (idea: ContentIdea) => {
+      const cacheBuster = idea.updatedAt ? `?v=${idea.updatedAt.toMillis()}` : ''
+      return `/${idea.exampleMediaPath}${cacheBuster}`
     }
 
-    return mediaPath
+    // For carousels, get multiple images (up to 5)
+    if (template.type === 'carousel') {
+      const imageIdeas = matchingIdeas.filter((idea) => idea.exampleMediaType === 'image')
+      if (imageIdeas.length > 0) {
+        // Shuffle and take up to 5
+        const shuffled = imageIdeas.sort(() => Math.random() - 0.5).slice(0, 5)
+        const carouselImages = shuffled.map((idea) => withCacheBuster(idea))
+        return {
+          url: carouselImages[0],
+          type: 'image' as const,
+          carouselImages,
+        }
+      }
+    }
+
+    // Pick a random one for non-carousel types
+    const randomIdea = matchingIdeas[Math.floor(Math.random() * matchingIdeas.length)]
+    if (!randomIdea.exampleMediaPath) {
+      return null
+    }
+
+    return {
+      url: withCacheBuster(randomIdea),
+      type: randomIdea.exampleMediaType || 'image',
+    }
   }
 
   /**
    * Get a cover image URL based on mission template
    * Uses template's custom cover image if available, otherwise falls back to default
    */
-  private getCoverImage(type: string, coverImagePath: string | null): string {
+  private getCoverImage(type: string, coverImagePath: string | null, updatedAt?: DateTime): string {
     // Use template's custom cover image if available
     if (coverImagePath) {
-      return `/${coverImagePath}`
+      // Add cache-buster based on updatedAt
+      const cacheBuster = updatedAt ? `?v=${updatedAt.toMillis()}` : ''
+      return `/${coverImagePath}${cacheBuster}`
     }
 
     // Fallback to default placeholder images
@@ -143,13 +163,17 @@ export default class DashboardController {
     // Format today's missions for the carousel
     const formattedTodayMissions = await Promise.all(
       todayMissions.map(async (m) => {
-        let coverImageUrl = this.getCoverImage(m.missionTemplate.type, m.missionTemplate.coverImagePath)
+        let coverImageUrl = this.getCoverImage(m.missionTemplate.type, m.missionTemplate.coverImagePath, m.missionTemplate.updatedAt)
+        let mediaType: 'image' | 'video' = 'image'
+        let carouselImages: string[] | undefined
 
         // If template uses random idea background, try to get one
         if (m.missionTemplate.useRandomIdeaBackground) {
           const randomIdeaMedia = await this.getRandomIdeaMedia(m.missionTemplate, restaurant.type)
           if (randomIdeaMedia) {
-            coverImageUrl = randomIdeaMedia
+            coverImageUrl = randomIdeaMedia.url
+            mediaType = randomIdeaMedia.type
+            carouselImages = randomIdeaMedia.carouselImages
           }
         }
 
@@ -158,6 +182,8 @@ export default class DashboardController {
           title: m.missionTemplate.title,
           description: m.missionTemplate.contentIdea,
           coverImageUrl,
+          mediaType,
+          carouselImages,
           type: m.missionTemplate.type,
           status: m.status,
           isRecommended: m.isRecommended,
@@ -178,9 +204,6 @@ export default class DashboardController {
         ? {
             id: recommendedMission.id,
             status: recommendedMission.status,
-            canUseAction: recommendedMission.canUsePassOrReload(),
-            usedPass: recommendedMission.usedPass,
-            usedReload: recommendedMission.usedReload,
             template: {
               type: recommendedMission.missionTemplate.type,
               title: recommendedMission.missionTemplate.title,

@@ -1,6 +1,6 @@
 import { Head, router, usePage } from '@inertiajs/react'
 import { AppLayout } from '~/components/layout'
-import { Card, Heading } from '~/components/ui'
+import { Card, Heading, Toast } from '~/components/ui'
 import { StreakRestaurantBar, MissionCarousel } from '~/components/features/home'
 
 interface Mission {
@@ -21,6 +21,8 @@ interface TodayMission {
   title: string
   description: string
   coverImageUrl: string
+  mediaType?: 'image' | 'video'
+  carouselImages?: string[]
   type: 'post' | 'story' | 'reel' | 'tuto' | 'engagement' | 'carousel'
   status: 'pending' | 'completed' | 'skipped'
   isRecommended: boolean
@@ -75,9 +77,7 @@ export default function Dashboard({ user, restaurant, mission, todayMissions, st
       <Head title="Accueil" />
 
       {flash?.success && (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-xl mb-4">
-          {flash.success}
-        </div>
+        <Toast message={flash.success} type="success" />
       )}
 
       <div className="py-2">

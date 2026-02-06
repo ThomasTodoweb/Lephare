@@ -111,6 +111,14 @@ export default class Publication extends BaseModel {
   @column.dateTime()
   declare qualityAnalyzedAt: DateTime | null
 
+  /**
+   * User context transcribed from voice
+   * Used to enrich AI-generated captions with details about the content
+   * (dish name, ingredients, person being featured, etc.)
+   */
+  @column()
+  declare userContext: string | null
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 

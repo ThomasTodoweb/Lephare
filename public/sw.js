@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lephare-v3'
+const CACHE_NAME = 'lephare-v4'
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Le Phare is an Instagram management SaaS for restaurants. Users get daily missions, publish content to Instagram via the Late API, receive AI-generated captions (OpenAI), track stats, earn badges/streaks, and follow tutorials. Subscriptions are handled via Stripe. All UI is in French.
+Le Phare is an Instagram management SaaS for restaurants. Users get daily missions, publish content to Instagram via the Late API, receive AI-generated captions (OpenAI/Anthropic), track stats, earn badges/streaks, and follow tutorials. Subscriptions are handled via Stripe. All UI is in French.
 
 ## Commands
 
@@ -15,9 +15,9 @@ npm start            # Start production server (node bin/server.js)
 npm run lint         # ESLint
 npm run format       # Prettier
 npm run typecheck    # TypeScript type checking (tsc --noEmit)
-npm run test         # Run all tests
-node ace test --suites=unit        # Unit tests only
-node ace test --suites=functional  # Functional tests only
+npm run test         # Run all tests (Japa runner)
+node ace test --suites=unit        # Unit tests only (2s timeout)
+node ace test --suites=functional  # Functional tests only (30s timeout)
 ```
 
 ### Database
@@ -27,11 +27,20 @@ node ace migration:run              # Run pending migrations
 node ace migration:rollback         # Rollback last batch
 node ace migration:status           # Check migration status
 node ace make:migration <name>      # Create new migration
-node ace db:seed                    # Run seeders (badges, strategies, tutorials)
-sudo -u postgres psql lephare       # Accès direct PostgreSQL
+node ace db:seed                    # Run seeders (badges, levels, strategies, templates, tutorial categories)
 ```
 
-### Ace scaffolding
+### Custom Ace Commands (Scheduled Tasks)
+
+```bash
+node ace check_streaks                      # Check/reset user streaks
+node ace send_daily_notifications           # Combined daily notifications
+node ace send_daily_email_notifications     # Daily email notifications only
+node ace send_daily_in_app_notifications    # Daily in-app notifications only
+node ace sync_notification_times            # Sync notification schedules
+```
+
+### Ace Scaffolding
 
 ```bash
 node ace make:controller <name>
@@ -46,15 +55,14 @@ node ace make:service <name>
 
 ### Tech Stack
 
-- **Backend**: AdonisJS 6 + TypeScript + Lucid ORM
-- **Frontend**: React 19 + Inertia.js + TailwindCSS 4
-- **Database**: PostgreSQL 17
-- **External APIs**: Stripe (payments), Late (Instagram publishing), OpenAI (captions/stats), Resend (email), Web Push (notifications)
+- **Backend**: AdonisJS 6 + TypeScript + Lucid ORM (PostgreSQL)
+- **Frontend**: React 19 + Inertia.js + TailwindCSS 4 + Vite
+- **External APIs**: Stripe (payments), Late (Instagram publishing), OpenAI (captions/stats), Anthropic (AI title generation), Resend (email), Web Push (notifications), Notion (content import)
 - **Auth**: Session-based with Google/Apple OAuth via @adonisjs/ally
 
 ### Request Flow
 
-Routes (`start/routes.ts`, 275+ routes) -> Middleware (`app/middleware/`) -> Controllers (`app/controllers/`) -> Services (`app/services/`) -> Models (`app/models/`)
+Routes (`start/routes.ts`, ~408 lines) -> Middleware (`app/middleware/`) -> Controllers (`app/controllers/`) -> Services (`app/services/`) -> Models (`app/models/`)
 
 Controllers return Inertia responses that render React pages from `inertia/pages/`.
 
@@ -62,37 +70,43 @@ Controllers return Inertia responses that render React pages from `inertia/pages
 
 | Path | Purpose |
 |------|---------|
-| `app/controllers/http/` | Main route handlers |
-| `app/controllers/admin/` | Admin panel controllers (under `/admin` routes) |
-| `app/services/` | Business logic (Stripe, Late API, AI, push, gamification, etc.) |
-| `app/models/` | Lucid ORM models (20+) |
+| `app/controllers/http/` | Main route handlers (~19 controllers) |
+| `app/controllers/admin/` | Admin panel controllers (~14 controllers, under `/admin` routes) |
+| `app/services/` | Business logic: Stripe, Late API, AI, push, gamification, missions, stats, levels, Notion, email, alerts, audit (15 services) |
+| `app/models/` | Lucid ORM models (26 models) |
 | `app/middleware/` | Auth, subscription, admin, throttle, raw body, guest |
-| `app/validators/` | Vine request validators (French error messages) |
-| `inertia/pages/` | React page components (58 pages, organized by feature) |
+| `app/validators/` | Vine request validators (French error messages): auth, onboarding, profile, restaurant, admin |
+| `inertia/pages/` | React page components (69 pages across 18 feature directories) |
 | `inertia/components/` | Reusable React components (ui/, layout/, features/) |
-| `database/migrations/` | 89 migration files |
+| `database/migrations/` | 51 migration files |
+| `database/seeders/` | badges, levels, strategies, mission templates, tutorial categories |
+| `commands/` | Custom Ace commands for scheduled tasks (streaks, notifications) |
 | `start/routes.ts` | All route definitions |
 | `start/kernel.ts` | Middleware registration |
+| `start/env.ts` | Environment variable validation |
 | `config/` | AdonisJS configuration files |
 
 ### Frontend Conventions
 
 - Vite entry point: `inertia/app/app.tsx`
 - Import alias: `~/` resolves to `inertia/`
-- Shared Inertia props (available on every page): `user`, `flash`, `errors` (defined in `config/inertia.ts`)
+- Shared Inertia props (available on every page): `user`, `flash`, `errors`, `unreadNotificationsCount` (defined in `config/inertia.ts`)
 - SSR is disabled
 - Icons: `lucide-react`
 - Mobile-first responsive design (max-width 428px container)
-- Service Worker registered in app.tsx for PWA & push notifications
+- Fonts: Montserrat + Poppins (Google Fonts, loaded in Edge layout)
+- Service Worker registered in app.tsx for PWA & push notifications (`public/sw.js`)
+- PWA manifest at `public/manifest.json`
 
 ### Route Groups & Middleware
 
 - **Public**: Home, static files (no auth)
 - **Auth routes**: Register, login, password reset (guest middleware + rate limiting)
-- **Protected (free tier)**: Dashboard, profile, onboarding, subscription page (auth middleware)
+- **OAuth**: Google and Apple sign-in with callbacks
+- **Protected (free tier)**: Dashboard, profile, onboarding, subscription page, calendar (auth middleware)
 - **Premium routes**: Missions, publications, tutorials, badges, reports, statistics (auth + subscription middleware)
-- **Admin routes** (`/admin`): Dashboard, strategies, templates, tutorials, alerts, users (auth + admin middleware)
-- **Webhooks**: Stripe webhook at `POST /webhooks/stripe` (raw body middleware for signature verification)
+- **Admin routes** (`/admin`): Dashboard, strategies, templates, tutorials, alerts, users, email logs, subscriptions, levels (auth + admin middleware)
+- **Webhooks**: Stripe webhook at `POST /webhooks/stripe` (rawBody + throttle middleware for signature verification)
 
 ### Subscription Tiers
 
@@ -105,11 +119,12 @@ The `subscription` middleware checks for active subscription (trial or paid). Re
 - **JSONB columns**: Complex data (aiInterpretation, mediaItems) stored as PostgreSQL JSONB
 - **UTC DateTimes**: All dates handled in UTC with Luxon
 - **Eager loading**: Use `.preload()` on relationships to avoid N+1 queries
-- **Node subpath imports**: Use `#controllers/*`, `#models/*`, `#services/*` etc. (defined in package.json `imports`)
+- **Node subpath imports**: Use `#controllers/*`, `#models/*`, `#services/*`, `#validators/*`, `#start/*` etc. (defined in package.json `imports`)
+- **Dual AI providers**: OpenAI for captions/analysis, Anthropic for title generation (both optional via env vars)
 
 ### Environment Variables
 
-Validated in `start/env.ts`. Key groups: App (PORT, HOST, APP_KEY), Database (DB_*), Stripe (STRIPE_*), Late API (LATE_API_KEY), OpenAI (OPENAI_API_KEY), VAPID (push notifications), Google/Apple OAuth.
+Validated in `start/env.ts`. Key groups: App (PORT, HOST, APP_KEY), Database (DB_*), Stripe (STRIPE_*), Late API (LATE_API_KEY), OpenAI (OPENAI_API_KEY), Anthropic (ANTHROPIC_API_KEY), VAPID (push notifications), Google/Apple OAuth, Notion (NOTION_API_KEY). Most external API keys are optional to allow local development without all services.
 
 ## Workflow de développement en équipe avec Claude Code
 
@@ -134,7 +149,6 @@ git add -A && git commit -m "description" && git push origin main
 
 **1. Récupérer la dernière version (OBLIGATOIRE)**
 ```bash
-cd /Users/.../le-phare  # ou le chemin local du projet
 git pull origin main
 ```
 
@@ -162,36 +176,16 @@ Le script `deploy.sh` effectue :
 5. Redémarrage PM2
 6. Exécution des migrations
 
-### En cas de conflit ou version cassée
+### En cas de conflit
 
-Si quelqu'un a poussé une version qui casse le site :
 ```bash
 # Voir les derniers commits
 git log --oneline -10
-
-# Revenir à un commit spécifique
-git reset --hard <commit-hash>
-
-# Forcer la mise à jour sur GitHub
-git push origin main --force
-
-# Redéployer
-bash deploy.sh
 ```
-
-### Communication entre développeurs
-
-- **Avant de bosser** : Prévenir l'autre pour éviter de modifier les mêmes fichiers
-- **Après avoir poussé** : Informer l'autre de faire `git pull`
-- **En cas de doute** : Toujours faire `git pull` avant de commencer
 
 ### Notification automatique (pour Claude Code)
 
-**IMPORTANT pour Claude** : Après chaque `git pull`, si des commits d'un autre développeur ont été récupérés, **prévenir l'utilisateur** avec un message du type :
-
-> "⚠️ Attention : ton collègue a poussé X commits depuis ta dernière session. Voici les modifications : [résumé des commits]"
-
-Cela permet d'éviter les surprises et de savoir ce qui a changé avant de commencer à travailler.
+**IMPORTANT pour Claude** : Après chaque `git pull`, si des commits d'un autre développeur ont été récupérés, **prévenir l'utilisateur** avec un résumé des changements avant de commencer à travailler.
 
 ### Server Info
 

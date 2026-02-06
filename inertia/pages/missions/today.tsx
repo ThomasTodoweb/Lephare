@@ -13,9 +13,6 @@ interface MissionTemplate {
 interface Mission {
   id: number
   status: 'pending' | 'completed' | 'skipped'
-  canUseAction: boolean
-  usedPass: boolean
-  usedReload: boolean
   slotNumber: number
   isRecommended: boolean
   template: MissionTemplate
@@ -44,24 +41,10 @@ const TYPE_LABELS: Record<string, string> = {
 
 export default function TodayMission({ mission, todayMissions = [] }: Props) {
   const acceptForm = useForm({})
-  const skipForm = useForm({})
-  const reloadForm = useForm({})
 
   const handleAccept = () => {
     if (mission) {
       acceptForm.post(`/missions/${mission.id}/accept`)
-    }
-  }
-
-  const handleSkip = () => {
-    if (mission) {
-      skipForm.post(`/missions/${mission.id}/skip`)
-    }
-  }
-
-  const handleReload = () => {
-    if (mission) {
-      reloadForm.post(`/missions/${mission.id}/reload`)
     }
   }
 
@@ -169,14 +152,6 @@ export default function TodayMission({ mission, todayMissions = [] }: Props) {
                 <p className="text-neutral-700">{mission.template.contentIdea}</p>
               </Card>
 
-              {/* Status indicator for used actions */}
-              {(mission.usedPass || mission.usedReload) && (
-                <div className="text-center text-sm text-neutral-500 mb-4">
-                  {mission.usedPass && 'Pass utilisé aujourd\'hui'}
-                  {mission.usedReload && 'Rechargement utilisé aujourd\'hui'}
-                </div>
-              )}
-
               {/* Other missions preview */}
               {sortedMissions.length > 1 && (
                 <div className="mb-6">
@@ -242,27 +217,6 @@ export default function TodayMission({ mission, todayMissions = [] }: Props) {
           >
             {acceptForm.processing ? 'Chargement...' : "C'est parti !"}
           </Button>
-
-          {mission.canUseAction && (
-            <div className="flex gap-3">
-              <Button
-                variant="outlined"
-                onClick={handleSkip}
-                disabled={skipForm.processing}
-                className="flex-1"
-              >
-                {skipForm.processing ? '...' : 'Passer'}
-              </Button>
-              <Button
-                variant="outlined"
-                onClick={handleReload}
-                disabled={reloadForm.processing}
-                className="flex-1"
-              >
-                {reloadForm.processing ? '...' : 'Autre mission'}
-              </Button>
-            </div>
-          )}
         </div>
       )}
 

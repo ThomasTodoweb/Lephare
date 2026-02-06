@@ -1,6 +1,7 @@
 import { Head, useForm, usePage, Link } from '@inertiajs/react'
 import { Button } from '~/components/ui/Button'
 import { Card } from '~/components/ui/Card'
+import { Toast } from '~/components/ui/Toast'
 import { useState } from 'react'
 
 interface Props {
@@ -54,12 +55,8 @@ export default function ResetPassword({ token }: Props) {
             </p>
           </div>
 
-          {/* Flash messages */}
-          {flash?.error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
-              {flash.error}
-            </div>
-          )}
+          {/* Flash messages as toasts */}
+          {flash?.error && <Toast message={flash.error} type="error" />}
 
           {/* Form */}
           <form onSubmit={handleSubmit}>

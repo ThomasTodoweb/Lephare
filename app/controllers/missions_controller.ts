@@ -96,46 +96,6 @@ export default class MissionsController {
   }
 
   /**
-   * Skip today's mission
-   */
-  async skip({ response, auth, params, session }: HttpContext) {
-    const user = auth.getUserOrFail()
-    const missionService = new MissionService()
-
-    const result = await missionService.skipMission(Number(params.id), user.id)
-
-    if (!result.success) {
-      session.flash('error', result.error || 'Impossible de passer la mission')
-      return response.redirect().back()
-    }
-
-    session.flash('success', 'Mission passée. À demain !')
-    return response.redirect().toRoute('dashboard')
-  }
-
-  /**
-   * Reload mission (get a different one)
-   */
-  async reload({ response, auth, params, session }: HttpContext) {
-    const user = auth.getUserOrFail()
-    const missionService = new MissionService()
-
-    const result = await missionService.reloadMission(Number(params.id), user.id)
-
-    if (!result.success) {
-      session.flash('error', result.error || 'Impossible de recharger la mission')
-      return response.redirect().back()
-    }
-
-    session.flash('success', 'Nouvelle mission chargée !')
-
-    // Redirect directly to the mission photo page to avoid multiple history entries
-    // The reloadMission service updates the current mission with a new template
-    // so we can redirect directly to the same mission ID
-    return response.redirect().toRoute('missions.photo', { id: params.id })
-  }
-
-  /**
    * Show mission history
    */
   async history({ inertia, auth }: HttpContext) {

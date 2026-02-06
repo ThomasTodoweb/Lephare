@@ -1,7 +1,7 @@
 import { Head, router } from '@inertiajs/react'
 import { useEffect, useState, useRef } from 'react'
 import { Button, PopoteMessage } from '~/components/ui'
-import { CheckCircle, AlertTriangle, XCircle, Loader2, HelpCircle, RotateCcw, ArrowLeft } from 'lucide-react'
+import { CheckCircle, AlertTriangle, XCircle, HelpCircle, RotateCcw, ArrowLeft } from 'lucide-react'
 
 interface MediaItem {
   type: 'image' | 'video'
@@ -270,11 +270,6 @@ export default function MediaAnalysis({ publication, mission, totalSteps = 3, cu
                 variant={score === 'green' ? 'happy' : 'default'}
                 size="md"
               />
-              {/* Score badge */}
-              <div className={`${config.bg} border ${config.border} rounded-xl p-3 mt-3 flex items-center gap-2`}>
-                <config.icon className={`w-5 h-5 ${config.text}`} />
-                <span className={`font-semibold ${config.text}`}>{config.label}</span>
-              </div>
             </div>
           )}
 
@@ -292,7 +287,8 @@ export default function MediaAnalysis({ publication, mission, totalSteps = 3, cu
               )}
             </div>
           )}
-        </div>
+
+          </div>
 
         {/* Fixed bottom buttons */}
         <div className="fixed bottom-0 left-0 right-0 p-6 bg-white border-t border-neutral-100 space-y-3">

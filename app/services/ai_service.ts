@@ -9,12 +9,17 @@ interface DescriptionContext {
   restaurantCity?: string
   imageBase64?: string // Base64 encoded image for vision
   imageMimeType?: string // e.g., 'image/jpeg'
+  userContext?: string // User-provided context (transcribed from voice)
 }
 
 export interface MediaQualityResult {
   score: 'green' | 'yellow' | 'red'
   feedback: string // User-facing message
   details?: string // Technical details for logging
+  /** What the AI detected in the image */
+  detectedContent?: 'dish' | 'person' | 'team' | 'kitchen' | 'ambiance' | 'exterior' | 'other'
+  /** Whether the content matches the mission */
+  matchesMission?: boolean
 }
 
 type AIProvider = 'claude' | 'openai'
@@ -340,6 +345,16 @@ RESTO:`
 CONTENU: ${context.missionType} - ${context.missionTitle}
 THÈME: ${context.contentIdea}`
 
+    // Add user-provided context if available
+    if (context.userContext && context.userContext.trim()) {
+      prompt += `
+
+CONTEXTE (fourni par l'utilisateur):
+"${context.userContext.trim()}"
+
+Intègre ces informations naturellement dans la légende. Si un nom de plat, des ingrédients, une personne ou une occasion spéciale sont mentionnés, utilise-les pour personnaliser.`
+    }
+
     if (context.imageBase64) {
       prompt += `
 
@@ -528,6 +543,15 @@ SCORING :
 - yellow : Problème de qualité OU pas lié au resto OU pas cohérent avec la mission
 - red : Qualité vraiment mauvaise
 
+DÉTECTION DU CONTENU (identifie ce qui est montré) :
+- "dish" : un plat, une assiette, de la nourriture
+- "person" : une personne seule (membre équipe, chef, serveur)
+- "team" : plusieurs personnes, équipe
+- "kitchen" : cuisine, préparation, coulisses
+- "ambiance" : salle, décor, terrasse, ambiance du lieu
+- "exterior" : façade, extérieur du restaurant
+- "other" : autre chose
+
 EXEMPLES :
 - green: "Ça donne faim, la lumière est jolie. Tu peux poster."
 - yellow: "C'est un peu sombre, on voit pas bien les détails."
@@ -536,7 +560,13 @@ EXEMPLES :
 - red: "C'est trop flou, refais-la."
 
 FORMAT RÉPONSE (JSON uniquement) :
-{"score": "green|yellow|red", "feedback": "ton avis", "details": "note technique"}`
+{
+  "score": "green|yellow|red",
+  "feedback": "ton avis",
+  "details": "note technique",
+  "detectedContent": "dish|person|team|kitchen|ambiance|exterior|other",
+  "matchesMission": true|false
+}`
 
     const userPrompt = missionTitle
       ? `Je vais poster cette photo sur l'Instagram de mon resto. La mission c'est "${missionTitle}". T'en penses quoi ?`
@@ -569,6 +599,8 @@ FORMAT RÉPONSE (JSON uniquement) :
             score?: string
             feedback?: string
             details?: string
+            detectedContent?: string
+            matchesMission?: boolean
           }
 
           // Validate score
@@ -577,10 +609,18 @@ FORMAT RÉPONSE (JSON uniquement) :
             ? (parsed.score as 'green' | 'yellow' | 'red')
             : 'green'
 
+          // Validate detected content
+          const validContents = ['dish', 'person', 'team', 'kitchen', 'ambiance', 'exterior', 'other']
+          const detectedContent = validContents.includes(parsed.detectedContent || '')
+            ? (parsed.detectedContent as 'dish' | 'person' | 'team' | 'kitchen' | 'ambiance' | 'exterior' | 'other')
+            : undefined
+
           return {
             score,
             feedback: parsed.feedback || 'Image analysée.',
             details: parsed.details,
+            detectedContent,
+            matchesMission: parsed.matchesMission,
           }
         }
       } catch (parseError) {

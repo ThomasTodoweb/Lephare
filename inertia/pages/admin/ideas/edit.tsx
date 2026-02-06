@@ -124,6 +124,7 @@ export default function EditIdea({ idea, categories }: Props) {
       formData.append('contentTypes', JSON.stringify(contentTypes))
       formData.append('thematicCategoryIds', JSON.stringify(thematicCategoryIds))
       formData.append('restaurantTags', JSON.stringify(restaurantTags))
+      formData.append('_method', 'PUT') // Method spoofing for AdonisJS
 
       if (removeMedia) {
         formData.append('removeMedia', 'true')
@@ -132,17 +133,24 @@ export default function EditIdea({ idea, categories }: Props) {
         formData.append('exampleMedia', mediaFile)
       }
 
+      // Use fetch but handle response properly
       const response = await fetch(`/admin/ideas/${idea.id}`, {
-        method: 'PUT',
+        method: 'POST',
         body: formData,
       })
 
-      if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || 'Erreur lors de la mise à jour')
+      // Check if successful (AdonisJS redirects with 302/303 or returns 200)
+      if (response.ok || response.redirected) {
+        router.visit('/admin/ideas')
+        return
       }
 
-      router.visit('/admin/ideas')
+      // Try to extract error message
+      const text = await response.text()
+      if (text.includes('<!DOCTYPE')) {
+        throw new Error('Erreur serveur. Veuillez réessayer.')
+      }
+      throw new Error('Erreur lors de la mise à jour')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur inconnue')
       setSaving(false)

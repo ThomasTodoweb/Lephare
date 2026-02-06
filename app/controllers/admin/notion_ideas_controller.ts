@@ -101,9 +101,9 @@ export default class NotionIdeasController {
 
       sendEvent({ type: 'saving', message: 'Enregistrement en base de données...' })
 
-      // Save to database, skip duplicates
+      // Save to database, update existing or create new
       let created = 0
-      let skipped = 0
+      let updated = 0
 
       for (let i = 0; i < importedIdeas.length; i++) {
         const idea = importedIdeas[i]
@@ -111,7 +111,11 @@ export default class NotionIdeasController {
         // Check if already exists
         const existing = await NotionIdea.findBy('notion_page_id', idea.notionPageId)
         if (existing) {
-          skipped++
+          // Update media paths for existing ideas (files may have been re-downloaded with new UUIDs)
+          existing.mediaPaths = idea.mediaPaths
+          existing.mediaTypes = idea.mediaTypes
+          await existing.save()
+          updated++
           continue
         }
 
@@ -145,9 +149,9 @@ export default class NotionIdeasController {
       sendEvent({
         type: 'complete',
         success: true,
-        message: `Import terminé: ${created} idées créées, ${skipped} doublons ignorés`,
+        message: `Import terminé: ${created} idées créées, ${updated} mises à jour`,
         created,
-        skipped,
+        updated,
         total: importedIdeas.length,
       })
 
@@ -417,9 +421,10 @@ export default class NotionIdeasController {
     const photoTips = request.input('photoTips') || null
 
     try {
-      // Copy the first media file to content_ideas folder
+      // Try to copy the first media file to content_ideas folder
       let exampleMediaPath: string | null = null
       let exampleMediaType: 'image' | 'video' | null = null
+      let mediaWarning: string | null = null
 
       if (notionIdea.mediaPaths.length > 0 && notionIdea.mediaTypes.length > 0) {
         const sourcePath = notionIdea.mediaPaths[0]
@@ -438,17 +443,27 @@ export default class NotionIdeasController {
         // Copy file - remove leading slash from source path if present
         const cleanSourcePath = sourcePath.startsWith('/') ? sourcePath.slice(1) : sourcePath
         const sourceFullPath = app.makePath('storage', cleanSourcePath)
-        await copyFile(sourceFullPath, destFullPath)
 
-        // Store path matching other ideas format (storage/uploads/...)
-        exampleMediaPath = destRelativePath
-        exampleMediaType = mediaType
+        try {
+          await copyFile(sourceFullPath, destFullPath)
+          // Store path matching other ideas format (storage/uploads/...)
+          exampleMediaPath = destRelativePath
+          exampleMediaType = mediaType
+        } catch (copyError) {
+          // File doesn't exist - continue without media
+          console.warn(
+            `NotionIdeasController: Media file not found: ${sourceFullPath}, continuing without media`
+          )
+          mediaWarning =
+            'Média non disponible (fichier non téléchargé). Vous pouvez ajouter un média manuellement.'
+        }
       }
 
       // Map Notion content type to ContentIdea contentTypes array
-      const contentTypes = notionIdea.contentType === 'carousel'
-        ? ['carousel' as const]
-        : [notionIdea.contentType as 'post' | 'story' | 'reel']
+      const contentTypes =
+        notionIdea.contentType === 'carousel'
+          ? ['carousel' as const]
+          : [notionIdea.contentType as 'post' | 'story' | 'reel']
 
       // Create the ContentIdea
       const contentIdea = await ContentIdea.create({
@@ -469,8 +484,11 @@ export default class NotionIdeasController {
 
       return response.json({
         success: true,
-        message: 'Idée convertie avec succès',
+        message: mediaWarning
+          ? `Idée convertie (sans média: ${mediaWarning})`
+          : 'Idée convertie avec succès',
         contentIdeaId: contentIdea.id,
+        warning: mediaWarning,
       })
     } catch (error) {
       console.error('NotionIdeasController: Convert failed', error)
@@ -491,6 +509,7 @@ export default class NotionIdeasController {
     }
 
     let converted = 0
+    let convertedWithoutMedia = 0
     const errors: string[] = []
 
     for (const id of ids) {
@@ -506,9 +525,10 @@ export default class NotionIdeasController {
       }
 
       try {
-        // Copy media
+        // Try to copy media
         let exampleMediaPath: string | null = null
         let exampleMediaType: 'image' | 'video' | null = null
+        let hasMedia = false
 
         if (notionIdea.mediaPaths.length > 0 && notionIdea.mediaTypes.length > 0) {
           const sourcePath = notionIdea.mediaPaths[0]
@@ -525,16 +545,25 @@ export default class NotionIdeasController {
           // Remove leading slash from source path if present
           const cleanSourcePath = sourcePath.startsWith('/') ? sourcePath.slice(1) : sourcePath
           const sourceFullPath = app.makePath('storage', cleanSourcePath)
-          await copyFile(sourceFullPath, destFullPath)
 
-          // Store path matching other ideas format (storage/uploads/...)
-          exampleMediaPath = destRelativePath
-          exampleMediaType = mediaType
+          try {
+            await copyFile(sourceFullPath, destFullPath)
+            // Store path matching other ideas format (storage/uploads/...)
+            exampleMediaPath = destRelativePath
+            exampleMediaType = mediaType
+            hasMedia = true
+          } catch {
+            // File doesn't exist - continue without media
+            console.warn(
+              `NotionIdeasController: Media file not found for bulk convert: ${sourceFullPath}`
+            )
+          }
         }
 
-        const contentTypes = notionIdea.contentType === 'carousel'
-          ? ['carousel' as const]
-          : [notionIdea.contentType as 'post' | 'story' | 'reel']
+        const contentTypes =
+          notionIdea.contentType === 'carousel'
+            ? ['carousel' as const]
+            : [notionIdea.contentType as 'post' | 'story' | 'reel']
 
         await ContentIdea.create({
           title: notionIdea.displayTitle,
@@ -551,16 +580,28 @@ export default class NotionIdeasController {
         notionIdea.status = 'converted'
         await notionIdea.save()
         converted++
+        if (!hasMedia) {
+          convertedWithoutMedia++
+        }
       } catch (error) {
         errors.push(`ID ${id}: ${error instanceof Error ? error.message : 'erreur'}`)
       }
     }
 
+    let message = `${converted} idée(s) convertie(s)`
+    if (convertedWithoutMedia > 0) {
+      message += ` (dont ${convertedWithoutMedia} sans média)`
+    }
+    if (errors.length > 0) {
+      message += `, ${errors.length} erreur(s)`
+    }
+
     return response.json({
       success: true,
       converted,
+      convertedWithoutMedia,
       errors: errors.length > 0 ? errors : undefined,
-      message: `${converted} idée(s) convertie(s)${errors.length > 0 ? `, ${errors.length} erreur(s)` : ''}`,
+      message,
     })
   }
 }

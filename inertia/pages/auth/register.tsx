@@ -1,5 +1,5 @@
 import { Head, useForm, Link, usePage } from '@inertiajs/react'
-import { Button, Input, Card } from '~/components/ui'
+import { Button, Input, Card, Toast } from '~/components/ui'
 
 interface PageProps {
   flash?: {
@@ -34,11 +34,7 @@ export default function Register() {
             Créer un compte
           </h1>
 
-          {flash?.error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl mb-4">
-              {flash.error}
-            </div>
-          )}
+          {flash?.error && <Toast message={flash.error} type="error" />}
 
           {/* Social Login Buttons */}
           <div className="space-y-3 mb-6">

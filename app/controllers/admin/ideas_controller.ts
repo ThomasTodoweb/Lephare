@@ -33,6 +33,12 @@ export default class IdeasController {
 
     const categories = await ThematicCategory.query().where('is_active', true).orderBy('name', 'asc')
 
+    // Count optimization stats
+    const allIdeasWithMedia = await ContentIdea.query().whereNotNull('example_media_path')
+    const totalWithMedia = allIdeasWithMedia.length
+    const optimizedCount = allIdeasWithMedia.filter((i) => i.isOptimized).length
+    const pendingCount = totalWithMedia - optimizedCount
+
     return inertia.render('admin/ideas/index', {
       ideas: filteredIdeas.map((idea) => ({
         id: idea.id,
@@ -45,6 +51,7 @@ export default class IdeasController {
         thematicCategoryIds: idea.thematicCategoryIds,
         exampleMediaPath: idea.exampleMediaPath,
         exampleMediaType: idea.exampleMediaType,
+        isOptimized: idea.isOptimized,
       })),
       categories: categories.map((c) => ({
         id: c.id,
@@ -55,6 +62,11 @@ export default class IdeasController {
       filters: {
         contentType: contentTypeFilter || null,
         category: categoryFilter || null,
+      },
+      optimizationStats: {
+        total: totalWithMedia,
+        optimized: optimizedCount,
+        pending: pendingCount,
       },
     })
   }

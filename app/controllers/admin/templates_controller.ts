@@ -3,6 +3,7 @@ import MissionTemplate from '#models/mission_template'
 import Strategy from '#models/strategy'
 import Tutorial from '#models/tutorial'
 import ThematicCategory from '#models/thematic_category'
+import ContentIdea from '#models/content_idea'
 import { createTemplateValidator, updateTemplateValidator } from '#validators/admin'
 import { cuid } from '@adonisjs/core/helpers'
 import app from '@adonisjs/core/services/app'
@@ -138,6 +139,13 @@ export default class TemplatesController {
     const tutorials = await Tutorial.query().where('is_active', true).orderBy('title', 'asc')
     const thematicCategories = await ThematicCategory.query().where('is_active', true).orderBy('name', 'asc')
 
+    // Get all available ideas (not linked to any template) for selection
+    const availableIdeas = await ContentIdea.query()
+      .where('is_active', true)
+      .whereNull('mission_template_id')
+      .whereNotNull('example_media_path')
+      .orderBy('id', 'desc')
+
     return inertia.render('admin/templates/edit', {
       template: {
         id: template.id,
@@ -166,6 +174,15 @@ export default class TemplatesController {
       strategies: strategies.map((s) => ({ id: s.id, name: s.name })),
       tutorials: tutorials.map((t) => ({ id: t.id, title: t.title })),
       thematicCategories: thematicCategories.map((c) => ({ id: c.id, name: c.name, icon: c.icon })),
+      availableIdeas: availableIdeas.map((idea) => ({
+        id: idea.id,
+        title: idea.title,
+        suggestionText: idea.suggestionText,
+        exampleMediaPath: idea.exampleMediaPath,
+        exampleMediaType: idea.exampleMediaType,
+        contentTypes: idea.contentTypes,
+        thematicCategoryIds: idea.thematicCategoryIds,
+      })),
     })
   }
 
@@ -322,6 +339,78 @@ export default class TemplatesController {
 
     template.coverImagePath = null
     await template.save()
+
+    return response.json({ success: true })
+  }
+
+  /**
+   * Link an existing idea to a template
+   */
+  async linkIdea({ request, response, params }: HttpContext) {
+    const templateId = Number(params.id)
+    const ideaId = Number(request.input('ideaId'))
+
+    if (Number.isNaN(templateId) || templateId <= 0) {
+      return response.badRequest({ error: 'ID template invalide' })
+    }
+    if (Number.isNaN(ideaId) || ideaId <= 0) {
+      return response.badRequest({ error: 'ID idée invalide' })
+    }
+
+    const template = await MissionTemplate.find(templateId)
+    if (!template) {
+      return response.notFound({ error: 'Template non trouvé' })
+    }
+
+    const idea = await ContentIdea.find(ideaId)
+    if (!idea) {
+      return response.notFound({ error: 'Idée non trouvée' })
+    }
+
+    // Link the idea to the template
+    idea.missionTemplateId = templateId
+    await idea.save()
+
+    return response.json({
+      success: true,
+      idea: {
+        id: idea.id,
+        suggestionText: idea.suggestionText,
+        photoTips: idea.photoTips,
+        isActive: idea.isActive,
+        restaurantTags: idea.restaurantTags,
+        exampleMediaPath: idea.exampleMediaPath,
+        exampleMediaType: idea.exampleMediaType,
+      },
+    })
+  }
+
+  /**
+   * Unlink an idea from a template
+   */
+  async unlinkIdea({ response, params }: HttpContext) {
+    const templateId = Number(params.id)
+    const ideaId = Number(params.ideaId)
+
+    if (Number.isNaN(templateId) || templateId <= 0) {
+      return response.badRequest({ error: 'ID template invalide' })
+    }
+    if (Number.isNaN(ideaId) || ideaId <= 0) {
+      return response.badRequest({ error: 'ID idée invalide' })
+    }
+
+    const idea = await ContentIdea.find(ideaId)
+    if (!idea) {
+      return response.notFound({ error: 'Idée non trouvée' })
+    }
+
+    if (idea.missionTemplateId !== templateId) {
+      return response.badRequest({ error: 'Cette idée n\'est pas liée à ce template' })
+    }
+
+    // Unlink the idea from the template
+    idea.missionTemplateId = null
+    await idea.save()
 
     return response.json({ success: true })
   }

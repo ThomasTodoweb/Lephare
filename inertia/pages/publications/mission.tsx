@@ -1,7 +1,10 @@
-import { Head, router, usePage, useForm } from '@inertiajs/react'
+import { Head, router, usePage } from '@inertiajs/react'
 import { useRef, useState, useCallback, useEffect } from 'react'
 import { Button } from '~/components/ui/Button'
-import { X, Plus, Image, Film, ArrowLeft, Volume2, VolumeX, SwitchCamera, Zap, ZapOff, Upload, SkipForward, RefreshCw, BookOpen, ChevronRight } from 'lucide-react'
+import { Toast } from '~/components/ui/Toast'
+import { LazyVideo } from '~/components/ui/LazyVideo'
+import { MediaContextInput } from '~/components/MediaContextInput'
+import { X, Plus, Image, Film, ArrowLeft, Volume2, VolumeX, SwitchCamera, Zap, ZapOff, Upload, BookOpen, ChevronRight } from 'lucide-react'
 import axios from 'axios'
 
 interface ContentIdea {
@@ -11,6 +14,7 @@ interface ContentIdea {
   photoTips: string | null
   exampleMediaPath: string | null
   exampleMediaType: 'image' | 'video' | null
+  updatedAt: string | null
 }
 
 interface Props {
@@ -55,18 +59,6 @@ const CONTENT_TYPE_CONFIG: Record<string, { label: string; emoji: string; descri
 export default function MissionPage({ mission, contentType, maxImages, acceptVideo, totalSteps = 3, currentStep = 1 }: Props) {
   const { flash } = usePage<{ flash?: { error?: string; success?: string } }>().props
 
-  // Forms for skip/reload actions
-  const skipForm = useForm({})
-  const reloadForm = useForm({})
-
-  const handleSkip = () => {
-    skipForm.post(`/missions/${mission.id}/skip`)
-  }
-
-  const handleReload = () => {
-    reloadForm.post(`/missions/${mission.id}/reload`)
-  }
-
   const typeConfig = CONTENT_TYPE_CONFIG[contentType] || CONTENT_TYPE_CONFIG.post
   const galleryInputRef = useRef<HTMLInputElement>(null)
   const cameraInputRef = useRef<HTMLInputElement>(null)
@@ -85,10 +77,21 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
   const [isUploading, setIsUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [isMuted, setIsMuted] = useState(true)
+  const [userContext, setUserContext] = useState('')
 
   // Content ideas (inspiration only - no selection)
   const ideas = mission.template.ideas || []
   const ideasWithMedia = ideas.filter((idea) => idea.exampleMediaPath)
+
+  // Cache-buster helper for idea media URLs
+  const getIdeaMediaUrl = (idea: ContentIdea) => {
+    const base = `/${idea.exampleMediaPath}`
+    if (idea.updatedAt) {
+      const timestamp = new Date(idea.updatedAt).getTime()
+      return `${base}?v=${timestamp}`
+    }
+    return base
+  }
 
   // Expanded idea for full view
   const [expandedIdeaId, setExpandedIdeaId] = useState<number | null>(null)
@@ -640,6 +643,11 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
 
     formData.append('shareToFeed', shareToFeed ? 'true' : 'false')
 
+    // Include user context if provided
+    if (userContext.trim()) {
+      formData.append('userContext', userContext.trim())
+    }
+
     try {
       const response = await axios.post(`/missions/${mission.id}/photo`, formData, {
         headers: {
@@ -674,7 +682,7 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
       }
       setIsUploading(false)
     }
-  }, [mediaFiles, coverImage, shareToFeed, mission.id, isCarousel])
+  }, [mediaFiles, coverImage, shareToFeed, mission.id, isCarousel, userContext])
 
   const formatFileSize = (bytes: number): string => {
     if (bytes < 1024 * 1024) {
@@ -737,26 +745,6 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
             {typeConfig.description}
           </p>
 
-          {/* Skip/Reload actions - always visible but subtle */}
-          <div className="flex items-center gap-2 mt-4">
-            <button
-              onClick={handleSkip}
-              disabled={skipForm.processing}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 rounded-lg transition-colors"
-            >
-              <SkipForward className="w-4 h-4" />
-              {skipForm.processing ? 'Chargement...' : 'Passer'}
-            </button>
-            <button
-              onClick={handleReload}
-              disabled={reloadForm.processing}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 rounded-lg transition-colors"
-            >
-              <RefreshCw className="w-4 h-4" />
-              {reloadForm.processing ? 'Chargement...' : 'Autre mission'}
-            </button>
-          </div>
-
           {/* Linked tutorial - "Besoin d'aide?" section */}
           {mission.template.linkedTutorial && (
             <button
@@ -790,24 +778,19 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
                     className="relative aspect-[9/16] overflow-hidden rounded-lg bg-neutral-100"
                   >
                     {idea.exampleMediaType === 'video' ? (
-                      <video
-                        src={`/${idea.exampleMediaPath}`}
-                        className="w-full h-full object-cover"
-                        autoPlay
-                        loop
-                        muted
-                        playsInline
-                        onError={(e) => {
-                          // Hide broken videos
-                          const target = e.target as HTMLVideoElement
-                          target.style.display = 'none'
-                        }}
+                      <LazyVideo
+                        src={getIdeaMediaUrl(idea)}
+                        className="w-full h-full"
+                        autoPlay={true}
+                        showPlayIcon={false}
+                        onClick={() => setExpandedIdeaId(idea.id)}
                       />
                     ) : (
                       <img
-                        src={`/${idea.exampleMediaPath}`}
+                        src={getIdeaMediaUrl(idea)}
                         alt=""
                         className="w-full h-full object-cover"
+                        loading="lazy"
                         onError={(e) => {
                           // Hide broken images
                           const target = e.target as HTMLImageElement
@@ -833,7 +816,7 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
                         <>
                           {idea.exampleMediaType === 'video' ? (
                             <video
-                              src={`/${idea.exampleMediaPath}`}
+                              src={getIdeaMediaUrl(idea)}
                               className="w-full aspect-[9/16] object-cover rounded-xl"
                               autoPlay
                               loop
@@ -842,7 +825,7 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
                             />
                           ) : (
                             <img
-                              src={`/${idea.exampleMediaPath}`}
+                              src={getIdeaMediaUrl(idea)}
                               alt=""
                               className="w-full aspect-[9/16] object-cover rounded-xl"
                             />
@@ -1038,10 +1021,11 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
             </div>
           )}
 
-          {/* Error messages */}
-          {(flash?.error || videoError || uploadError) && (
+          {/* Error messages as toasts */}
+          {flash?.error && <Toast message={flash.error} type="error" />}
+          {(videoError || uploadError) && (
             <p className="text-red-600 text-sm mt-4 text-center">
-              {flash?.error || videoError || uploadError}
+              {videoError || uploadError}
             </p>
           )}
 
@@ -1060,6 +1044,17 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
                 <span className="text-amber-600 ml-1">(fichier volumineux)</span>
               )}
             </p>
+          )}
+
+          {/* Context input - ask user for additional info based on mission type */}
+          {mediaFiles.length > 0 && !isUploading && (
+            <div className="mt-6">
+              <MediaContextInput
+                missionTitle={mission.template.title}
+                onContextChange={setUserContext}
+                disabled={isUploading}
+              />
+            </div>
           )}
 
           {/* Hidden file inputs */}

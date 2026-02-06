@@ -1,7 +1,8 @@
-import { Head, Link, router } from '@inertiajs/react'
+import { Head, Link, router, usePage } from '@inertiajs/react'
 import { AdminLayout } from '~/components/layout'
-import { useState, useRef } from 'react'
-import { Plus, Edit, Trash2, ToggleLeft, ToggleRight, Search, X, Play, Image } from 'lucide-react'
+import { useState } from 'react'
+import { Plus, Edit, Trash2, ToggleLeft, ToggleRight, Search, X, Image, Zap, Loader2 } from 'lucide-react'
+import { LazyVideo } from '~/components/ui/LazyVideo'
 
 type RestaurantType = 'brasserie' | 'gastronomique' | 'fast_food' | 'pizzeria' | 'cafe_bar' | 'autre'
 type ContentType = 'post' | 'carousel' | 'story' | 'reel'
@@ -24,6 +25,7 @@ interface ContentIdea {
   thematicCategoryIds: number[] | null
   exampleMediaPath: string | null
   exampleMediaType: 'image' | 'video' | null
+  isOptimized: boolean
 }
 
 interface Props {
@@ -32,6 +34,11 @@ interface Props {
   filters: {
     contentType: string | null
     category: string | null
+  }
+  optimizationStats: {
+    total: number
+    optimized: number
+    pending: number
   }
 }
 
@@ -51,10 +58,12 @@ const RESTAURANT_TYPE_LABELS: Record<RestaurantType, string> = {
   autre: 'Autre',
 }
 
-export default function IdeasIndex({ ideas, categories, filters }: Props) {
+export default function IdeasIndex({ ideas, categories, filters, optimizationStats }: Props) {
+  const { flash } = usePage<{ flash?: { success?: string; warning?: string; info?: string } }>().props
   const [search, setSearch] = useState('')
   const [contentTypeFilter, setContentTypeFilter] = useState(filters.contentType || '')
   const [categoryFilter, setCategoryFilter] = useState(filters.category || '')
+  const [optimizing, setOptimizing] = useState(false)
 
   const filteredIdeas = ideas.filter((idea) => {
     if (search) {
@@ -103,6 +112,21 @@ export default function IdeasIndex({ ideas, categories, filters }: Props) {
     return cat ? `${cat.icon || ''} ${cat.name}`.trim() : `#${id}`
   }
 
+  const handleOptimizeAll = () => {
+    if (optimizing) return
+    if (optimizationStats.pending === 0) {
+      alert('Tous les médias sont déjà optimisés !')
+      return
+    }
+    if (!confirm(`Optimiser ${optimizationStats.pending} média(s) non optimisé(s) ?\n\nCette opération peut prendre plusieurs minutes.`)) return
+
+    setOptimizing(true)
+    router.post('/admin/ideas/optimization/all', {}, {
+      preserveScroll: true,
+      onFinish: () => setOptimizing(false),
+    })
+  }
+
   return (
     <AdminLayout>
       <Head title="Gestion des Idées - Admin" />
@@ -116,14 +140,55 @@ export default function IdeasIndex({ ideas, categories, filters }: Props) {
               Gérez les inspirations visuelles pour les publications
             </p>
           </div>
-          <Link
-            href="/admin/ideas/create"
-            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <Plus className="h-5 w-5 mr-2" />
-            Nouvelle idée
-          </Link>
+          <div className="flex gap-2">
+            <button
+              onClick={handleOptimizeAll}
+              disabled={optimizing}
+              className="inline-flex items-center px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {optimizing ? (
+                <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+              ) : (
+                <Zap className="h-5 w-5 mr-2" />
+              )}
+              {optimizing ? 'Optimisation...' : `Optimiser (${optimizationStats.pending})`}
+            </button>
+            <Link
+              href="/admin/ideas/create"
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <Plus className="h-5 w-5 mr-2" />
+              Nouvelle idée
+            </Link>
+          </div>
         </div>
+
+        {/* Flash Messages */}
+        {flash?.success && (
+          <div className="p-4 rounded-lg bg-green-50 border border-green-200">
+            <p className="font-medium text-green-800">{flash.success}</p>
+          </div>
+        )}
+        {flash?.warning && (
+          <div className="p-4 rounded-lg bg-amber-50 border border-amber-200">
+            <p className="font-medium text-amber-800">{flash.warning}</p>
+          </div>
+        )}
+        {flash?.info && (
+          <div className="p-4 rounded-lg bg-blue-50 border border-blue-200">
+            <p className="font-medium text-blue-800">{flash.info}</p>
+          </div>
+        )}
+
+        {/* Optimization Stats */}
+        {optimizationStats.total > 0 && (
+          <div className="text-sm text-gray-600">
+            Médias: {optimizationStats.optimized}/{optimizationStats.total} optimisés
+            {optimizationStats.pending > 0 && (
+              <span className="ml-2 text-amber-600">({optimizationStats.pending} en attente)</span>
+            )}
+          </div>
+        )}
 
         {/* Filters */}
         <div className="bg-white rounded-lg shadow p-4">
@@ -238,7 +303,6 @@ interface IdeaCardProps {
 }
 
 function IdeaCard({ idea, onToggle, onDelete, getCategoryName }: IdeaCardProps) {
-  const videoRef = useRef<HTMLVideoElement>(null)
   const isVideo = idea.exampleMediaType === 'video'
 
   return (
@@ -249,33 +313,16 @@ function IdeaCard({ idea, onToggle, onDelete, getCategoryName }: IdeaCardProps) 
       <div className="aspect-square bg-gray-100 relative">
         {idea.exampleMediaPath ? (
           isVideo ? (
-            <>
-              <video
-                ref={videoRef}
-                src={`/${idea.exampleMediaPath}`}
-                className="w-full h-full object-cover"
-                muted
-                loop
-                playsInline
-                onMouseEnter={() => videoRef.current?.play()}
-                onMouseLeave={() => {
-                  if (videoRef.current) {
-                    videoRef.current.pause()
-                    videoRef.current.currentTime = 0
-                  }
-                }}
-              />
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="w-12 h-12 bg-black/50 rounded-full flex items-center justify-center">
-                  <Play className="h-6 w-6 text-white ml-1" />
-                </div>
-              </div>
-            </>
+            <LazyVideo
+              src={`/${idea.exampleMediaPath}`}
+              className="w-full h-full"
+            />
           ) : (
             <img
               src={`/${idea.exampleMediaPath}`}
               alt={idea.title || 'Idée'}
               className="w-full h-full object-cover"
+              loading="lazy"
             />
           )
         ) : (

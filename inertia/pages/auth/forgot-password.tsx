@@ -1,6 +1,7 @@
 import { Head, useForm, usePage, Link } from '@inertiajs/react'
 import { Button } from '~/components/ui/Button'
 import { Card } from '~/components/ui/Card'
+import { Toast } from '~/components/ui/Toast'
 
 export default function ForgotPassword() {
   const { flash } = usePage().props as { flash?: { success?: string; error?: string } }
@@ -33,17 +34,9 @@ export default function ForgotPassword() {
             </p>
           </div>
 
-          {/* Flash messages */}
-          {flash?.error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
-              {flash.error}
-            </div>
-          )}
-          {flash?.success && (
-            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">
-              {flash.success}
-            </div>
-          )}
+          {/* Flash messages as toasts */}
+          {flash?.error && <Toast message={flash.error} type="error" />}
+          {flash?.success && <Toast message={flash.success} type="success" />}
 
           {/* Form */}
           <form onSubmit={handleSubmit}>

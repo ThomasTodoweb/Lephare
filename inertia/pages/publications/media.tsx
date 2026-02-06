@@ -1,6 +1,7 @@
 import { Head, useForm, Link, usePage, router } from '@inertiajs/react'
 import { useRef, useState, useCallback, useEffect } from 'react'
 import { Button } from '~/components/ui/Button'
+import { Toast } from '~/components/ui/Toast'
 import { Upload, X, Plus, Image, Film, Smartphone, Grid, Lightbulb, ChevronDown, ChevronUp, Check, Play, Volume2, VolumeX } from 'lucide-react'
 import axios from 'axios'
 
@@ -385,10 +386,11 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
 
         {/* Content */}
         <div className="flex-1 px-6 py-6 pb-32">
-          {/* Error messages */}
-          {(flash?.error || videoError || uploadError) && (
+          {/* Error messages as toasts */}
+          {flash?.error && <Toast message={flash.error} type="error" />}
+          {(videoError || uploadError) && (
             <p className="text-red-600 text-sm mb-4">
-              {flash?.error || videoError || uploadError}
+              {videoError || uploadError}
             </p>
           )}
 

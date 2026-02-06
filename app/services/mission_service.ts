@@ -106,8 +106,6 @@ export default class MissionService {
         missionTemplateId: publicationTemplate.id,
         status: 'pending',
         assignedAt: now,
-        usedPass: false,
-        usedReload: false,
         slotNumber: 1,
         isRecommended: isPublicationDay, // Recommended on publication days
       })
@@ -132,8 +130,6 @@ export default class MissionService {
         missionTemplateId: engagementTemplate.id,
         status: 'pending',
         assignedAt: now,
-        usedPass: false,
-        usedReload: false,
         slotNumber: 2,
         isRecommended: !isPublicationDay, // Recommended on non-publication days
       })
@@ -158,8 +154,6 @@ export default class MissionService {
         missionTemplateId: thirdTemplate.id,
         status: 'pending',
         assignedAt: now,
-        usedPass: false,
-        usedReload: false,
         slotNumber: 3,
         isRecommended: false, // Never recommended
       })
@@ -260,77 +254,6 @@ export default class MissionService {
       default:
         return true
     }
-  }
-
-  /**
-   * Skip today's mission (mark as skipped, no new mission)
-   */
-  async skipMission(missionId: number, userId: number): Promise<{ success: boolean; error?: string }> {
-    const mission = await Mission.query()
-      .where('id', missionId)
-      .where('user_id', userId)
-      .first()
-
-    if (!mission) {
-      return { success: false, error: 'Mission introuvable' }
-    }
-
-    if (!mission.canUsePassOrReload()) {
-      return { success: false, error: 'Vous avez déjà utilisé votre action du jour' }
-    }
-
-    mission.status = 'skipped'
-    mission.usedPass = true
-    await mission.save()
-
-    return { success: true }
-  }
-
-  /**
-   * Reload mission (get a different one)
-   */
-  async reloadMission(missionId: number, userId: number): Promise<{ success: boolean; mission?: Mission; error?: string }> {
-    const currentMission = await Mission.query()
-      .where('id', missionId)
-      .where('user_id', userId)
-      .first()
-
-    if (!currentMission) {
-      return { success: false, error: 'Mission introuvable' }
-    }
-
-    if (!currentMission.canUsePassOrReload()) {
-      return { success: false, error: 'Vous avez déjà utilisé votre action du jour' }
-    }
-
-    const user = await User.query()
-      .where('id', userId)
-      .preload('restaurant')
-      .first()
-
-    if (!user?.restaurant?.strategyId) {
-      return { success: false, error: 'Configuration manquante' }
-    }
-
-    // Find a different template
-    const newTemplate = await MissionTemplate.query()
-      .where('strategy_id', user.restaurant.strategyId)
-      .where('is_active', true)
-      .whereNot('id', currentMission.missionTemplateId)
-      .orderByRaw('RANDOM()')
-      .first()
-
-    if (!newTemplate) {
-      return { success: false, error: 'Aucune autre mission disponible' }
-    }
-
-    // Update current mission with new template
-    currentMission.missionTemplateId = newTemplate.id
-    currentMission.usedReload = true
-    await currentMission.save()
-    await currentMission.load('missionTemplate')
-
-    return { success: true, mission: currentMission }
   }
 
   /**

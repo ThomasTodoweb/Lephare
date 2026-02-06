@@ -1,8 +1,8 @@
 import { Head, Link, useForm } from '@inertiajs/react'
 import { useState, useRef } from 'react'
 import { AdminLayout } from '~/components/layout'
-import { Card, Button, Input } from '~/components/ui'
-import { Plus, Trash2, Edit2, Check, X, Lightbulb, Tag, Upload, Image, Film } from 'lucide-react'
+import { Card, Button, Input, LazyVideo } from '~/components/ui'
+import { Plus, Trash2, Edit2, Check, X, Lightbulb, Tag, Upload, Image, Film, Link2, Unlink } from 'lucide-react'
 
 type RestaurantType = 'brasserie' | 'gastronomique' | 'fast_food' | 'pizzeria' | 'cafe_bar' | 'autre'
 
@@ -51,13 +51,31 @@ interface Tutorial {
   title: string
 }
 
+interface ThematicCategory {
+  id: number
+  name: string
+  icon: string | null
+}
+
+interface AvailableIdea {
+  id: number
+  title: string | null
+  suggestionText: string
+  exampleMediaPath: string | null
+  exampleMediaType: 'image' | 'video' | null
+  contentTypes: string[] | null
+  thematicCategoryIds: number[] | null
+}
+
 interface Props {
   template: Template
   strategies: Strategy[]
   tutorials: Tutorial[]
+  thematicCategories?: ThematicCategory[]
+  availableIdeas?: AvailableIdea[]
 }
 
-export default function AdminTemplatesEdit({ template, strategies, tutorials }: Props) {
+export default function AdminTemplatesEdit({ template, strategies, tutorials, thematicCategories = [], availableIdeas = [] }: Props) {
   const { data, setData, put, processing, errors } = useForm({
     strategyId: template.strategyId,
     type: template.type,
@@ -92,6 +110,11 @@ export default function AdminTemplatesEdit({ template, strategies, tutorials }: 
   const [coverImagePreview, setCoverImagePreview] = useState<string | null>(null)
   const [coverImageLoading, setCoverImageLoading] = useState(false)
   const coverImageInputRef = useRef<HTMLInputElement>(null)
+
+  // Available ideas state (for linking existing ideas)
+  const [localAvailableIdeas, setLocalAvailableIdeas] = useState<AvailableIdea[]>(availableIdeas)
+  const [isLinkingIdea, setIsLinkingIdea] = useState(false)
+  const [linkLoading, setLinkLoading] = useState(false)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -337,6 +360,70 @@ export default function AdminTemplatesEdit({ template, strategies, tutorials }: 
       }
     } catch (err) {
       console.error('Error deleting idea:', err)
+    }
+  }
+
+  // Link an existing idea to this template
+  const handleLinkIdea = async (ideaId: number) => {
+    setLinkLoading(true)
+    try {
+      const response = await fetch(`/admin/templates/${template.id}/link-idea`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-XSRF-TOKEN': getXsrfToken(),
+        },
+        body: JSON.stringify({ ideaId }),
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        // Add to linked ideas
+        setIdeas([...ideas, result.idea])
+        // Remove from available ideas
+        setLocalAvailableIdeas(localAvailableIdeas.filter((i) => i.id !== ideaId))
+        setIsLinkingIdea(false)
+      }
+    } catch (err) {
+      console.error('Error linking idea:', err)
+    } finally {
+      setLinkLoading(false)
+    }
+  }
+
+  // Unlink an idea from this template (but keep it in the system)
+  const handleUnlinkIdea = async (ideaId: number) => {
+    if (!confirm('Retirer cette idee de ce template ? (elle restera dans la liste des idees)')) return
+
+    try {
+      const response = await fetch(`/admin/templates/${template.id}/ideas/${ideaId}`, {
+        method: 'DELETE',
+        headers: {
+          'X-XSRF-TOKEN': getXsrfToken(),
+        },
+      })
+
+      if (response.ok) {
+        // Find the idea to add back to available list
+        const unlinkedIdea = ideas.find((i) => i.id === ideaId)
+        if (unlinkedIdea) {
+          setLocalAvailableIdeas([
+            ...localAvailableIdeas,
+            {
+              id: unlinkedIdea.id,
+              title: null,
+              suggestionText: unlinkedIdea.suggestionText,
+              exampleMediaPath: unlinkedIdea.exampleMediaPath,
+              exampleMediaType: unlinkedIdea.exampleMediaType,
+              contentTypes: null,
+              thematicCategoryIds: null,
+            },
+          ])
+        }
+        setIdeas(ideas.filter((i) => i.id !== ideaId))
+      }
+    } catch (err) {
+      console.error('Error unlinking idea:', err)
     }
   }
 
@@ -657,22 +744,98 @@ export default function AdminTemplatesEdit({ template, strategies, tutorials }: 
             <Lightbulb className="w-5 h-5 text-amber-500" />
             <h2 className="text-lg font-semibold text-neutral-900">Inspirations visuelles</h2>
           </div>
-          {!isAddingIdea && (
-            <Button
-              type="button"
-              variant="outlined"
-              onClick={() => setIsAddingIdea(true)}
-              className="flex items-center gap-1 text-sm"
-            >
-              <Plus className="w-4 h-4" />
-              Ajouter
-            </Button>
+          {!isAddingIdea && !isLinkingIdea && (
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outlined"
+                onClick={() => setIsLinkingIdea(true)}
+                className="flex items-center gap-1 text-sm"
+                disabled={localAvailableIdeas.length === 0}
+              >
+                <Link2 className="w-4 h-4" />
+                Lier une idée ({localAvailableIdeas.length})
+              </Button>
+              <Button
+                type="button"
+                variant="outlined"
+                onClick={() => setIsAddingIdea(true)}
+                className="flex items-center gap-1 text-sm"
+              >
+                <Plus className="w-4 h-4" />
+                Créer
+              </Button>
+            </div>
           )}
         </div>
 
         <p className="text-sm text-neutral-500 mb-4">
           Ces exemples visuels (photos/videos) seront proposes aux utilisateurs pour les inspirer lors de la creation de leur publication.
         </p>
+
+        {/* Link existing idea section */}
+        {isLinkingIdea && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-medium text-blue-900">Sélectionner une idée existante</h3>
+              <button
+                type="button"
+                onClick={() => setIsLinkingIdea(false)}
+                className="text-blue-600 hover:text-blue-700"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            {localAvailableIdeas.length === 0 ? (
+              <p className="text-sm text-blue-700">Aucune idée disponible à lier.</p>
+            ) : (
+              <div className="grid gap-3 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 max-h-96 overflow-y-auto">
+                {localAvailableIdeas.map((idea) => (
+                  <button
+                    key={idea.id}
+                    type="button"
+                    onClick={() => handleLinkIdea(idea.id)}
+                    disabled={linkLoading}
+                    className="border border-blue-200 rounded-lg overflow-hidden bg-white hover:border-blue-400 transition-colors disabled:opacity-50 text-left"
+                  >
+                    {idea.exampleMediaPath ? (
+                      <div className="aspect-square bg-neutral-100">
+                        {idea.exampleMediaType === 'video' ? (
+                          <video
+                            src={`/${idea.exampleMediaPath}`}
+                            className="w-full h-full object-cover"
+                            muted
+                          />
+                        ) : (
+                          <img
+                            src={`/${idea.exampleMediaPath}`}
+                            alt={idea.suggestionText}
+                            className="w-full h-full object-cover"
+                          />
+                        )}
+                      </div>
+                    ) : (
+                      <div className="aspect-square bg-neutral-100 flex items-center justify-center">
+                        <Image className="w-8 h-8 text-neutral-300" />
+                      </div>
+                    )}
+                    <div className="p-2">
+                      <p className="text-xs text-neutral-700 line-clamp-2">{idea.suggestionText}</p>
+                      {idea.exampleMediaType && (
+                        <span className={`inline-flex items-center gap-1 mt-1 px-1.5 py-0.5 rounded text-xs ${
+                          idea.exampleMediaType === 'video' ? 'bg-purple-100 text-purple-700' : 'bg-green-100 text-green-700'
+                        }`}>
+                          {idea.exampleMediaType === 'video' ? <Film className="w-3 h-3" /> : <Image className="w-3 h-3" />}
+                          {idea.exampleMediaType === 'video' ? 'Vidéo' : 'Image'}
+                        </span>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Add new idea form */}
         {isAddingIdea && (
@@ -1019,9 +1182,17 @@ export default function AdminTemplatesEdit({ template, strategies, tutorials }: 
                         </button>
                         <button
                           type="button"
+                          onClick={() => handleUnlinkIdea(idea.id)}
+                          className="p-1.5 text-neutral-400 hover:text-orange-500"
+                          title="Retirer du template (sans supprimer)"
+                        >
+                          <Unlink className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
                           onClick={() => handleDeleteIdea(idea.id)}
                           className="p-1.5 text-neutral-400 hover:text-red-500"
-                          title="Supprimer"
+                          title="Supprimer définitivement"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>

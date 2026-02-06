@@ -126,6 +126,12 @@ export default class ContentIdea extends BaseModel {
   @column()
   declare exampleMediaType: 'image' | 'video' | null
 
+  /**
+   * Whether the media has been optimized
+   */
+  @column()
+  declare isOptimized: boolean
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 
