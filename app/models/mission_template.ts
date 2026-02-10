@@ -46,6 +46,9 @@ export default class MissionTemplate extends BaseModel {
   @column()
   declare useRandomIdeaBackground: boolean
 
+  @column()
+  declare notificationTime: string | null
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 

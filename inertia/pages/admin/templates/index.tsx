@@ -16,6 +16,7 @@ interface Template {
   tutorialTitle: string | null
   requiredTutorialId: number | null
   requiredTutorialTitle: string | null
+  notificationTime: string | null
 }
 
 interface Strategy {
@@ -159,6 +160,11 @@ export default function AdminTemplatesIndex({ templates, strategies, currentFilt
               {template.requiredTutorialTitle && (
                 <p className="text-xs text-amber-600 mt-1">
                   🔒 Prérequis: {template.requiredTutorialTitle}
+                </p>
+              )}
+              {template.notificationTime && (
+                <p className="text-xs text-blue-600 mt-1">
+                  🔔 Notification à {template.notificationTime}
                 </p>
               )}
             </div>

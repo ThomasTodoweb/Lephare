@@ -37,6 +37,7 @@ interface Template {
   requiredTutorialId: number | null
   coverImagePath: string | null
   useRandomIdeaBackground: boolean
+  notificationTime: string | null
   ideas?: ContentIdea[]
 }
 
@@ -85,6 +86,7 @@ export default function AdminTemplatesEdit({ template, strategies, tutorials, th
     tutorialId: template.tutorialId,
     requiredTutorialId: template.requiredTutorialId,
     useRandomIdeaBackground: template.useRandomIdeaBackground,
+    notificationTime: template.notificationTime || '',
   })
 
   // Ideas state management
@@ -654,6 +656,21 @@ export default function AdminTemplatesEdit({ template, strategies, tutorials, th
             </select>
             <p className="text-xs text-neutral-500 mt-1">
               L'utilisateur devra completer ce tutoriel avant de debloquer cette mission
+            </p>
+          </div>
+
+          {/* Notification Time */}
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-1">
+              Heure de notification (optionnel)
+            </label>
+            <Input
+              type="time"
+              value={data.notificationTime}
+              onChange={(e) => setData('notificationTime', e.target.value)}
+            />
+            <p className="text-xs text-neutral-500 mt-1">
+              Si vide, l'heure par défaut de l'utilisateur sera utilisée.
             </p>
           </div>
 

@@ -64,6 +64,7 @@ export const createTemplateValidator = vine.compile(
     tutorialId: vine.number().positive().optional().nullable(),
     requiredTutorialId: vine.number().positive().optional().nullable(),
     thematicCategoryId: vine.number().positive().optional().nullable(),
+    notificationTime: vine.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/).optional().nullable(),
   })
 )
 createTemplateValidator.messagesProvider = messages
@@ -80,6 +81,7 @@ export const updateTemplateValidator = vine.compile(
     requiredTutorialId: vine.number().positive().optional().nullable(),
     thematicCategoryId: vine.number().positive().optional().nullable(),
     useRandomIdeaBackground: vine.boolean().optional(),
+    notificationTime: vine.string().regex(/^([01]\d|2[0-3]):([0-5]\d)$/).optional().nullable(),
   })
 )
 updateTemplateValidator.messagesProvider = messages

@@ -33,7 +33,7 @@ export default function InstagramSettings({ isConfigured, account }: Props) {
       <Head title="Instagram - Parametres - Le Phare" />
       <div className="min-h-screen bg-background">
         {/* Header */}
-        <div className="px-6 pt-8 pb-6">
+        <div className="px-6 pt-14 pb-6">
           <Link
             href="/profile"
             className="inline-flex items-center text-neutral-500 hover:text-neutral-700 mb-4"

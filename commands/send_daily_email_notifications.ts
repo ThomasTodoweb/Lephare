@@ -8,7 +8,7 @@ import User from '#models/user'
 
 export default class SendDailyEmailNotifications extends BaseCommand {
   static commandName = 'notifications:send-daily-emails'
-  static description = 'Send daily email notifications to users based on their notification time'
+  static description = 'Send daily email notifications based on mission template notification time or user default'
 
   static options: CommandOptions = {
     startApp: true,
@@ -30,57 +30,65 @@ export default class SendDailyEmailNotifications extends BaseCommand {
 
     // Get current time in HH:MM format (Paris timezone - all users are in France)
     const currentTime = DateTime.now().setZone('Europe/Paris').toFormat('HH:mm')
-    this.logger.info(`Checking for email notifications scheduled at ${currentTime} (Europe/Paris)`)
+    this.logger.info(`Checking for email notifications at ${currentTime} (Europe/Paris)`)
 
-    // Get users who want email notifications at this time
-    // Check both legacy toggle and granular preference
+    // Get all users eligible for email notifications
     const users = await User.query()
       .where('email_verified', true)
       .where('email_notifications_enabled', true)
       .where('email_daily_mission_enabled', true)
-      .where('email_notification_time', currentTime)
       .preload('restaurant')
 
     if (users.length === 0) {
-      this.logger.info('No users found for this time slot')
+      this.logger.info('No eligible users found')
       return
     }
 
-    this.logger.info(`Found ${users.length} users to notify by email`)
+    this.logger.info(`Found ${users.length} eligible users for email notifications`)
 
     const missionService = new MissionService()
     let sent = 0
     let failed = 0
+    let skipped = 0
 
     for (const user of users) {
       try {
-        // Get all today's missions and find a pending one
+        // Get/create today's missions and find the recommended pending one
         const missions = await missionService.getTodayMissions(user.id)
-        const pendingMission = missions.find((m) => m.status === 'pending')
+        const recommended = missions.find((m) => m.isRecommended && m.status === 'pending')
 
-        if (pendingMission) {
-          const mission = pendingMission
-          const template = mission.missionTemplate
-          const success = await emailService.sendDailyMissionEmail(
-            user.email,
-            {
-              title: template.title,
-              description: template.contentIdea,
-              category: template.type,
-            },
-            user.fullName || undefined,
-            user.restaurant?.name || undefined
-          )
+        if (!recommended) {
+          skipped++
+          continue
+        }
 
-          if (success) {
-            this.logger.info(`Email sent to ${user.email} for mission: ${mission.missionTemplate.title}`)
-            sent++
-          } else {
-            this.logger.warning(`Failed to send email to ${user.email}`)
-            failed++
-          }
+        // Resolve effective notification time:
+        // template override > user's email notification time
+        const effectiveTime = recommended.missionTemplate.notificationTime || user.emailNotificationTime
+
+        if (effectiveTime !== currentTime) {
+          skipped++
+          continue
+        }
+
+        const template = recommended.missionTemplate
+        const success = await emailService.sendDailyMissionEmail(
+          user.email,
+          {
+            title: template.title,
+            description: template.contentIdea,
+            category: template.type,
+          },
+          user.fullName || undefined,
+          user.restaurant?.name || undefined
+        )
+
+        if (success) {
+          this.logger.info(`Email sent to ${user.email} for mission: ${template.title}`)
+          sent++
         } else {
-          this.logger.info(`User ${user.id} has no pending missions today (found ${missions.length} missions)`)
+          this.logger.warning(`Failed to send email to ${user.email}`)
+          failed++
         }
       } catch (error) {
         this.logger.error(`Error sending email to user ${user.id}: ${error}`)
@@ -88,6 +96,6 @@ export default class SendDailyEmailNotifications extends BaseCommand {
       }
     }
 
-    this.logger.success(`Email notifications sent: ${sent}, failed: ${failed}`)
+    this.logger.success(`Email notifications - sent: ${sent}, failed: ${failed}, skipped: ${skipped}`)
   }
 }

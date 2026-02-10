@@ -56,6 +56,7 @@ export default class TemplatesController {
         thematicCategoryId: t.thematicCategoryId,
         thematicCategoryName: t.thematicCategory?.name || null,
         thematicCategoryIcon: t.thematicCategory?.icon || null,
+        notificationTime: t.notificationTime,
       })),
       strategies: strategies.map((s) => ({
         id: s.id,
@@ -112,6 +113,7 @@ export default class TemplatesController {
       tutorialId: data.tutorialId || null,
       requiredTutorialId: data.requiredTutorialId || null,
       thematicCategoryId: data.thematicCategoryId || null,
+      notificationTime: data.notificationTime || null,
     })
 
     return response.redirect('/admin/templates')
@@ -157,6 +159,7 @@ export default class TemplatesController {
         thematicCategoryId: template.thematicCategoryId,
         coverImagePath: template.coverImagePath,
         useRandomIdeaBackground: template.useRandomIdeaBackground,
+        notificationTime: template.notificationTime,
         ideas: template.contentIdeas.map((idea) => ({
           id: idea.id,
           suggestionText: idea.suggestionText,
@@ -210,6 +213,7 @@ export default class TemplatesController {
       requiredTutorialId: data.requiredTutorialId || null,
       thematicCategoryId: data.thematicCategoryId || null,
       useRandomIdeaBackground: data.useRandomIdeaBackground ?? false,
+      notificationTime: data.notificationTime ?? null,
     })
 
     await template.save()

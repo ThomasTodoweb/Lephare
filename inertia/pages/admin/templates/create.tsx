@@ -27,6 +27,7 @@ export default function AdminTemplatesCreate({ strategies, tutorials }: Props) {
     isActive: true,
     tutorialId: null as number | null,
     requiredTutorialId: null as number | null,
+    notificationTime: '',
   })
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -159,6 +160,21 @@ export default function AdminTemplatesCreate({ strategies, tutorials }: Props) {
             </select>
             <p className="text-xs text-neutral-500 mt-1">
               L'utilisateur devra compléter ce tutoriel avant de débloquer cette mission
+            </p>
+          </div>
+
+          {/* Notification Time */}
+          <div>
+            <label className="block text-sm font-medium text-neutral-700 mb-1">
+              Heure de notification (optionnel)
+            </label>
+            <Input
+              type="time"
+              value={data.notificationTime}
+              onChange={(e) => setData('notificationTime', e.target.value)}
+            />
+            <p className="text-xs text-neutral-500 mt-1">
+              Si vide, l'heure par défaut de l'utilisateur sera utilisée.
             </p>
           </div>
 
