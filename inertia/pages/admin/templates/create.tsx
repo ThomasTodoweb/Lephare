@@ -44,11 +44,11 @@ export default function AdminTemplatesCreate({ strategies, tutorials }: Props) {
   ]
 
   return (
-    <AdminLayout title="Nouveau template">
-      <Head title="Nouveau template - Admin Le Phare" />
+    <AdminLayout title="Nouvelle mission">
+      <Head title="Nouvelle mission - Admin Le Phare" />
 
       <Link href="/admin/templates" className="text-primary text-sm mb-4 inline-block">
-        ← Retour aux templates
+        ← Retour aux missions
       </Link>
 
       <Card>
@@ -188,7 +188,7 @@ export default function AdminTemplatesCreate({ strategies, tutorials }: Props) {
               className="w-5 h-5 rounded border-neutral-300 text-primary focus:ring-primary"
             />
             <label htmlFor="isActive" className="text-sm text-neutral-700">
-              Template actif
+              Mission active
             </label>
           </div>
 
@@ -200,7 +200,7 @@ export default function AdminTemplatesCreate({ strategies, tutorials }: Props) {
               </Button>
             </Link>
             <Button type="submit" className="flex-1" disabled={processing}>
-              {processing ? 'Création...' : 'Créer le template'}
+              {processing ? 'Création...' : 'Créer la mission'}
             </Button>
           </div>
         </form>

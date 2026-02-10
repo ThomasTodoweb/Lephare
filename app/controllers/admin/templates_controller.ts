@@ -22,7 +22,6 @@ export default class TemplatesController {
       .preload('tutorial')
       .preload('requiredTutorial')
       .preload('thematicCategory')
-      .withCount('missions')
       .whereNot('type', 'tuto') // Les tutos sont gérés séparément dans /admin/tutorials
       .orderBy('strategy_id', 'asc')
       .orderBy('order', 'asc')
@@ -57,7 +56,6 @@ export default class TemplatesController {
         thematicCategoryId: t.thematicCategoryId,
         thematicCategoryName: t.thematicCategory?.name || null,
         thematicCategoryIcon: t.thematicCategory?.icon || null,
-        missionsCount: Number(t.$extras.missions_count || 0),
       })),
       strategies: strategies.map((s) => ({
         id: s.id,
@@ -128,7 +126,6 @@ export default class TemplatesController {
       .preload('strategy')
       .preload('thematicCategory')
       .preload('contentIdeas')
-      .withCount('missions')
       .first()
 
     if (!template) {
@@ -160,7 +157,6 @@ export default class TemplatesController {
         thematicCategoryId: template.thematicCategoryId,
         coverImagePath: template.coverImagePath,
         useRandomIdeaBackground: template.useRandomIdeaBackground,
-        missionsCount: Number(template.$extras.missions_count || 0),
         ideas: template.contentIdeas.map((idea) => ({
           id: idea.id,
           suggestionText: idea.suggestionText,
@@ -198,7 +194,7 @@ export default class TemplatesController {
     const template = await MissionTemplate.find(templateId)
 
     if (!template) {
-      return response.notFound({ error: 'Template non trouvé' })
+      return response.notFound({ error: 'Mission non trouvée' })
     }
 
     const data = await request.validateUsing(updateTemplateValidator)
@@ -228,7 +224,7 @@ export default class TemplatesController {
     const template = await MissionTemplate.find(params.id)
 
     if (!template) {
-      return response.notFound({ error: 'Template non trouvé' })
+      return response.notFound({ error: 'Mission non trouvée' })
     }
 
     template.isActive = !template.isActive
@@ -241,20 +237,10 @@ export default class TemplatesController {
    * Delete template
    */
   async destroy({ response, params }: HttpContext) {
-    const template = await MissionTemplate.query()
-      .where('id', params.id)
-      .withCount('missions')
-      .first()
+    const template = await MissionTemplate.find(params.id)
 
     if (!template) {
-      return response.notFound({ error: 'Template non trouvé' })
-    }
-
-    const missionsCount = Number(template.$extras.missions_count || 0)
-    if (missionsCount > 0) {
-      return response.badRequest({
-        error: `Ce template est utilisé par ${missionsCount} mission(s)`,
-      })
+      return response.notFound({ error: 'Mission non trouvée' })
     }
 
     await template.delete()
@@ -273,7 +259,7 @@ export default class TemplatesController {
 
     const template = await MissionTemplate.find(templateId)
     if (!template) {
-      return response.notFound({ error: 'Template non trouvé' })
+      return response.notFound({ error: 'Mission non trouvée' })
     }
 
     const coverImage = request.file('coverImage', {
@@ -324,7 +310,7 @@ export default class TemplatesController {
 
     const template = await MissionTemplate.find(templateId)
     if (!template) {
-      return response.notFound({ error: 'Template non trouvé' })
+      return response.notFound({ error: 'Mission non trouvée' })
     }
 
     // Delete cover image file if exists
@@ -351,7 +337,7 @@ export default class TemplatesController {
     const ideaId = Number(request.input('ideaId'))
 
     if (Number.isNaN(templateId) || templateId <= 0) {
-      return response.badRequest({ error: 'ID template invalide' })
+      return response.badRequest({ error: 'ID mission invalide' })
     }
     if (Number.isNaN(ideaId) || ideaId <= 0) {
       return response.badRequest({ error: 'ID idée invalide' })
@@ -359,7 +345,7 @@ export default class TemplatesController {
 
     const template = await MissionTemplate.find(templateId)
     if (!template) {
-      return response.notFound({ error: 'Template non trouvé' })
+      return response.notFound({ error: 'Mission non trouvée' })
     }
 
     const idea = await ContentIdea.find(ideaId)
@@ -393,7 +379,7 @@ export default class TemplatesController {
     const ideaId = Number(params.ideaId)
 
     if (Number.isNaN(templateId) || templateId <= 0) {
-      return response.badRequest({ error: 'ID template invalide' })
+      return response.badRequest({ error: 'ID mission invalide' })
     }
     if (Number.isNaN(ideaId) || ideaId <= 0) {
       return response.badRequest({ error: 'ID idée invalide' })
@@ -405,7 +391,7 @@ export default class TemplatesController {
     }
 
     if (idea.missionTemplateId !== templateId) {
-      return response.badRequest({ error: 'Cette idée n\'est pas liée à ce template' })
+      return response.badRequest({ error: 'Cette idée n\'est pas liée à cette mission' })
     }
 
     // Unlink the idea from the template

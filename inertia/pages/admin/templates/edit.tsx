@@ -37,7 +37,6 @@ interface Template {
   requiredTutorialId: number | null
   coverImagePath: string | null
   useRandomIdeaBackground: boolean
-  missionsCount: number
   ideas?: ContentIdea[]
 }
 
@@ -393,7 +392,7 @@ export default function AdminTemplatesEdit({ template, strategies, tutorials, th
 
   // Unlink an idea from this template (but keep it in the system)
   const handleUnlinkIdea = async (ideaId: number) => {
-    if (!confirm('Retirer cette idee de ce template ? (elle restera dans la liste des idees)')) return
+    if (!confirm('Retirer cette idée de cette mission ? (elle restera dans la liste des idées)')) return
 
     try {
       const response = await fetch(`/admin/templates/${template.id}/ideas/${ideaId}`, {
@@ -474,25 +473,8 @@ export default function AdminTemplatesEdit({ template, strategies, tutorials, th
       <Head title={`Modifier ${template.title} - Admin Le Phare`} />
 
       <Link href="/admin/templates" className="text-primary text-sm mb-4 inline-block">
-        ← Retour aux templates
+        ← Retour aux missions
       </Link>
-
-      {/* Stats info card */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-        <div className="flex items-center gap-3">
-          <div className="bg-blue-100 rounded-full p-2">
-            <span className="text-lg">📊</span>
-          </div>
-          <div>
-            <p className="font-medium text-blue-900">
-              {template.missionsCount} mission{template.missionsCount !== 1 ? 's' : ''} utilisent ce template
-            </p>
-            <p className="text-sm text-blue-700">
-              Ce nombre est calcule automatiquement et ne peut pas etre modifie manuellement.
-            </p>
-          </div>
-        </div>
-      </div>
 
       {/* Cover Image Section */}
       <Card className="mb-4">
@@ -696,7 +678,7 @@ export default function AdminTemplatesEdit({ template, strategies, tutorials, th
               className="w-5 h-5 rounded border-neutral-300 text-primary focus:ring-primary"
             />
             <label htmlFor="isActive" className="text-sm text-neutral-700">
-              Template actif
+              Mission active
             </label>
           </div>
 
@@ -1184,7 +1166,7 @@ export default function AdminTemplatesEdit({ template, strategies, tutorials, th
                           type="button"
                           onClick={() => handleUnlinkIdea(idea.id)}
                           className="p-1.5 text-neutral-400 hover:text-orange-500"
-                          title="Retirer du template (sans supprimer)"
+                          title="Retirer de la mission (sans supprimer)"
                         >
                           <Unlink className="w-4 h-4" />
                         </button>

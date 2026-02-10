@@ -16,7 +16,6 @@ interface Template {
   tutorialTitle: string | null
   requiredTutorialId: number | null
   requiredTutorialTitle: string | null
-  missionsCount: number
 }
 
 interface Strategy {
@@ -61,13 +60,8 @@ export default function AdminTemplatesIndex({ templates, strategies, currentFilt
     router.post(`/admin/templates/${id}/toggle`, {}, { preserveScroll: true })
   }
 
-  const handleDelete = (id: number, missionsCount: number) => {
-    if (missionsCount > 0) {
-      alert(`Ce template est utilisé par ${missionsCount} mission(s). Vous ne pouvez pas le supprimer.`)
-      return
-    }
-
-    if (confirm('Êtes-vous sûr de vouloir supprimer ce template ?')) {
+  const handleDelete = (id: number) => {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cette mission ?')) {
       setDeleting(id)
       router.delete(`/admin/templates/${id}`, {
         preserveScroll: true,
@@ -77,13 +71,13 @@ export default function AdminTemplatesIndex({ templates, strategies, currentFilt
   }
 
   return (
-    <AdminLayout title="Templates de missions">
-      <Head title="Templates - Admin Le Phare" />
+    <AdminLayout title="Missions">
+      <Head title="Missions - Admin Le Phare" />
 
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
         <Link href="/admin/templates/create">
-          <Button>+ Nouveau template</Button>
+          <Button>+ Nouvelle mission</Button>
         </Link>
       </div>
 
@@ -132,7 +126,7 @@ export default function AdminTemplatesIndex({ templates, strategies, currentFilt
         </select>
       </div>
 
-      <p className="text-neutral-500 text-sm mb-4">{templates.length} template(s)</p>
+      <p className="text-neutral-500 text-sm mb-4">{templates.length} mission(s)</p>
 
       {/* Templates list */}
       <div className="space-y-3">
@@ -169,12 +163,6 @@ export default function AdminTemplatesIndex({ templates, strategies, currentFilt
               )}
             </div>
 
-            {/* Stats */}
-            <div className="text-center text-sm">
-              <p className="font-bold text-neutral-900">{template.missionsCount}</p>
-              <p className="text-xs text-neutral-500">missions</p>
-            </div>
-
             {/* Actions */}
             <div className="flex flex-col gap-2">
               <Link href={`/admin/templates/${template.id}/edit`}>
@@ -193,7 +181,7 @@ export default function AdminTemplatesIndex({ templates, strategies, currentFilt
                 {template.isActive ? 'Active' : 'Inactive'}
               </button>
               <button
-                onClick={() => handleDelete(template.id, template.missionsCount)}
+                onClick={() => handleDelete(template.id)}
                 disabled={deleting === template.id}
                 className="px-3 py-1.5 text-xs rounded-lg border border-red-300 text-red-600 hover:bg-red-50"
               >
@@ -206,9 +194,9 @@ export default function AdminTemplatesIndex({ templates, strategies, currentFilt
         {templates.length === 0 && (
           <Card className="text-center py-12">
             <span className="text-4xl block mb-2">📝</span>
-            <p className="text-neutral-500">Aucun template trouvé</p>
+            <p className="text-neutral-500">Aucune mission trouvée</p>
             <Link href="/admin/templates/create" className="text-primary text-sm mt-2 inline-block">
-              Créer votre premier template →
+              Créer votre première mission →
             </Link>
           </Card>
         )}
