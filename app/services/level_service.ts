@@ -140,9 +140,11 @@ export default class LevelService {
     }
 
     const nextLevelXp = nextThreshold!.xpRequired
-    const xpInLevel = xpTotal - currentLevelXp
+    const xpInLevel = Math.max(0, xpTotal - currentLevelXp)
     const xpNeededForNextLevel = nextLevelXp - currentLevelXp
-    const progressPercent = Math.min(100, Math.round((xpInLevel / xpNeededForNextLevel) * 100))
+    const progressPercent = xpNeededForNextLevel > 0
+      ? Math.min(100, Math.max(0, Math.round((xpInLevel / xpNeededForNextLevel) * 100)))
+      : 0
 
     return {
       xpTotal,

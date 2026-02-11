@@ -51,7 +51,6 @@ const navGroups: NavGroup[] = [
     icon: '🏆',
     items: [
       { href: '/admin/levels', label: 'Niveaux & XP', icon: '⭐' },
-      { href: '/admin/badges', label: 'Badges', icon: '🏅' },
     ],
   },
   {

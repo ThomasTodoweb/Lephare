@@ -5,31 +5,37 @@ import LevelService from '#services/level_service'
 
 export default class CalendarController {
   /**
-   * Show calendar page with monthly view
+   * Show calendar page with week view (default) and selected day's missions pre-loaded
    */
   async index({ inertia, auth, request }: HttpContext) {
     const user = auth.getUserOrFail()
 
-    // Get month and year from query params, default to current month
-    const year = Number(request.input('year')) || DateTime.utc().year
-    const month = Number(request.input('month')) || DateTime.utc().month
+    // Selected date from query param, default to today (Paris timezone)
+    const dateParam = request.input('date')
+    const selectedDate = dateParam
+      ? DateTime.fromISO(dateParam, { zone: 'utc' })
+      : DateTime.now().setZone('Europe/Paris').startOf('day').toUTC()
 
-    // Calculate start and end of month
+    const selectedDateStr = selectedDate.toFormat('yyyy-MM-dd')
+
+    // Calculate the month range for missionsByDay (needed for both week and month views)
+    const year = selectedDate.year
+    const month = selectedDate.month
     const startOfMonth = DateTime.utc(year, month, 1)
     const endOfMonth = startOfMonth.endOf('month')
 
     // Get all missions for this user in this month range
-    const missions = await Mission.query()
+    const monthMissions = await Mission.query()
       .where('user_id', user.id)
       .where('assigned_at', '>=', startOfMonth.toSQL()!)
       .where('assigned_at', '<=', endOfMonth.toSQL()!)
       .preload('missionTemplate')
       .orderBy('assigned_at', 'asc')
 
-    // Group missions by day
+    // Group missions by day (for calendar dots)
     const missionsByDay: Record<string, { completed: number; skipped: number; pending: number }> = {}
 
-    for (const mission of missions) {
+    for (const mission of monthMissions) {
       const dayKey = mission.assignedAt.toFormat('yyyy-MM-dd')
       if (!missionsByDay[dayKey]) {
         missionsByDay[dayKey] = { completed: 0, skipped: 0, pending: 0 }
@@ -44,18 +50,16 @@ export default class CalendarController {
       }
     }
 
-    // Get upcoming pending missions (next 14 days)
-    const upcomingStart = DateTime.utc().startOf('day').plus({ days: 1 })
-    const upcomingEnd = upcomingStart.plus({ days: 14 })
+    // Pre-load missions for the selected day
+    const startOfDay = selectedDate.startOf('day')
+    const endOfDay = selectedDate.endOf('day')
 
-    const upcomingMissions = await Mission.query()
+    const dayMissions = await Mission.query()
       .where('user_id', user.id)
-      .where('status', 'pending')
-      .where('assigned_at', '>=', upcomingStart.toSQL()!)
-      .where('assigned_at', '<=', upcomingEnd.toSQL()!)
+      .where('assigned_at', '>=', startOfDay.toSQL()!)
+      .where('assigned_at', '<=', endOfDay.toSQL()!)
       .preload('missionTemplate')
       .orderBy('assigned_at', 'asc')
-      .limit(10)
 
     // Get level info
     const levelService = new LevelService()
@@ -64,22 +68,25 @@ export default class CalendarController {
     return inertia.render('calendar/index', {
       year,
       month,
-      monthName: startOfMonth.setLocale('fr').toFormat('MMMM yyyy'),
       missionsByDay,
-      today: DateTime.utc().toFormat('yyyy-MM-dd'),
-      upcomingMissions: upcomingMissions.map((m) => ({
+      today: DateTime.now().setZone('Europe/Paris').toFormat('yyyy-MM-dd'),
+      selectedDate: selectedDateStr,
+      selectedDayMissions: dayMissions.map((m) => ({
         id: m.id,
-        date: m.assignedAt.toFormat('yyyy-MM-dd'),
-        dateFormatted: m.assignedAt.setLocale('fr').toFormat('ccc dd MMM'),
-        type: m.missionTemplate?.type || 'post',
-        title: m.missionTemplate?.title || 'Mission',
+        status: m.status,
+        assignedAt: m.assignedAt.toISO(),
+        completedAt: m.completedAt?.toISO() ?? null,
+        template: {
+          type: m.missionTemplate.type,
+          title: m.missionTemplate.title,
+        },
       })),
       level: levelInfo,
     })
   }
 
   /**
-   * Get missions for a specific day
+   * Get missions for a specific day (AJAX)
    */
   async day({ auth, params, response }: HttpContext) {
     const user = auth.getUserOrFail()
@@ -108,7 +115,7 @@ export default class CalendarController {
         id: m.id,
         status: m.status,
         assignedAt: m.assignedAt.toISO(),
-        completedAt: m.completedAt?.toISO(),
+        completedAt: m.completedAt?.toISO() ?? null,
         template: {
           type: m.missionTemplate.type,
           title: m.missionTemplate.title,

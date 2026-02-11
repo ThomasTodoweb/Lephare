@@ -1,21 +1,12 @@
 import { Head, router } from '@inertiajs/react'
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { AppLayout } from '~/components/layout'
-import { ChevronLeft, ChevronRight, Check, X as XIcon, Clock, Target, Star, Camera, Smartphone, Film, BookOpen, MessageCircle, Images } from 'lucide-react'
-import { LevelProgressBar } from '~/components/features/home/LevelProgressBar'
+import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, Camera, Smartphone, Film, BookOpen, MessageCircle, Images } from 'lucide-react'
 
 interface DayStats {
   completed: number
   skipped: number
   pending: number
-}
-
-interface UpcomingMission {
-  id: number
-  date: string
-  dateFormatted: string
-  type: string
-  title: string
 }
 
 interface LevelInfo {
@@ -29,16 +20,6 @@ interface LevelInfo {
   isMaxLevel: boolean
 }
 
-interface Props {
-  year: number
-  month: number
-  monthName: string
-  missionsByDay: Record<string, DayStats>
-  today: string
-  upcomingMissions: UpcomingMission[]
-  level: LevelInfo
-}
-
 interface DayMission {
   id: number
   status: 'pending' | 'completed' | 'skipped'
@@ -50,9 +31,19 @@ interface DayMission {
   }
 }
 
-const WEEKDAYS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
+interface Props {
+  year: number
+  month: number
+  missionsByDay: Record<string, DayStats>
+  today: string
+  selectedDate: string
+  selectedDayMissions: DayMission[]
+  level: LevelInfo
+}
 
-const missionTypeEmojis: Record<string, { icon: React.ReactNode; label: string }> = {
+const WEEKDAY_LABELS = ['L', 'M', 'M', 'J', 'V', 'S', 'D']
+
+const missionTypeConfig: Record<string, { icon: React.ReactNode; label: string }> = {
   post: { icon: <Camera className="w-4 h-4" />, label: 'Post' },
   story: { icon: <Smartphone className="w-4 h-4" />, label: 'Story' },
   reel: { icon: <Film className="w-4 h-4" />, label: 'Reel' },
@@ -61,366 +52,415 @@ const missionTypeEmojis: Record<string, { icon: React.ReactNode; label: string }
   carousel: { icon: <Images className="w-4 h-4" />, label: 'Carrousel' },
 }
 
-export default function CalendarPage({ year, month, monthName, missionsByDay, today, upcomingMissions, level }: Props) {
-  const [selectedDate, setSelectedDate] = useState<string | null>(null)
-  const [dayMissions, setDayMissions] = useState<DayMission[]>([])
-  const [loadingDay, setLoadingDay] = useState(false)
-  const abortControllerRef = useRef<AbortController | null>(null)
+// ---- Date helpers ----
 
-  // Cleanup on unmount
+function toDateStr(d: Date): string {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
+function parseDate(s: string): Date {
+  const [y, m, d] = s.split('-').map(Number)
+  return new Date(y, m - 1, d)
+}
+
+function addDays(d: Date, n: number): Date {
+  const result = new Date(d)
+  result.setDate(result.getDate() + n)
+  return result
+}
+
+function getMonday(d: Date): Date {
+  const day = d.getDay()
+  const diff = day === 0 ? -6 : 1 - day
+  return addDays(d, diff)
+}
+
+function formatDayTitle(dateStr: string): string {
+  const d = parseDate(dateStr)
+  return d.toLocaleDateString('fr-FR', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  })
+}
+
+function getWeekDays(monday: Date): Date[] {
+  return Array.from({ length: 7 }, (_, i) => addDays(monday, i))
+}
+
+function getMonthGrid(year: number, month: number): (Date | null)[][] {
+  const firstDay = new Date(year, month - 1, 1)
+  const daysInMonth = new Date(year, month, 0).getDate()
+  let startDow = firstDay.getDay() - 1
+  if (startDow < 0) startDow = 6
+
+  const cells: (Date | null)[] = []
+  for (let i = 0; i < startDow; i++) cells.push(null)
+  for (let d = 1; d <= daysInMonth; d++) cells.push(new Date(year, month - 1, d))
+  while (cells.length % 7 !== 0) cells.push(null)
+
+  const weeks: (Date | null)[][] = []
+  for (let i = 0; i < cells.length; i += 7) {
+    weeks.push(cells.slice(i, i + 7))
+  }
+  return weeks
+}
+
+// ---- Component ----
+
+export default function CalendarPage({ year, month, missionsByDay, today, selectedDate: initialSelectedDate, selectedDayMissions, level }: Props) {
+  const [currentDate, setCurrentDate] = useState(initialSelectedDate)
+  const [missions, setMissions] = useState<DayMission[]>(selectedDayMissions)
+  const [loading, setLoading] = useState(false)
+  const [showMonth, setShowMonth] = useState(false)
+  const [monthViewYear, setMonthViewYear] = useState(year)
+  const [monthViewMonth, setMonthViewMonth] = useState(month)
+
+  const abortRef = useRef<AbortController | null>(null)
+  const touchStartRef = useRef<{ x: number; y: number; t: number } | null>(null)
+
   useEffect(() => {
-    return () => {
-      abortControllerRef.current?.abort()
+    return () => { abortRef.current?.abort() }
+  }, [])
+
+  // Sync props when Inertia re-renders with new data
+  useEffect(() => {
+    setCurrentDate(initialSelectedDate)
+    setMissions(selectedDayMissions)
+    setMonthViewYear(year)
+    setMonthViewMonth(month)
+  }, [initialSelectedDate, selectedDayMissions, year, month])
+
+  // Fetch missions for a given date via AJAX
+  const fetchDay = useCallback(async (dateStr: string) => {
+    abortRef.current?.abort()
+    abortRef.current = new AbortController()
+    const signal = abortRef.current.signal
+
+    setLoading(true)
+    try {
+      const res = await fetch(`/calendar/day/${dateStr}`, { signal })
+      if (res.ok && !signal.aborted) {
+        const data = await res.json()
+        setMissions(data.missions || [])
+      }
+    } catch (e) {
+      if (e instanceof Error && e.name === 'AbortError') return
+    } finally {
+      if (!signal.aborted) setLoading(false)
     }
   }, [])
 
-  // Generate calendar grid
-  const generateCalendarDays = useCallback(() => {
-    const firstDayOfMonth = new Date(year, month - 1, 1)
-    const lastDayOfMonth = new Date(year, month, 0)
-    const daysInMonth = lastDayOfMonth.getDate()
-
-    // Monday = 0, Sunday = 6 (ISO week)
-    let startDayOfWeek = firstDayOfMonth.getDay() - 1
-    if (startDayOfWeek < 0) startDayOfWeek = 6
-
-    const days: (number | null)[] = []
-
-    // Add empty cells for days before the first of the month
-    for (let i = 0; i < startDayOfWeek; i++) {
-      days.push(null)
+  const selectDate = useCallback((dateStr: string) => {
+    setCurrentDate(dateStr)
+    // If the date is in a different month, do a full Inertia visit to get new month stats
+    const d = parseDate(dateStr)
+    const newMonth = d.getMonth() + 1
+    const newYear = d.getFullYear()
+    if (newMonth !== monthViewMonth || newYear !== monthViewYear) {
+      router.get('/calendar', { date: dateStr }, { preserveState: false })
+      return
     }
+    fetchDay(dateStr)
+  }, [fetchDay, monthViewMonth, monthViewYear])
 
-    // Add all days of the month
-    for (let day = 1; day <= daysInMonth; day++) {
-      days.push(day)
+  const goToPrevDay = useCallback(() => {
+    const prev = addDays(parseDate(currentDate), -1)
+    selectDate(toDateStr(prev))
+  }, [currentDate, selectDate])
+
+  const goToNextDay = useCallback(() => {
+    const next = addDays(parseDate(currentDate), 1)
+    selectDate(toDateStr(next))
+  }, [currentDate, selectDate])
+
+  // ---- Swipe handling ----
+  const onTouchStart = useCallback((e: React.TouchEvent) => {
+    const touch = e.touches[0]
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY, t: Date.now() }
+  }, [])
+
+  const onTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (!touchStartRef.current) return
+    const touch = e.changedTouches[0]
+    const dx = touch.clientX - touchStartRef.current.x
+    const dy = touch.clientY - touchStartRef.current.y
+    const dt = Date.now() - touchStartRef.current.t
+    touchStartRef.current = null
+
+    if (dt > 300) return
+    if (Math.abs(dx) < 50) return
+    if (Math.abs(dy) > Math.abs(dx)) return
+
+    if (dx < 0) {
+      goToNextDay()
+    } else {
+      goToPrevDay()
     }
+  }, [goToNextDay, goToPrevDay])
 
-    return days
-  }, [year, month])
+  // ---- Week view data ----
+  const currentParsed = parseDate(currentDate)
+  const monday = getMonday(currentParsed)
+  const weekDays = getWeekDays(monday)
 
-  const calendarDays = generateCalendarDays()
-
-  const formatDateKey = (day: number) => {
-    const m = String(month).padStart(2, '0')
-    const d = String(day).padStart(2, '0')
-    return `${year}-${m}-${d}`
-  }
+  // ---- Month view data ----
+  const monthGrid = getMonthGrid(monthViewYear, monthViewMonth)
+  const monthLabel = new Date(monthViewYear, monthViewMonth - 1, 1)
+    .toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
 
   const navigateMonth = (direction: -1 | 1) => {
-    let newMonth = month + direction
-    let newYear = year
-
-    if (newMonth < 1) {
-      newMonth = 12
-      newYear -= 1
-    } else if (newMonth > 12) {
-      newMonth = 1
-      newYear += 1
-    }
-
-    router.get('/calendar', { year: newYear, month: newMonth }, { preserveState: true })
+    let newMonth = monthViewMonth + direction
+    let newYear = monthViewYear
+    if (newMonth < 1) { newMonth = 12; newYear-- }
+    else if (newMonth > 12) { newMonth = 1; newYear++ }
+    const firstOfMonth = `${newYear}-${String(newMonth).padStart(2, '0')}-01`
+    router.get('/calendar', { date: firstOfMonth }, { preserveState: false })
   }
 
-  const handleDayClick = async (day: number) => {
-    // Abort any previous request
-    abortControllerRef.current?.abort()
-    abortControllerRef.current = new AbortController()
-    const signal = abortControllerRef.current.signal
-
-    const dateKey = formatDateKey(day)
-    setSelectedDate(dateKey)
-    setLoadingDay(true)
-
-    try {
-      const response = await fetch(`/calendar/day/${dateKey}`, { signal })
-      if (response.ok && !signal.aborted) {
-        const data = await response.json()
-        setDayMissions(data.missions || [])
-      }
-    } catch (error) {
-      if (error instanceof Error && error.name === 'AbortError') {
-        return // Request was aborted, ignore silently
-      }
-      console.error('Failed to load day missions:', error)
-    } finally {
-      if (!signal.aborted) {
-        setLoadingDay(false)
-      }
-    }
-  }
-
-  const closeDayPanel = () => {
-    setSelectedDate(null)
-    setDayMissions([])
-  }
-
-  const getDayStatus = (day: number) => {
-    const dateKey = formatDateKey(day)
-    const stats = missionsByDay[dateKey]
-    const isToday = dateKey === today
-    const isPast = dateKey < today
-    const isFuture = dateKey > today
-
-    return { stats, isToday, isPast, isFuture, dateKey }
-  }
-
-  const getMissionTypeEmoji = (type: string) => {
-    const types: Record<string, string> = {
-      post: '📸',
-      story: '📱',
-      reel: '🎬',
-      carousel: '🖼️',
-      tuto: '📚',
-      engagement: '💬',
-    }
-    return types[type] || '📸'
+  // Day status dot color
+  const getDotColor = (dateStr: string): string | null => {
+    const stats = missionsByDay[dateStr]
+    if (!stats) return null
+    if (stats.completed > 0) return 'bg-green-500'
+    if (stats.pending > 0) return 'bg-blue-400'
+    if (stats.skipped > 0) return 'bg-neutral-400'
+    return null
   }
 
   return (
     <AppLayout>
       <Head title="Calendrier - Le Phare" />
 
-      {/* Header */}
-      <div className="pt-4 pb-4">
-        <h1 className="text-2xl font-bolota font-bold text-neutral-900 uppercase">
-          Calendrier
-        </h1>
-      </div>
-
-      {/* Month navigation */}
-      <div className="flex items-center justify-between mb-6">
-        <button
-          onClick={() => navigateMonth(-1)}
-          className="p-2 rounded-full hover:bg-neutral-100 transition-colors"
-        >
-          <ChevronLeft className="w-6 h-6 text-neutral-600" />
-        </button>
-        <h2 className="text-lg font-bold text-neutral-900 capitalize">
-          {monthName}
-        </h2>
-        <button
-          onClick={() => navigateMonth(1)}
-          className="p-2 rounded-full hover:bg-neutral-100 transition-colors"
-        >
-          <ChevronRight className="w-6 h-6 text-neutral-600" />
-        </button>
-      </div>
-
-      {/* Weekday headers */}
-      <div className="grid grid-cols-7 gap-1 mb-2">
-        {WEEKDAYS.map((day) => (
-          <div key={day} className="text-center text-xs font-medium text-neutral-500 py-2">
-            {day}
+      {/* Compact level bar */}
+      <div className="flex items-center justify-between py-3 px-1">
+        <div className="flex items-center gap-2">
+          <span className="text-base">{level.levelIcon}</span>
+          <span className="text-sm font-medium text-neutral-700">
+            Niveau {level.currentLevel}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-20 h-1.5 bg-neutral-200 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-primary rounded-full transition-all duration-500"
+              style={{ width: `${level.progressPercent}%` }}
+            />
           </div>
-        ))}
-      </div>
-
-      {/* Calendar grid */}
-      <div className="grid grid-cols-7 gap-1 mb-6">
-        {calendarDays.map((day, index) => {
-          if (day === null) {
-            return <div key={`empty-${index}`} className="aspect-square" />
-          }
-
-          const { stats, isToday, isPast, isFuture, dateKey } = getDayStatus(day)
-          const hasCompleted = stats?.completed > 0
-          const hasSkipped = stats?.skipped > 0 && !hasCompleted
-          const hasPending = stats?.pending > 0
-
-          return (
-            <button
-              key={dateKey}
-              onClick={() => handleDayClick(day)}
-              className={`
-                aspect-square rounded-xl flex flex-col items-center justify-center
-                transition-all relative
-                ${isToday ? 'ring-2 ring-primary bg-primary/10' : ''}
-                ${isPast && !stats ? 'bg-neutral-50 text-neutral-300' : ''}
-                ${isFuture && hasPending ? 'bg-blue-50' : ''}
-                ${selectedDate === dateKey ? 'bg-primary/20' : ''}
-                ${!isToday && stats ? 'hover:bg-neutral-100' : 'hover:bg-neutral-50'}
-              `}
-            >
-              <span className={`text-sm font-medium ${isToday ? 'text-primary' : ''}`}>
-                {day}
-              </span>
-
-              {/* Status indicator */}
-              {stats && (
-                <div className="flex items-center gap-0.5 mt-1">
-                  {hasCompleted && (
-                    <div className="w-2 h-2 rounded-full bg-green-500" />
-                  )}
-                  {hasSkipped && (
-                    <div className="w-2 h-2 rounded-full bg-neutral-400" />
-                  )}
-                  {isFuture && hasPending && (
-                    <div className="w-2 h-2 rounded-full bg-blue-500" />
-                  )}
-                </div>
-              )}
-            </button>
-          )
-        })}
-      </div>
-
-      {/* Legend */}
-      <div className="flex flex-wrap gap-4 text-xs text-neutral-600 mb-6 px-2">
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-full bg-green-500" />
-          <span>Complété</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-full bg-neutral-400" />
-          <span>Passé</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-full bg-blue-500" />
-          <span>Planifié</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-full border-2 border-primary" />
-          <span>Aujourd'hui</span>
+          <span className="text-xs text-neutral-500">
+            {level.isMaxLevel ? 'MAX' : `${level.xpProgressInLevel} / ${level.xpProgressInLevel + level.xpForNextLevel} XP`}
+          </span>
         </div>
       </div>
 
-      {/* Level Progress */}
-      <div className="mb-6">
-        <LevelProgressBar
-          currentLevel={level.currentLevel}
-          levelName={level.levelName}
-          levelIcon={level.levelIcon}
-          xpTotal={level.xpTotal}
-          xpProgressInLevel={level.xpProgressInLevel}
-          xpForNextLevel={level.xpForNextLevel}
-          progressPercent={level.progressPercent}
-          isMaxLevel={level.isMaxLevel}
-        />
-      </div>
+      {/* Week selector (hidden when month view is open) */}
+      {!showMonth && (
+        <div className="grid grid-cols-7 gap-1 mb-2">
+          {weekDays.map((d, i) => {
+            const dateStr = toDateStr(d)
+            const isSelected = dateStr === currentDate
+            const isToday = dateStr === today
+            const dot = getDotColor(dateStr)
 
-      {/* Upcoming missions */}
-      {upcomingMissions.length > 0 && (
-        <div className="mb-6">
-          <h2 className="text-lg font-bold text-neutral-900 mb-3">Prochaines missions</h2>
-          <div className="space-y-2">
-            {upcomingMissions.map((mission) => {
-              const typeConfig = missionTypeEmojis[mission.type] || missionTypeEmojis.post
-              return (
-                <button
-                  key={mission.id}
-                  type="button"
-                  onClick={() => router.visit(`/missions/${mission.id}`)}
-                  className="w-full flex items-center gap-3 bg-white rounded-xl p-3 border border-neutral-100 hover:border-primary/30 transition-colors text-left"
-                >
-                  <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
-                    {typeConfig.icon}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-neutral-900 text-sm truncate">{mission.title}</p>
-                    <p className="text-xs text-neutral-500 capitalize">{mission.dateFormatted}</p>
-                  </div>
-                  <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
-                    {typeConfig.label}
-                  </span>
-                </button>
-              )
-            })}
-          </div>
+            return (
+              <button
+                key={i}
+                onClick={() => selectDate(dateStr)}
+                className={`
+                  flex flex-col items-center py-2 rounded-xl transition-all
+                  ${isSelected ? 'bg-primary text-white' : 'text-neutral-700'}
+                  ${isToday && !isSelected ? 'ring-1 ring-primary' : ''}
+                `}
+              >
+                <span className={`text-[10px] font-medium mb-0.5 ${isSelected ? 'text-white/70' : 'text-neutral-400'}`}>
+                  {WEEKDAY_LABELS[i]}
+                </span>
+                <span className={`text-sm font-bold ${isSelected ? 'text-white' : ''}`}>
+                  {d.getDate()}
+                </span>
+                {dot && (
+                  <div className={`w-1.5 h-1.5 rounded-full mt-0.5 ${isSelected ? 'bg-white' : dot}`} />
+                )}
+              </button>
+            )
+          })}
         </div>
       )}
 
-      {/* Day detail panel */}
-      {selectedDate && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
-          {/* Backdrop */}
-          <div
-            className="absolute inset-0 bg-black/50"
-            onClick={closeDayPanel}
-          />
+      {/* Month view toggle */}
+      <button
+        onClick={() => setShowMonth(!showMonth)}
+        className="w-full flex items-center justify-center gap-1 py-2 text-xs text-neutral-500 hover:text-neutral-700 transition-colors"
+      >
+        {showMonth ? (
+          <>
+            <ChevronUp className="w-3.5 h-3.5" />
+            Voir la semaine
+          </>
+        ) : (
+          <>
+            <ChevronDown className="w-3.5 h-3.5" />
+            Voir le mois
+          </>
+        )}
+      </button>
 
-          {/* Panel */}
-          <div className="relative bg-white rounded-t-3xl sm:rounded-2xl w-full max-w-md max-h-[70vh] overflow-hidden animate-slide-up">
-            {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-neutral-100">
-              <h3 className="text-lg font-bold text-neutral-900">
-                {new Date(selectedDate).toLocaleDateString('fr-FR', {
-                  weekday: 'long',
-                  day: 'numeric',
-                  month: 'long',
-                })}
-              </h3>
-              <button
-                onClick={closeDayPanel}
-                className="p-2 rounded-full hover:bg-neutral-100"
-              >
-                <XIcon className="w-5 h-5 text-neutral-500" />
-              </button>
-            </div>
-
-            {/* Content */}
-            <div className="p-4 overflow-y-auto max-h-[50vh]">
-              {loadingDay ? (
-                <div className="flex justify-center py-8">
-                  <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                </div>
-              ) : dayMissions.length === 0 ? (
-                <div className="text-center py-8">
-                  <Target className="w-12 h-12 mx-auto text-neutral-300 mb-3" />
-                  <p className="text-neutral-500">Aucune mission ce jour</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {dayMissions.map((mission) => (
-                    <div
-                      key={mission.id}
-                      className={`
-                        p-4 rounded-xl border
-                        ${mission.status === 'completed' ? 'bg-green-50 border-green-200' : ''}
-                        ${mission.status === 'skipped' ? 'bg-neutral-50 border-neutral-200' : ''}
-                        ${mission.status === 'pending' ? 'bg-white border-neutral-200' : ''}
-                      `}
-                    >
-                      <div className="flex items-start gap-3">
-                        <span className="text-2xl">{getMissionTypeEmoji(mission.template.type)}</span>
-                        <div className="flex-1">
-                          <p className="font-medium text-neutral-900">
-                            {mission.template.title}
-                          </p>
-                          <div className="flex items-center gap-2 mt-1">
-                            {mission.status === 'completed' && (
-                              <span className="flex items-center gap-1 text-xs text-green-600">
-                                <Check className="w-3 h-3" />
-                                Complété
-                              </span>
-                            )}
-                            {mission.status === 'skipped' && (
-                              <span className="text-xs text-neutral-500">Passé</span>
-                            )}
-                            {mission.status === 'pending' && (
-                              <span className="flex items-center gap-1 text-xs text-blue-600">
-                                <Clock className="w-3 h-3" />
-                                À faire
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        {mission.status === 'pending' && (
-                          <button
-                            onClick={() => router.visit(`/missions/${mission.id}`)}
-                            className="px-3 py-1.5 bg-primary text-white text-sm font-medium rounded-lg"
-                          >
-                            Faire
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+      {/* Month view (expanded) */}
+      {showMonth && (
+        <div className="mb-4">
+          {/* Month navigation */}
+          <div className="flex items-center justify-between mb-3">
+            <button
+              onClick={() => navigateMonth(-1)}
+              className="p-1.5 rounded-full hover:bg-neutral-100 transition-colors"
+            >
+              <ChevronLeft className="w-5 h-5 text-neutral-600" />
+            </button>
+            <span className="text-sm font-bold text-neutral-900 capitalize">{monthLabel}</span>
+            <button
+              onClick={() => navigateMonth(1)}
+              className="p-1.5 rounded-full hover:bg-neutral-100 transition-colors"
+            >
+              <ChevronRight className="w-5 h-5 text-neutral-600" />
+            </button>
           </div>
+
+          {/* Weekday headers */}
+          <div className="grid grid-cols-7 gap-1 mb-1">
+            {WEEKDAY_LABELS.map((label, i) => (
+              <div key={i} className="text-center text-[10px] font-medium text-neutral-400 py-1">
+                {label}
+              </div>
+            ))}
+          </div>
+
+          {/* Month grid */}
+          {monthGrid.map((week, wi) => (
+            <div key={wi} className="grid grid-cols-7 gap-1">
+              {week.map((d, di) => {
+                if (!d) return <div key={di} className="aspect-square" />
+
+                const dateStr = toDateStr(d)
+                const isSelected = dateStr === currentDate
+                const isToday = dateStr === today
+                const dot = getDotColor(dateStr)
+
+                return (
+                  <button
+                    key={di}
+                    onClick={() => {
+                      selectDate(dateStr)
+                      setShowMonth(false)
+                    }}
+                    className={`
+                      aspect-square rounded-lg flex flex-col items-center justify-center transition-all
+                      ${isSelected ? 'bg-primary text-white' : ''}
+                      ${isToday && !isSelected ? 'ring-1 ring-primary' : ''}
+                    `}
+                  >
+                    <span className={`text-xs font-medium ${isSelected ? 'text-white' : 'text-neutral-700'}`}>
+                      {d.getDate()}
+                    </span>
+                    {dot && (
+                      <div className={`w-1 h-1 rounded-full mt-0.5 ${isSelected ? 'bg-white' : dot}`} />
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+          ))}
         </div>
+      )}
+
+      {/* Selected day title */}
+      <div className="py-3">
+        <h2 className="text-base font-bold text-neutral-900 capitalize">
+          {formatDayTitle(currentDate)}
+        </h2>
+      </div>
+
+      {/* Missions list (swipeable) */}
+      <div
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+        className="min-h-[200px]"
+      >
+        {loading ? (
+          <div className="flex justify-center py-12">
+            <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : missions.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-neutral-400 text-sm">Aucune mission ce jour</p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {missions.map((mission) => {
+              const config = missionTypeConfig[mission.template.type] || missionTypeConfig.post
+              const isPending = mission.status === 'pending'
+              const isCompleted = mission.status === 'completed'
+              const isSkipped = mission.status === 'skipped'
+
+              return (
+                <div
+                  key={mission.id}
+                  className={`
+                    flex items-center gap-3 p-3 rounded-xl border transition-all
+                    ${isCompleted ? 'bg-green-50/50 border-green-100' : ''}
+                    ${isSkipped ? 'bg-neutral-50 border-neutral-100' : ''}
+                    ${isPending ? 'bg-white border-neutral-100' : ''}
+                  `}
+                >
+                  {/* Type icon */}
+                  <div className={`
+                    w-10 h-10 rounded-xl flex items-center justify-center shrink-0
+                    ${isCompleted ? 'bg-green-100 text-green-600' : ''}
+                    ${isSkipped ? 'bg-neutral-100 text-neutral-400' : ''}
+                    ${isPending ? 'bg-blue-50 text-blue-600' : ''}
+                  `}>
+                    {config.icon}
+                  </div>
+
+                  {/* Title */}
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-sm font-medium truncate ${isSkipped ? 'text-neutral-400' : 'text-neutral-900'}`}>
+                      {mission.template.title}
+                    </p>
+                    <p className="text-[11px] text-neutral-400">{config.label}</p>
+                  </div>
+
+                  {/* Status / action */}
+                  {isCompleted && (
+                    <div className="flex items-center gap-1 text-green-600">
+                      <Check className="w-4 h-4" />
+                    </div>
+                  )}
+                  {isSkipped && (
+                    <span className="text-xs text-neutral-400">Passé</span>
+                  )}
+                  {isPending && (
+                    <button
+                      onClick={() => router.visit(`/missions/${mission.id}`)}
+                      className="px-3 py-1.5 bg-primary text-white text-xs font-bold rounded-lg shrink-0"
+                    >
+                      Faire
+                    </button>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Swipe hint */}
+      {missions.length > 0 && (
+        <p className="text-center text-[10px] text-neutral-300 mt-4 mb-2">
+          Glissez pour changer de jour
+        </p>
       )}
     </AppLayout>
   )

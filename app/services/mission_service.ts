@@ -430,12 +430,29 @@ export default class MissionService {
 
       // Update user's streak and check badges
       const gamificationService = new GamificationService()
-      await gamificationService.updateStreak(userId)
-      await gamificationService.checkBadgeUnlocks(userId)
+      const streakResult = await gamificationService.updateStreak(userId)
+      const newBadges = await gamificationService.checkBadgeUnlocks(userId)
 
       // Update daily statistics for evolution tracking
       const statisticsService = new StatisticsService()
       await statisticsService.calculateDailyStats(userId)
+
+      // Add XP for mission completion
+      const levelService = new LevelService()
+      await levelService.addXp(userId, 'mission_completed')
+
+      // Award extra XP for streak milestones
+      if (streakResult && streakResult.currentStreak > 0) {
+        await levelService.addXp(userId, 'streak_day')
+        if (streakResult.currentStreak % 7 === 0) {
+          await levelService.addXp(userId, 'weekly_streak')
+        }
+      }
+
+      // Award XP for badges earned
+      for (const _badge of newBadges) {
+        await levelService.addXp(userId, 'badge_earned')
+      }
 
       return { success: true, missionId: mission.id }
     }
