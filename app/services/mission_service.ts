@@ -1,4 +1,5 @@
 import { DateTime } from 'luxon'
+import db from '@adonisjs/lucid/services/db'
 import Mission from '#models/mission'
 import MissionTemplate from '#models/mission_template'
 import TutorialCompletion from '#models/tutorial_completion'
@@ -11,12 +12,13 @@ export default class MissionService {
   /**
    * Get or create today's missions for a user (3 missions per day)
    * Uses UTC for consistent date handling across timezones
+   * Protected against race conditions with pg_advisory_xact_lock
    */
   async getTodayMissions(userId: number): Promise<Mission[]> {
     const today = DateTime.utc().startOf('day')
     const tomorrow = today.plus({ days: 1 })
 
-    // Check if user already has missions for today
+    // Fast path: check if missions already exist (no lock needed)
     let missions = await Mission.query()
       .where('user_id', userId)
       .where('assigned_at', '>=', today.toSQL())
@@ -25,21 +27,54 @@ export default class MissionService {
       .orderBy('slot_number', 'asc')
 
     if (missions.length > 0) {
-      return missions
+      // Deduplicate: keep only one mission per slot_number (oldest wins)
+      return this.deduplicateMissions(missions)
     }
 
-    // No missions for today, prescribe 3 (with race condition protection)
-    try {
-      return await this.prescribeDailyMissions(userId)
-    } catch {
-      // If duplicate missions created due to race condition, fetch existing ones
-      return Mission.query()
+    // Slow path: create missions within a transaction with advisory lock
+    // This prevents race conditions when two requests arrive simultaneously
+    return await db.transaction(async (trx) => {
+      // Advisory lock scoped to this user (released when transaction ends)
+      await trx.rawQuery('SELECT pg_advisory_xact_lock(?)', [userId])
+
+      // Re-check inside the lock (another request may have created them)
+      const existingMissions = await Mission.query({ client: trx })
         .where('user_id', userId)
         .where('assigned_at', '>=', today.toSQL())
         .where('assigned_at', '<', tomorrow.toSQL())
         .preload('missionTemplate')
         .orderBy('slot_number', 'asc')
+
+      if (existingMissions.length > 0) {
+        return this.deduplicateMissions(existingMissions)
+      }
+
+      return await this.prescribeDailyMissions(userId, trx)
+    })
+  }
+
+  /**
+   * Remove duplicate missions per slot_number, keeping the oldest (lowest id)
+   * Deletes extras from the database and returns the clean list
+   */
+  private deduplicateMissions(missions: Mission[]): Mission[] {
+    const seenSlots = new Map<number, Mission>()
+    const toDelete: number[] = []
+
+    for (const mission of missions) {
+      if (!seenSlots.has(mission.slotNumber)) {
+        seenSlots.set(mission.slotNumber, mission)
+      } else {
+        toDelete.push(mission.id)
+      }
     }
+
+    // Fire-and-forget cleanup of duplicates
+    if (toDelete.length > 0) {
+      Mission.query().whereIn('id', toDelete).delete().catch(() => {})
+    }
+
+    return Array.from(seenSlots.values()).sort((a, b) => a.slotNumber - b.slotNumber)
   }
 
   /**
@@ -57,7 +92,10 @@ export default class MissionService {
    * Slot 2: Engagement mission - recommended on non-publication days
    * Slot 3: Tuto or different publication type
    */
-  async prescribeDailyMissions(userId: number): Promise<Mission[]> {
+  async prescribeDailyMissions(
+    userId: number,
+    trx?: import('@adonisjs/lucid/types/database').TransactionClientContract
+  ): Promise<Mission[]> {
     const user = await User.query()
       .where('id', userId)
       .preload('restaurant')
@@ -101,14 +139,17 @@ export default class MissionService {
       completedTutorialIds
     )
     if (publicationTemplate) {
-      const mission = await Mission.create({
+      const mission = new Mission()
+      mission.fill({
         userId,
         missionTemplateId: publicationTemplate.id,
         status: 'pending',
         assignedAt: now,
         slotNumber: 1,
-        isRecommended: isPublicationDay, // Recommended on publication days
+        isRecommended: isPublicationDay,
       })
+      if (trx) mission.useTransaction(trx)
+      await mission.save()
       await mission.load('missionTemplate')
       missions.push(mission)
       usedTemplateIds.push(publicationTemplate.id)
@@ -125,14 +166,17 @@ export default class MissionService {
       completedTutorialIds
     )
     if (engagementTemplate) {
-      const mission = await Mission.create({
+      const mission = new Mission()
+      mission.fill({
         userId,
         missionTemplateId: engagementTemplate.id,
         status: 'pending',
         assignedAt: now,
         slotNumber: 2,
-        isRecommended: !isPublicationDay, // Recommended on non-publication days
+        isRecommended: !isPublicationDay,
       })
+      if (trx) mission.useTransaction(trx)
+      await mission.save()
       await mission.load('missionTemplate')
       missions.push(mission)
       usedTemplateIds.push(engagementTemplate.id)
@@ -149,14 +193,17 @@ export default class MissionService {
       completedTutorialIds
     )
     if (thirdTemplate) {
-      const mission = await Mission.create({
+      const mission = new Mission()
+      mission.fill({
         userId,
         missionTemplateId: thirdTemplate.id,
         status: 'pending',
         assignedAt: now,
         slotNumber: 3,
-        isRecommended: false, // Never recommended
+        isRecommended: false,
       })
+      if (trx) mission.useTransaction(trx)
+      await mission.save()
       await mission.load('missionTemplate')
       missions.push(mission)
     }
