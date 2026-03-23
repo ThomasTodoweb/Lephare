@@ -15,10 +15,10 @@ export function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-5 left-5 right-5 glass rounded-2xl shadow-float z-50 safe-area-inset-bottom"
+      className="fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-t border-black/[0.04]"
       aria-label="Navigation principale"
     >
-      <div className="flex justify-around items-center h-14 px-1">
+      <div className="max-w-[430px] mx-auto flex justify-around items-center h-[52px] px-2">
         {NAV_ITEMS.map((item) => {
           const isActive = url === item.href || url.startsWith(`${item.href}/`)
           return (
@@ -32,6 +32,8 @@ export function BottomNav() {
           )
         })}
       </div>
+      {/* Safe area bottom spacer for PWA */}
+      <div className="h-[env(safe-area-inset-bottom,0px)] bg-white/90" />
     </nav>
   )
 }
