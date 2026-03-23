@@ -152,14 +152,14 @@ export default function SubscriptionIndex({ subscription, trialInfo, pricing, is
       }
     } catch (error) {
       console.error('Checkout error:', error)
-      alert('Une erreur est survenue. Veuillez réessayer.')
+      alert('Une erreur est survenue. Réessaie.')
     } finally {
       setIsLoading(false)
     }
   }
 
   const handleCancel = async () => {
-    if (!confirm('Êtes-vous sûr de vouloir annuler votre abonnement ?')) {
+    if (!confirm('Es-tu sûr de vouloir annuler ton abonnement ?')) {
       return
     }
 
@@ -182,7 +182,7 @@ export default function SubscriptionIndex({ subscription, trialInfo, pricing, is
       router.reload()
     } catch (error) {
       console.error('Cancel error:', error)
-      alert('Une erreur est survenue. Veuillez réessayer.')
+      alert('Une erreur est survenue. Réessaie.')
     } finally {
       setIsCanceling(false)
     }
@@ -222,7 +222,7 @@ export default function SubscriptionIndex({ subscription, trialInfo, pricing, is
               <div>
                 <p className="text-[14px] font-semibold text-text">Période d'essai</p>
                 <p className="text-[13px] text-text-secondary">
-                  Il vous reste <strong>{trialInfo.daysRemaining} jours</strong> d'essai gratuit
+                  Il te reste <strong>{trialInfo.daysRemaining} jours</strong> d'essai gratuit
                 </p>
                 <p className="text-[12px] text-text-muted mt-0.5">
                   Se termine le {formatDate(trialInfo.endsAt)}
@@ -236,7 +236,7 @@ export default function SubscriptionIndex({ subscription, trialInfo, pricing, is
         {(isActive || isCanceled) && subscription && (
           <div className="mb-5">
             <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-2 px-1">
-              Votre abonnement
+              Ton abonnement
             </p>
             <Card variant="bordered">
               <div className="space-y-3">
@@ -345,7 +345,7 @@ export default function SubscriptionIndex({ subscription, trialInfo, pricing, is
         {(!subscription || isTrialing || isCanceled) && (
           <>
             <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-3 px-1">
-              {isTrialing ? 'Choisissez votre plan' : 'Nos offres'}
+              {isTrialing ? 'Choisis ton plan' : 'Nos offres'}
             </p>
 
             <div className="space-y-3 mb-5">
@@ -401,7 +401,7 @@ export default function SubscriptionIndex({ subscription, trialInfo, pricing, is
 
             {/* Subscribe Button */}
             <Button onClick={handleSubscribe} loading={isLoading} fullWidth>
-              S'abonner - {selectedPlan === 'monthly' ? pricing.monthly.price : pricing.yearly.price}€
+              Rejoindre Le Phare - {selectedPlan === 'monthly' ? pricing.monthly.price : pricing.yearly.price}€
             </Button>
 
             {!isConfigured && (
@@ -423,7 +423,7 @@ export default function SubscriptionIndex({ subscription, trialInfo, pricing, is
                 'Missions quotidiennes personnalisées',
                 'Accès à tous les tutoriels',
                 'Statistiques détaillées',
-                'Système de badges et gamification',
+                'Système de badges et de motivation',
                 'Rappels quotidiens',
                 'Support prioritaire',
               ].map((feature) => (
@@ -448,7 +448,7 @@ export default function SubscriptionIndex({ subscription, trialInfo, pricing, is
                   Puis-je annuler à tout moment ?
                 </p>
                 <p className="text-[13px] text-text-secondary mt-1">
-                  Oui, vous pouvez annuler votre abonnement quand vous le souhaitez. Vous garderez l'accès jusqu'à la fin de la période payée.
+                  Oui, tu peux annuler ton abonnement quand tu le souhaites. Tu garderas l'accès jusqu'à la fin de la période payée.
                 </p>
               </div>
               <div className="pt-4 border-t border-border">
@@ -456,7 +456,7 @@ export default function SubscriptionIndex({ subscription, trialInfo, pricing, is
                   Comment fonctionne la période d'essai ?
                 </p>
                 <p className="text-[13px] text-text-secondary mt-1">
-                  Vous bénéficiez de 7 jours d'essai gratuit pour découvrir toutes les fonctionnalités de Le Phare.
+                  Tu bénéficies de 7 jours d'essai gratuit pour découvrir toutes les fonctionnalités de Le Phare.
                 </p>
               </div>
             </div>

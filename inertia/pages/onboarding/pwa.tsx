@@ -44,10 +44,10 @@ export default function Pwa({ step, totalSteps }: Props) {
           <OnboardingProgress currentStep={step} totalSteps={totalSteps} />
 
           <h1 className="text-[22px] font-bold text-text tracking-tight">
-            Installez l'app
+            Installe l'app
           </h1>
           <p className="text-[15px] text-text-secondary mt-2 leading-relaxed">
-            Ajoutez Le Phare a votre ecran d'accueil pour y acceder en un clic.
+            Ajoute Le Phare a ton ecran d'accueil pour y acceder en un clic.
           </p>
 
           <div className="mt-6">
@@ -61,7 +61,7 @@ export default function Pwa({ step, totalSteps }: Props) {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-[15px] font-semibold text-text">Application installee</p>
-                    <p className="text-[13px] text-text-secondary">Accessible depuis votre ecran d'accueil</p>
+                    <p className="text-[13px] text-text-secondary">Accessible depuis ton ecran d'accueil</p>
                   </div>
                   <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
                     <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
@@ -75,7 +75,7 @@ export default function Pwa({ step, totalSteps }: Props) {
                   <ul className="text-[13px] text-text-secondary space-y-1.5">
                     <li className="flex items-start gap-2">
                       <span className="text-text-muted mt-0.5">--</span>
-                      <span>Acces rapide depuis votre ecran d'accueil</span>
+                      <span>Acces rapide depuis ton ecran d'accueil</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-text-muted mt-0.5">--</span>
@@ -95,15 +95,15 @@ export default function Pwa({ step, totalSteps }: Props) {
                       <ol className="text-[13px] text-text-secondary space-y-2.5">
                         <li className="flex items-start gap-2.5">
                           <span className="text-[13px] font-semibold text-text w-4 flex-shrink-0">1.</span>
-                          <span>Appuyez sur le bouton de partage <SafariShareIcon /> en bas de l'ecran</span>
+                          <span>Appuie sur le bouton de partage <SafariShareIcon /> en bas de l'ecran</span>
                         </li>
                         <li className="flex items-start gap-2.5">
                           <span className="text-[13px] font-semibold text-text w-4 flex-shrink-0">2.</span>
-                          <span>Faites defiler et appuyez sur <strong className="text-text font-medium">"Sur l'ecran d'accueil"</strong></span>
+                          <span>Fais defiler et appuie sur <strong className="text-text font-medium">"Sur l'ecran d'accueil"</strong></span>
                         </li>
                         <li className="flex items-start gap-2.5">
                           <span className="text-[13px] font-semibold text-text w-4 flex-shrink-0">3.</span>
-                          <span>Appuyez sur <strong className="text-text font-medium">"Ajouter"</strong></span>
+                          <span>Appuie sur <strong className="text-text font-medium">"Ajouter"</strong></span>
                         </li>
                       </ol>
                     </Card>
@@ -113,15 +113,15 @@ export default function Pwa({ step, totalSteps }: Props) {
                       <ol className="text-[13px] text-text-secondary space-y-2.5">
                         <li className="flex items-start gap-2.5">
                           <span className="text-[13px] font-semibold text-text w-4 flex-shrink-0">1.</span>
-                          <span>Appuyez sur le bouton partager <ChromeShareIcon /> en haut a droite (a cote de l'URL)</span>
+                          <span>Appuie sur le bouton partager <ChromeShareIcon /> en haut a droite (a cote de l'URL)</span>
                         </li>
                         <li className="flex items-start gap-2.5">
                           <span className="text-[13px] font-semibold text-text w-4 flex-shrink-0">2.</span>
-                          <span>Appuyez sur <strong className="text-text font-medium">"Ajouter a l'ecran d'accueil"</strong></span>
+                          <span>Appuie sur <strong className="text-text font-medium">"Ajouter a l'ecran d'accueil"</strong></span>
                         </li>
                         <li className="flex items-start gap-2.5">
                           <span className="text-[13px] font-semibold text-text w-4 flex-shrink-0">3.</span>
-                          <span>Confirmez en appuyant sur <strong className="text-text font-medium">"Ajouter"</strong></span>
+                          <span>Confirme en appuyant sur <strong className="text-text font-medium">"Ajouter"</strong></span>
                         </li>
                       </ol>
                     </Card>
@@ -131,15 +131,15 @@ export default function Pwa({ step, totalSteps }: Props) {
                       <ol className="text-[13px] text-text-secondary space-y-2.5">
                         <li className="flex items-start gap-2.5">
                           <span className="text-[13px] font-semibold text-text w-4 flex-shrink-0">1.</span>
-                          <span>Appuyez sur le bouton de partage <SafariShareIcon /></span>
+                          <span>Appuie sur le bouton de partage <SafariShareIcon /></span>
                         </li>
                         <li className="flex items-start gap-2.5">
                           <span className="text-[13px] font-semibold text-text w-4 flex-shrink-0">2.</span>
-                          <span>Appuyez sur <strong className="text-text font-medium">"Ajouter a l'ecran d'accueil"</strong></span>
+                          <span>Appuie sur <strong className="text-text font-medium">"Ajouter a l'ecran d'accueil"</strong></span>
                         </li>
                         <li className="flex items-start gap-2.5">
                           <span className="text-[13px] font-semibold text-text w-4 flex-shrink-0">3.</span>
-                          <span>Appuyez sur <strong className="text-text font-medium">"Ajouter"</strong></span>
+                          <span>Appuie sur <strong className="text-text font-medium">"Ajouter"</strong></span>
                         </li>
                       </ol>
                     </Card>
@@ -155,10 +155,10 @@ export default function Pwa({ step, totalSteps }: Props) {
                   ) : (
                     <Card variant="flat">
                       <p className="text-[13px] text-text-secondary text-center">
-                        Si vous voyez deja l'icone Le Phare sur votre ecran d'accueil, c'est parfait !
+                        Si tu vois deja l'icone Le Phare sur ton ecran d'accueil, c'est parfait !
                       </p>
                       <p className="text-[12px] text-text-muted text-center mt-1.5">
-                        Sinon, utilisez le menu de votre navigateur pour "Ajouter a l'ecran d'accueil".
+                        Sinon, utilise le menu de ton navigateur pour "Ajouter a l'ecran d'accueil".
                       </p>
                     </Card>
                   )}

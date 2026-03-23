@@ -38,9 +38,9 @@ interface Props {
 }
 
 const CONTENT_TYPE_LABELS: Record<string, string> = {
-  post: 'POST',
-  carousel: 'CAROUSEL',
-  reel: 'REEL',
+  post: 'PHOTO',
+  carousel: 'ALBUM',
+  reel: 'VIDÉO',
   story: 'STORY',
 }
 
@@ -135,7 +135,7 @@ export default function Description({ publication, mission, instagramAccount, to
                 value={caption}
                 onChange={(e) => setCaption(e.target.value)}
                 className="w-full h-48 px-4 py-3 bg-bg-card border border-border rounded-xl focus:outline-none focus:border-text focus:ring-1 focus:ring-text/20 resize-none text-[14px] text-text placeholder:text-text-muted"
-                placeholder="Écrivez votre légende..."
+                placeholder="Écris ta légende..."
                 autoFocus
               />
               <CaptionAnalyzer caption={caption} />
@@ -166,7 +166,7 @@ export default function Description({ publication, mission, instagramAccount, to
                   className="flex items-center gap-1.5 text-[13px] text-text-muted hover:text-text-secondary mt-3 transition-colors"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
-                  Revenir à la description IA
+                  Revenir au texte de Popote
                 </button>
               )}
             </div>
@@ -179,7 +179,7 @@ export default function Description({ publication, mission, instagramAccount, to
                 {publication.aiGeneratedCaption && (
                   <span className="flex items-center gap-1 text-text-muted">
                     <Sparkles className="w-3.5 h-3.5" />
-                    Généré par IA
+                    Écrit par Popote
                   </span>
                 )}
               </div>
@@ -207,7 +207,7 @@ export default function Description({ publication, mission, instagramAccount, to
           </Button>
           {!caption.trim() && (
             <p className="text-center text-[12px] text-text-muted mt-2">
-              Ajoutez une description pour publier
+              Ajoute une description pour publier
             </p>
           )}
         </div>

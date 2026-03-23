@@ -65,16 +65,16 @@ export default function Instagram({ isConnected, instagramUsername, instagramPro
 
   return (
     <>
-      <Head title="Connectez Instagram - Le Phare" />
+      <Head title="Connecte Instagram - Le Phare" />
       <div className="min-h-screen bg-bg flex flex-col">
         <div className="flex-1 px-5 pt-12 pb-32 max-w-lg mx-auto w-full">
           <OnboardingProgress currentStep={step} totalSteps={totalSteps} />
 
           <h1 className="text-[22px] font-bold text-text tracking-tight">
-            Connectez Instagram
+            Connecte Instagram
           </h1>
           <p className="text-[15px] text-text-secondary mt-2 leading-relaxed">
-            Pour publier directement depuis Le Phare, connectez votre compte Instagram professionnel.
+            Pour publier directement depuis Le Phare, connecte ton compte Instagram professionnel.
           </p>
 
           <div className="mt-6">
@@ -122,15 +122,15 @@ export default function Instagram({ isConnected, instagramUsername, instagramPro
                   <ul className="text-[13px] text-text-secondary space-y-1.5">
                     <li className="flex items-start gap-2">
                       <span className="text-text-muted mt-0.5">--</span>
-                      <span>Publiez en un clic depuis Le Phare</span>
+                      <span>Publie en un clic depuis Le Phare</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-text-muted mt-0.5">--</span>
-                      <span>Recevez des idees adaptees a votre style</span>
+                      <span>Recois des idees adaptees a ton style</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-text-muted mt-0.5">--</span>
-                      <span>Suivez vos statistiques facilement</span>
+                      <span>Suis tes statistiques facilement</span>
                     </li>
                   </ul>
                 </Card>
@@ -147,8 +147,8 @@ export default function Instagram({ isConnected, instagramUsername, instagramPro
                           </h3>
                           <p className="text-[13px] text-text-secondary mt-1 leading-relaxed">
                             {isPWA
-                              ? 'Pour connecter Instagram, vous devez ouvrir ce lien dans Safari ou Chrome.'
-                              : 'La connexion Instagram ne fonctionne pas dans ce navigateur. Veuillez ouvrir le lien dans Safari ou Chrome.'}
+                              ? 'Pour connecter Instagram, tu dois ouvrir ce lien dans Safari ou Chrome.'
+                              : 'La connexion Instagram ne fonctionne pas dans ce navigateur. Ouvre le lien dans Safari ou Chrome.'}
                           </p>
                         </div>
                       </div>
@@ -172,7 +172,7 @@ export default function Instagram({ isConnected, instagramUsername, instagramPro
                     </Button>
 
                     <p className="text-[12px] text-text-muted text-center">
-                      Collez le lien dans Safari ou Chrome pour vous connecter
+                      Colle le lien dans Safari ou Chrome pour te connecter
                     </p>
                   </div>
                 ) : (
@@ -189,7 +189,7 @@ export default function Instagram({ isConnected, instagramUsername, instagramPro
                     </Button>
 
                     <p className="text-[12px] text-text-muted text-center mt-3">
-                      Vos donnees sont securisees et ne sont jamais partagees.
+                      Tes donnees sont securisees et ne sont jamais partagees.
                     </p>
                   </>
                 )}

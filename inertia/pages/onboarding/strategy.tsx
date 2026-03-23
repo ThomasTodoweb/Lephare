@@ -35,16 +35,16 @@ export default function Strategy({ strategies, currentStrategyId, step, totalSte
 
   return (
     <>
-      <Head title="Choisissez votre strategie - Le Phare" />
+      <Head title="Choisis ta strategie - Le Phare" />
       <div className="min-h-screen bg-bg flex flex-col">
         <form onSubmit={handleSubmit} className="flex-1 px-5 pt-12 pb-32 max-w-lg mx-auto w-full">
           <OnboardingProgress currentStep={step} totalSteps={totalSteps} />
 
           <h1 className="text-[22px] font-bold text-text tracking-tight">
-            Votre objectif ?
+            Ton objectif ?
           </h1>
           <p className="text-[15px] text-text-secondary mt-2 leading-relaxed">
-            Choisissez ce qui vous correspond le mieux, on adapte votre parcours.
+            Choisis ce qui te correspond le mieux, on adapte ton parcours.
           </p>
 
           <div className="mt-6 space-y-3">

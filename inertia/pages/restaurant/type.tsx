@@ -36,10 +36,10 @@ export default function RestaurantType({ restaurantTypes }: Props) {
           />
 
           <h1 className="text-[22px] font-bold text-text text-center tracking-tight">
-            Votre restaurant
+            Ton restaurant
           </h1>
           <p className="text-[15px] text-text-secondary text-center mt-2">
-            Quel type de restaurant avez-vous ?
+            Quel type de restaurant as-tu ?
           </p>
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-6">
@@ -72,7 +72,7 @@ export default function RestaurantType({ restaurantTypes }: Props) {
             )}
 
             <Input
-              label="Nom de votre restaurant"
+              label="Nom de ton restaurant"
               value={data.name}
               onChange={(e) => setData('name', e.target.value)}
               error={errors.name}

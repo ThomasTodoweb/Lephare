@@ -56,21 +56,21 @@ export default function InstagramError({ errorMessage, step = 4, totalSteps = 5 
             <ol className="text-[13px] text-text-secondary space-y-2.5">
               <li className="flex items-start gap-2.5">
                 <span className="text-[13px] font-semibold text-text w-4 flex-shrink-0">1.</span>
-                <span>Assurez-vous d'avoir un compte Instagram <strong className="text-text font-medium">professionnel</strong> ou <strong className="text-text font-medium">createur</strong></span>
+                <span>Assure-toi d'avoir un compte Instagram <strong className="text-text font-medium">professionnel</strong> ou <strong className="text-text font-medium">createur</strong></span>
               </li>
               <li className="flex items-start gap-2.5">
                 <span className="text-[13px] font-semibold text-text w-4 flex-shrink-0">2.</span>
-                <span>Votre compte doit etre lie a une page Facebook</span>
+                <span>Ton compte doit etre lie a une page Facebook</span>
               </li>
               <li className="flex items-start gap-2.5">
                 <span className="text-[13px] font-semibold text-text w-4 flex-shrink-0">3.</span>
-                <span>Acceptez toutes les autorisations demandees par Instagram</span>
+                <span>Accepte toutes les autorisations demandees par Instagram</span>
               </li>
             </ol>
           </Card>
 
           <p className="text-[12px] text-text-muted text-center mt-4">
-            Vous pouvez aussi connecter Instagram plus tard depuis vos parametres.
+            Tu peux aussi connecter Instagram plus tard depuis tes parametres.
           </p>
         </div>
 

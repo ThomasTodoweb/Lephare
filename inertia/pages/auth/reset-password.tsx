@@ -53,7 +53,7 @@ export default function ResetPassword({ token }: Props) {
               Nouveau mot de passe
             </h1>
             <p className="text-[14px] text-text-secondary mt-2 leading-relaxed">
-              Choisissez un nouveau mot de passe securise.
+              Choisis un nouveau mot de passe securise.
             </p>
           </div>
 
@@ -100,7 +100,7 @@ export default function ResetPassword({ token }: Props) {
                   value={form.data.password_confirmation}
                   onChange={(e) => form.setData('password_confirmation', e.target.value)}
                   className="w-full h-11 px-3.5 pr-11 bg-bg-card border border-border rounded-xl text-[15px] text-text placeholder-text-muted transition-colors focus:outline-none focus:border-text focus:ring-1 focus:ring-text/10"
-                  placeholder="Retapez le mot de passe"
+                  placeholder="Retape le mot de passe"
                   required
                 />
                 <button

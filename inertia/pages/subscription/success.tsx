@@ -23,7 +23,7 @@ export default function SubscriptionSuccess() {
           </h1>
 
           <p className="text-[14px] text-text-secondary mb-8 max-w-sm mx-auto">
-            Votre abonnement est maintenant actif. Vous avez accès à toutes les fonctionnalités de Le Phare !
+            Ton abonnement est maintenant actif. Tu as accès à toutes les fonctionnalités de Le Phare !
           </p>
 
           <Card variant="bordered" className="mb-6 text-left">
@@ -35,19 +35,19 @@ export default function SubscriptionSuccess() {
                 <span className="w-6 h-6 rounded-full bg-text text-white flex items-center justify-center text-[12px] font-semibold flex-shrink-0">
                   1
                 </span>
-                <span className="text-[14px] text-text">Découvrez votre mission du jour</span>
+                <span className="text-[14px] text-text">Découvre ta mission du jour</span>
               </li>
               <li className="flex items-center gap-3">
                 <span className="w-6 h-6 rounded-full bg-text text-white flex items-center justify-center text-[12px] font-semibold flex-shrink-0">
                   2
                 </span>
-                <span className="text-[14px] text-text">Explorez les tutoriels</span>
+                <span className="text-[14px] text-text">Explore les tutoriels</span>
               </li>
               <li className="flex items-center gap-3">
                 <span className="w-6 h-6 rounded-full bg-text text-white flex items-center justify-center text-[12px] font-semibold flex-shrink-0">
                   3
                 </span>
-                <span className="text-[14px] text-text">Activez les rappels quotidiens</span>
+                <span className="text-[14px] text-text">Active les rappels quotidiens</span>
               </li>
             </ul>
           </Card>

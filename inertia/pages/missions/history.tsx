@@ -37,17 +37,17 @@ interface Props {
 }
 
 const TYPE_LABELS: Record<string, string> = {
-  post: 'Post',
-  carousel: 'Carrousel',
+  post: 'Photo',
+  carousel: 'Album',
   story: 'Story',
-  reel: 'Reel',
+  reel: 'Vidéo courte',
   tuto: 'Tuto',
 }
 
 const CONTENT_TYPE_LABELS: Record<string, string> = {
-  post: 'Post',
-  carousel: 'Carrousel',
-  reel: 'Reel',
+  post: 'Photo',
+  carousel: 'Album',
+  reel: 'Vidéo courte',
   story: 'Story',
 }
 
@@ -111,7 +111,7 @@ export default function MissionHistory({ missions }: Props) {
           </Link>
           <h1 className="text-[22px] font-bold text-text">Historique</h1>
           <p className="text-[14px] text-text-secondary mt-1">
-            Vos missions passées
+            Tes missions passées
           </p>
         </div>
 
@@ -263,7 +263,7 @@ export default function MissionHistory({ missions }: Props) {
               Aucune mission
             </p>
             <p className="text-[13px] text-text-muted">
-              Vos missions apparaîtront ici une fois complétées
+              Tes missions apparaîtront ici une fois complétées
             </p>
           </div>
         )}

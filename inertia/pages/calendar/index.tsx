@@ -45,12 +45,12 @@ interface Props {
 const WEEKDAY_LABELS = ['L', 'M', 'M', 'J', 'V', 'S', 'D']
 
 const missionTypeConfig: Record<string, { icon: React.ReactNode; label: string }> = {
-  post: { icon: <Camera className="w-4 h-4" />, label: 'Post' },
+  post: { icon: <Camera className="w-4 h-4" />, label: 'Photo' },
   story: { icon: <Smartphone className="w-4 h-4" />, label: 'Story' },
-  reel: { icon: <Film className="w-4 h-4" />, label: 'Reel' },
+  reel: { icon: <Film className="w-4 h-4" />, label: 'Vidéo' },
   tuto: { icon: <BookOpen className="w-4 h-4" />, label: 'Tuto' },
   engagement: { icon: <MessageCircle className="w-4 h-4" />, label: 'Engage' },
-  carousel: { icon: <Images className="w-4 h-4" />, label: 'Carrousel' },
+  carousel: { icon: <Images className="w-4 h-4" />, label: 'Album' },
 }
 
 // ---- Date helpers ----
@@ -310,7 +310,7 @@ export default function CalendarPage({ year, month, missionsByDay: initialMissio
             />
           </div>
           <span className="text-[11px] text-text-muted">
-            {level.isMaxLevel ? 'MAX' : `${level.xpProgressInLevel} / ${level.xpProgressInLevel + level.xpForNextLevel} XP`}
+            {level.isMaxLevel ? 'MAX' : `${level.xpProgressInLevel} / ${level.xpProgressInLevel + level.xpForNextLevel} pts`}
           </span>
         </div>
       </div>
@@ -509,7 +509,7 @@ export default function CalendarPage({ year, month, missionsByDay: initialMissio
                       size="sm"
                       onClick={() => router.visit(`/missions/${mission.id}`)}
                     >
-                      Faire
+                      Go !
                     </Button>
                   )}
                 </div>

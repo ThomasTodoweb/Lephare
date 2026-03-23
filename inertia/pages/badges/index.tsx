@@ -29,7 +29,7 @@ interface Props {
 
 const CRITERIA_LABELS: Record<string, string> = {
   missions_completed: 'missions complétées',
-  streak_days: 'jours de streak',
+  streak_days: 'jours de série',
   tutorials_viewed: 'tutoriels vus',
 }
 
@@ -55,7 +55,7 @@ export default function BadgesIndex({ badges, stats }: Props) {
           </Link>
           <h1 className="text-[22px] font-bold text-text">Mes badges</h1>
           <p className="text-[14px] text-text-secondary mt-1">
-            Collectionnez les badges en progressant
+            Collectionne les badges
           </p>
         </div>
 

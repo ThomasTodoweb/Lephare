@@ -40,16 +40,16 @@ export default function Rhythm({ rhythms, currentRhythm, step, totalSteps }: Pro
 
   return (
     <>
-      <Head title="Votre rythme de publication - Le Phare" />
+      <Head title="Ton rythme de publication - Le Phare" />
       <div className="min-h-screen bg-bg flex flex-col">
         <form onSubmit={handleSubmit} className="flex-1 px-5 pt-12 pb-32 max-w-lg mx-auto w-full">
           <OnboardingProgress currentStep={step} totalSteps={totalSteps} />
 
           <h1 className="text-[22px] font-bold text-text tracking-tight">
-            Votre rythme ?
+            Ton rythme ?
           </h1>
           <p className="text-[15px] text-text-secondary mt-2 leading-relaxed">
-            A quelle frequence souhaitez-vous publier sur Instagram ?
+            A quelle frequence veux-tu publier sur Instagram ?
           </p>
 
           <div className="mt-6 space-y-3">

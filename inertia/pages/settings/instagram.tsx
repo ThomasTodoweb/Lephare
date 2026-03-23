@@ -20,7 +20,7 @@ export default function InstagramSettings({ isConfigured, account }: Props) {
   }
 
   const handleDisconnect = () => {
-    if (confirm('Etes-vous sur de vouloir deconnecter votre compte Instagram ?')) {
+    if (confirm('Es-tu sur de vouloir deconnecter ton compte Instagram ?')) {
       disconnectForm.post('/instagram/disconnect')
     }
   }
@@ -44,7 +44,7 @@ export default function InstagramSettings({ isConfigured, account }: Props) {
           </Link>
           <h1 className="text-[22px] font-bold text-text">Instagram</h1>
           <p className="text-[14px] text-text-secondary mt-1">
-            Connectez votre compte Instagram pour publier directement depuis Le Phare
+            Connecte ton compte Instagram pour publier directement depuis Le Phare
           </p>
         </div>
 
@@ -109,7 +109,7 @@ export default function InstagramSettings({ isConfigured, account }: Props) {
                   <div>
                     <p className="text-[14px] font-medium text-green-800">Compte connecte</p>
                     <p className="text-[13px] text-green-700 mt-0.5">
-                      Vous pouvez publier sur Instagram directement depuis vos missions quotidiennes.
+                      Tu peux publier sur Instagram directement depuis tes missions quotidiennes.
                     </p>
                   </div>
                 </div>
@@ -142,10 +142,10 @@ export default function InstagramSettings({ isConfigured, account }: Props) {
                   </svg>
                 </div>
                 <h2 className="text-[17px] font-semibold text-text mb-2">
-                  Connectez Instagram
+                  Connecte Instagram
                 </h2>
                 <p className="text-[14px] text-text-secondary mb-6 max-w-sm mx-auto">
-                  Liez votre compte Instagram pour publier vos photos directement depuis Le Phare.
+                  Lie ton compte Instagram pour publier tes photos directement depuis Le Phare.
                 </p>
                 <div className="max-w-xs mx-auto">
                   <Button onClick={handleConnect} fullWidth>
@@ -167,7 +167,7 @@ export default function InstagramSettings({ isConfigured, account }: Props) {
                     <div>
                       <p className="text-[14px] font-medium text-text">Publication en un clic</p>
                       <p className="text-[13px] text-text-muted">
-                        Publiez directement apres avoir pris votre photo
+                        Publie directement apres avoir pris ta photo
                       </p>
                     </div>
                   </li>
@@ -176,9 +176,9 @@ export default function InstagramSettings({ isConfigured, account }: Props) {
                       <Check size={12} className="text-white" />
                     </div>
                     <div>
-                      <p className="text-[14px] font-medium text-text">Legendes generees par IA</p>
+                      <p className="text-[14px] font-medium text-text">Légendes écrites par Popote</p>
                       <p className="text-[13px] text-text-muted">
-                        Des descriptions optimisees pour votre restaurant
+                        Des descriptions optimisees pour ton restaurant
                       </p>
                     </div>
                   </li>
@@ -189,7 +189,7 @@ export default function InstagramSettings({ isConfigured, account }: Props) {
                     <div>
                       <p className="text-[14px] font-medium text-text">Suivi des publications</p>
                       <p className="text-[13px] text-text-muted">
-                        Historique et statistiques de vos posts
+                        Historique et statistiques de tes publications
                       </p>
                     </div>
                   </li>
@@ -203,7 +203,7 @@ export default function InstagramSettings({ isConfigured, account }: Props) {
                   <div>
                     <p className="text-[14px] font-medium text-text">Securise par Late</p>
                     <p className="text-[13px] text-text-muted mt-0.5">
-                      La connexion est geree par Late, un service certifie par Meta. Vos identifiants ne sont jamais stockes sur nos serveurs.
+                      La connexion est geree par Late, un service certifie par Meta. Tes identifiants ne sont jamais stockes sur nos serveurs.
                     </p>
                   </div>
                 </div>

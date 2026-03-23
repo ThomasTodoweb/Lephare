@@ -161,7 +161,7 @@ export default function Profile({
   }
 
   const handleDisconnectInstagram = () => {
-    if (confirm('Voulez-vous vraiment déconnecter votre compte Instagram ?')) {
+    if (confirm('Veux-tu vraiment déconnecter ton compte Instagram ?')) {
       disconnectForm.post('/profile/instagram/disconnect')
     }
   }
@@ -305,7 +305,7 @@ export default function Profile({
               </span>
               {!level.isMaxLevel && (
                 <span className="text-[12px] text-text-muted">
-                  {level.xpProgressInLevel}/{xpNext} XP
+                  {level.xpProgressInLevel}/{xpNext} pts
                 </span>
               )}
             </div>
@@ -319,7 +319,7 @@ export default function Profile({
             </div>
             <div className="bg-white/80 rounded-xl p-2.5 text-center">
               <p className="text-[16px] font-bold text-text">{streak.currentStreak}</p>
-              <p className="text-[11px] text-text-muted mt-0.5">Série</p>
+              <p className="text-[11px] text-text-muted mt-0.5">Série en cours</p>
             </div>
             <div className="bg-white/80 rounded-xl p-2.5 text-center">
               <p className="text-[16px] font-bold text-text">{daysOnApp}</p>
@@ -652,7 +652,7 @@ export default function Profile({
                 <div className="flex items-center justify-between pt-2 border-t border-border">
                   <div>
                     <p className="text-[13px] font-medium text-text">Bilan hebdomadaire</p>
-                    <p className="text-[11px] text-text-muted">Analyse IA de votre semaine</p>
+                    <p className="text-[11px] text-text-muted">Analyse IA de ta semaine</p>
                   </div>
                   <button
                     onClick={() => updateEmailPreference('weeklySummary', !emailWeeklySummary)}

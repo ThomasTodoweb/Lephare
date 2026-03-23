@@ -68,7 +68,7 @@ export default function VerifyEmail({ email }: Props) {
 
   return (
     <>
-      <Head title="Verifier votre email - Le Phare" />
+      <Head title="Verifie ton email - Le Phare" />
       <div className="min-h-screen bg-bg flex flex-col items-center justify-center px-5 py-12">
         {flash?.error && <Toast message={flash.error} type="error" />}
         {flash?.success && <Toast message={flash.success} type="success" />}
@@ -81,7 +81,7 @@ export default function VerifyEmail({ email }: Props) {
               </svg>
             </div>
             <h1 className="text-[22px] font-bold text-text tracking-tight">
-              Verifiez votre email
+              Verifie ton email
             </h1>
             <p className="text-[14px] text-text-secondary mt-2 leading-relaxed">
               Un code a 6 chiffres a ete envoye a<br />
@@ -118,7 +118,7 @@ export default function VerifyEmail({ email }: Props) {
           {/* Resend link */}
           <div className="text-center">
             <p className="text-[13px] text-text-muted mb-1.5">
-              Vous n'avez pas recu le code ?
+              Tu n'as pas recu le code ?
             </p>
             <button
               type="button"
@@ -133,7 +133,7 @@ export default function VerifyEmail({ email }: Props) {
           {/* Info */}
           <div className="mt-6 p-3 bg-bg-subtle rounded-xl">
             <p className="text-[12px] text-text-muted text-center">
-              Le code expire dans 15 minutes. Verifiez aussi vos spams si vous ne trouvez pas l'email.
+              Le code expire dans 15 minutes. Verifie aussi tes spams si tu ne trouves pas l'email.
             </p>
           </div>
         </Card>

@@ -276,7 +276,7 @@ export default function StatisticsIndex({ keyMetrics, summary, comparison, insta
               <p className="text-[17px] font-bold text-text text-center leading-snug">
                 {interpretation?.text ||
                   (instagram
-                    ? `Avec ${(instagram.followers?.current ?? 0).toLocaleString('fr-FR')} abonnés et ${(instagram.engagement?.impressions ?? 0).toLocaleString('fr-FR')} impressions, tu as une belle base pour progresser.`
+                    ? `Avec ${(instagram.followers?.current ?? 0).toLocaleString('fr-FR')} abonnés et ${(instagram.engagement?.impressions ?? 0).toLocaleString('fr-FR')} vues, tu as une belle base pour progresser.`
                     : "Continue tes missions pour que je puisse analyser tes stats !")}
               </p>
               <span className="text-[28px]">{sentimentEmoji}</span>
@@ -309,7 +309,7 @@ export default function StatisticsIndex({ keyMetrics, summary, comparison, insta
             <p className="text-[22px] font-black text-text">
               {instagram ? (instagram.engagement?.reach ?? 0).toLocaleString('fr-FR') : '—'}
             </p>
-            <p className="text-[11px] text-text-muted mt-0.5">Portée</p>
+            <p className="text-[11px] text-text-muted mt-0.5">Personnes touchées</p>
             {instagramComparison && (instagramComparison.changes?.reachPercent ?? 0) !== 0 && (
               <div className={`flex items-center justify-center gap-0.5 mt-1 ${(instagramComparison.changes?.reachPercent ?? 0) >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
                 {(instagramComparison.changes?.reachPercent ?? 0) >= 0
@@ -327,7 +327,7 @@ export default function StatisticsIndex({ keyMetrics, summary, comparison, insta
             <p className="text-[22px] font-black text-text">
               {instagram ? `${Number(instagram.engagement?.averageRate ?? 0).toFixed(1)}%` : '—'}
             </p>
-            <p className="text-[11px] text-text-muted mt-0.5">Engagement</p>
+            <p className="text-[11px] text-text-muted mt-0.5">Interactions</p>
             {instagramComparison && (instagramComparison.changes?.engagementRate ?? 0) !== 0 && (
               <div className={`flex items-center justify-center gap-0.5 mt-1 ${(instagramComparison.changes?.engagementRate ?? 0) >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
                 {(instagramComparison.changes?.engagementRate ?? 0) >= 0
@@ -416,7 +416,7 @@ export default function StatisticsIndex({ keyMetrics, summary, comparison, insta
                     <p className="text-[18px] font-bold text-text">
                       {(instagram.engagement?.impressions ?? 0).toLocaleString('fr-FR')}
                     </p>
-                    <p className="text-[11px] text-text-muted">Impressions</p>
+                    <p className="text-[11px] text-text-muted">Vues</p>
                     {instagramComparison && (
                       <p className={`text-[11px] font-medium ${(instagramComparison.changes?.impressionsPercent ?? 0) >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
                         {(instagramComparison.changes?.impressionsPercent ?? 0) >= 0 ? '+' : ''}{instagramComparison.changes?.impressionsPercent ?? 0}%
@@ -427,7 +427,7 @@ export default function StatisticsIndex({ keyMetrics, summary, comparison, insta
                     <p className="text-[18px] font-bold text-text">
                       {(instagram.engagement?.reach ?? 0).toLocaleString('fr-FR')}
                     </p>
-                    <p className="text-[11px] text-text-muted">Portée</p>
+                    <p className="text-[11px] text-text-muted">Personnes touchées</p>
                     {instagramComparison && (
                       <p className={`text-[11px] font-medium ${(instagramComparison.changes?.reachPercent ?? 0) >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
                         {(instagramComparison.changes?.reachPercent ?? 0) >= 0 ? '+' : ''}{instagramComparison.changes?.reachPercent ?? 0}%
@@ -451,14 +451,14 @@ export default function StatisticsIndex({ keyMetrics, summary, comparison, insta
                   </div>
                   <div className="py-2">
                     <p className="text-[14px] font-bold text-text">{(instagram.engagement?.saves ?? 0).toLocaleString('fr-FR')}</p>
-                    <p className="text-[11px] text-text-muted">Saves</p>
+                    <p className="text-[11px] text-text-muted">Enregistrements</p>
                   </div>
                 </div>
 
                 <div className="bg-bg-subtle rounded-xl p-3">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-[12px] text-text-muted">Taux d'engagement</p>
+                      <p className="text-[12px] text-text-muted">Taux d'interaction</p>
                       <p className="text-[18px] font-bold text-text">
                         {Number(instagram.engagement?.averageRate ?? 0).toFixed(2)}%
                       </p>

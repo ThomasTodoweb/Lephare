@@ -11,25 +11,25 @@ const MILESTONES: Record<number, { title: string; emoji: string; message: string
   7: {
     title: '1 semaine !',
     emoji: '🌟',
-    message: 'Une semaine complète ! Tu prends le rythme.',
+    message: 'Une semaine complète ! Tu as trouvé ton rythme.',
     gradient: 'from-blue-500 to-cyan-400',
   },
   14: {
     title: '2 semaines !',
     emoji: '🔥',
-    message: '14 jours non-stop. Ton Insta va décoller.',
+    message: '14 jours non-stop ! Ton Instagram va décoller.',
     gradient: 'from-orange-500 to-amber-400',
   },
   30: {
     title: '1 MOIS !',
     emoji: '🏆',
-    message: 'Un mois de régularité ! Seulement 5% des restaurateurs y arrivent.',
+    message: 'Un mois de régularité ! Seulement 5 % des restaurateurs y arrivent.',
     gradient: 'from-purple-600 to-pink-500',
   },
   60: {
     title: 'LÉGENDAIRE',
     emoji: '💎',
-    message: '60 jours. Tu es dans le top 1% des restaurateurs sur Insta.',
+    message: '60 jours ! Tu es dans le top 1 % des restaurateurs sur Instagram.',
     gradient: 'from-emerald-500 to-teal-400',
   },
   100: {
@@ -55,7 +55,7 @@ export function StreakMilestone({ days, onDismiss }: StreakMilestoneProps) {
           {milestone.emoji}
         </div>
         <p className="text-[11px] font-bold text-text-muted uppercase tracking-wider mb-1">
-          Streak de {days} jours
+          Série de {days} jours
         </p>
         <h2 className="text-[24px] font-black text-text mb-3">{milestone.title}</h2>
         <p className="text-[14px] text-text-secondary leading-relaxed mb-6">

@@ -57,7 +57,7 @@ export default function Bravo({ publication, streak, xpEarned, isFirstPost }: Pr
             <div className="w-28 h-28 rounded-3xl overflow-hidden shadow-xl ring-4 ring-green-100">
               <img
                 src={`/${publication.imagePath}`}
-                alt="Votre publication"
+                alt="Ta publication"
                 className="w-full h-full object-cover"
               />
             </div>
@@ -68,13 +68,13 @@ export default function Bravo({ publication, streak, xpEarned, isFirstPost }: Pr
 
           {/* Title */}
           <h1 className="text-[26px] font-black text-text tracking-tight mb-2 animate-fade-up">
-            {isFirstPost ? 'Première publication !' : 'Bien joué !'}
+            {isFirstPost ? 'Première publication !' : 'Envoyé !'}
           </h1>
 
           <p className="text-[15px] text-text-secondary animate-fade-up" style={{ animationDelay: '100ms' }}>
             {isFirstPost
               ? 'Ta première publication est en ligne. Bienvenue dans l\'aventure !'
-              : 'Ton contenu est maintenant visible sur Instagram.'}
+              : 'C\'est en ligne ! Tes abonnés vont adorer.'}
           </p>
         </div>
 
@@ -94,7 +94,7 @@ export default function Bravo({ publication, streak, xpEarned, isFirstPost }: Pr
               <span className="text-xl">⭐</span>
               <div>
                 <p className="text-[18px] font-black text-amber-600 leading-none animate-tick-up">+{xpCounter}</p>
-                <p className="text-[10px] text-amber-500 font-medium">XP</p>
+                <p className="text-[10px] text-amber-500 font-medium">points</p>
               </div>
             </div>
           )}

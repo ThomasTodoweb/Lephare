@@ -16,8 +16,8 @@ export function CaptionAnalyzer({ caption }: CaptionAnalyzerProps) {
     if (!hasQuestion && charCount > 20) tips.push('Pose une question pour engager')
     if (hashtagCount > 10) tips.push('Trop de hashtags (max 5-10)')
     if (hashtagCount === 0 && charCount > 20) tips.push('Ajoute 3-5 hashtags')
-    if (!hasEmoji && charCount > 20) tips.push('Un emoji rend la caption plus humaine')
-    if (charCount < 30 && charCount > 0) tips.push('Développe un peu ta caption')
+    if (!hasEmoji && charCount > 20) tips.push('Un emoji rend la légende plus humaine')
+    if (charCount < 30 && charCount > 0) tips.push('Développe un peu ta légende')
 
     const score = Math.min(100,
       20 +
@@ -46,7 +46,7 @@ export function CaptionAnalyzer({ caption }: CaptionAnalyzerProps) {
       </div>
 
       <div className="flex gap-3 text-[11px] text-text-muted">
-        <span>{analysis.charCount} car.</span>
+        <span>{analysis.charCount} caractères</span>
         <span>{analysis.hashtagCount} #</span>
       </div>
 

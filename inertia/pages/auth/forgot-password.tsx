@@ -35,7 +35,7 @@ export default function ForgotPassword() {
               Mot de passe oublie ?
             </h1>
             <p className="text-[14px] text-text-secondary mt-2 leading-relaxed">
-              Entrez votre adresse email et nous vous enverrons un lien pour reinitialiser votre mot de passe.
+              Entre ton adresse email et nous t'enverrons un lien pour reinitialiser ton mot de passe.
             </p>
           </div>
 
@@ -46,7 +46,7 @@ export default function ForgotPassword() {
               type="email"
               value={form.data.email}
               onChange={(e) => form.setData('email', e.target.value)}
-              placeholder="votre@email.com"
+              placeholder="ton@email.com"
               error={form.errors.email}
               required
             />

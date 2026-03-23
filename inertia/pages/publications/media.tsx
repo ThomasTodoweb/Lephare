@@ -308,14 +308,14 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
       console.error('Upload error:', error)
       if (axios.isAxiosError(error)) {
         if (error.code === 'ECONNABORTED') {
-          setUploadError('La connexion a expire. Verifiez votre connexion internet et reessayez.')
+          setUploadError('La connexion a expire. Verifie ta connexion internet et reessaie.')
         } else if (error.response?.status === 413) {
-          setUploadError('Le fichier est trop volumineux. Essayez une video plus courte.')
+          setUploadError('Le fichier est trop volumineux. Essaie une video plus courte.')
         } else {
-          setUploadError(error.response?.data?.error || 'Erreur lors de l\'envoi. Veuillez reessayer.')
+          setUploadError(error.response?.data?.error || 'Erreur lors de l\'envoi. Réessaie.')
         }
       } else {
-        setUploadError('Erreur lors de l\'envoi. Veuillez reessayer.')
+        setUploadError('Erreur lors de l\'envoi. Réessaie.')
       }
       setIsUploading(false)
     }
@@ -324,13 +324,13 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
   const getContentTypeLabel = () => {
     switch (contentType) {
       case 'carousel':
-        return 'Carrousel'
+        return 'Album'
       case 'reel':
-        return 'Reel'
+        return 'Vidéo courte'
       case 'story':
         return 'Story'
       default:
-        return 'Post'
+        return 'Photo'
     }
   }
 
@@ -380,7 +380,7 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
             <span>&larr;</span> Retour
           </Link>
           <h1 className="text-[20px] font-bold text-text tracking-tight mb-1">
-            Ajouter votre {getContentTypeLabel().toLowerCase()}
+            Ajouter ton {getContentTypeLabel().toLowerCase()}
           </h1>
           <p className="text-[13px] text-text-secondary">{mission.template.title}</p>
         </div>
@@ -428,7 +428,7 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
                             loop
                             muted={isMuted}
                             playsInline
-                            onError={() => setVideoError('Impossible de lire cette video. Essayez un autre format (MP4 recommande).')}
+                            onError={() => setVideoError('Impossible de lire cette video. Essaie un autre format (MP4 recommande).')}
                             onLoadedData={() => setVideoLoading(false)}
                           />
                           {/* Sound indicator */}
@@ -714,7 +714,7 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
                     }`}
                   />
                 </div>
-                <span className="text-[14px] text-text">Partager aussi dans le feed</span>
+                <span className="text-[14px] text-text">Partager aussi dans le profil Instagram</span>
               </label>
             </div>
           )}
@@ -779,7 +779,7 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
                   />
                 </div>
                 <p className="text-[12px] text-text-muted mt-2">
-                  {uploadProgress < 100 ? 'Ne fermez pas cette page' : 'Traitement en cours...'}
+                  {uploadProgress < 100 ? 'Ne ferme pas cette page' : 'Traitement en cours...'}
                 </p>
               </div>
             </div>

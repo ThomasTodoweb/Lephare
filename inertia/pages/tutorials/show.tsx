@@ -145,7 +145,7 @@ export default function TutorialShow({ tutorial, isCompleted, feedback }: Props)
                 <p className="text-[14px] font-semibold text-text">Tutoriel terminé</p>
                 {feedback && (
                   <p className="text-[12px] text-text-secondary mt-0.5">
-                    Votre avis : {feedback === 'useful' ? 'Utile' : 'Pas utile'}
+                    Ton avis : {feedback === 'useful' ? 'Utile' : 'Pas utile'}
                   </p>
                 )}
               </div>
@@ -180,7 +180,7 @@ export default function TutorialShow({ tutorial, isCompleted, feedback }: Props)
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-6 z-50">
           <Card className="w-full max-w-sm">
             <h3 className="text-[17px] font-bold text-text mb-5 text-center">
-              Ce tutoriel vous a-t-il été utile ?
+              Ce tutoriel t'a été utile ?
             </h3>
             <div className="flex gap-3">
               <Button

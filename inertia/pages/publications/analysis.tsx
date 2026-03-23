@@ -32,9 +32,9 @@ interface Props {
 }
 
 const CONTENT_TYPE_LABELS: Record<string, string> = {
-  post: 'POST',
-  carousel: 'CAROUSEL',
-  reel: 'REEL',
+  post: 'PHOTO',
+  carousel: 'ALBUM',
+  reel: 'VIDÉO',
   story: 'STORY',
 }
 
@@ -46,7 +46,7 @@ const SCORE_CONFIG = {
     dot: 'bg-emerald-500',
     icon: CheckCircle,
     label: 'Parfait',
-    description: 'Votre média est prêt pour la publication.',
+    description: 'Ton média est prêt pour la publication.',
   },
   yellow: {
     bg: 'bg-amber-50',
@@ -55,7 +55,7 @@ const SCORE_CONFIG = {
     dot: 'bg-amber-500',
     icon: AlertTriangle,
     label: 'Attention',
-    description: 'Quelques points à améliorer, mais vous pouvez continuer.',
+    description: 'Quelques points à améliorer, mais tu peux continuer.',
   },
   red: {
     bg: 'bg-red-50',
@@ -129,10 +129,10 @@ export default function MediaAnalysis({ publication, mission, totalSteps = 3, cu
       }
       console.error('Analysis error:', err)
       if (!signal.aborted) {
-        setError('Impossible d\'analyser le média. Veuillez réessayer.')
+        setError('Impossible d\'analyser le média. Réessaie.')
         // Default to green to not block the user
         setScore('green')
-        setFeedback('Analyse non disponible, vous pouvez continuer.')
+        setFeedback('Analyse non disponible, tu peux continuer.')
       }
     } finally {
       if (!signal.aborted) {
@@ -278,12 +278,12 @@ export default function MediaAnalysis({ publication, mission, totalSteps = 3, cu
           {score === 'red' && !isAnalyzing && (
             <div className="bg-bg-subtle rounded-xl p-4 mb-5">
               <p className="text-[13px] text-text-secondary leading-relaxed">
-                Pour obtenir les meilleurs résultats sur Instagram, votre média doit être de bonne qualité :
+                Pour obtenir les meilleurs résultats sur Instagram, ton média doit être de bonne qualité :
                 luminosité correcte, image nette, bon cadrage.
               </p>
               {mission?.template.tutorialId && (
                 <p className="text-[13px] text-text-secondary mt-2">
-                  Besoin d'aide ? Consultez le tutoriel associé à cette mission.
+                  Besoin d'aide ? Consulte le tutoriel associé à cette mission.
                 </p>
               )}
             </div>
@@ -294,7 +294,7 @@ export default function MediaAnalysis({ publication, mission, totalSteps = 3, cu
         <div className="fixed bottom-0 left-0 right-0 p-5 bg-bg/80 backdrop-blur-lg border-t border-border space-y-3">
           {isAnalyzing || isPublishing ? (
             <p className="text-center text-[13px] text-text-muted py-3">
-              {isPublishing ? 'Publication en cours...' : 'Veuillez patienter...'}
+              {isPublishing ? 'Publication en cours...' : 'Patiente un instant...'}
             </p>
           ) : canContinue ? (
             <Button onClick={handleContinue} disabled={isPublishing} loading={isPublishing} fullWidth>
@@ -321,7 +321,7 @@ export default function MediaAnalysis({ publication, mission, totalSteps = 3, cu
           {/* Option to continue anyway for yellow */}
           {score === 'yellow' && !isAnalyzing && (
             <p className="text-center text-[12px] text-text-muted">
-              Vous pouvez continuer malgré l'avertissement
+              Tu peux continuer malgré l'avertissement
             </p>
           )}
         </div>

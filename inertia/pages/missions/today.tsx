@@ -29,7 +29,7 @@ interface Props {
 // Icons now rendered via MissionTypeIcon component
 
 const TYPE_LABELS: Record<string, string> = {
-  post: 'Post', story: 'Story', reel: 'Réel', tuto: 'Tutoriel', engagement: 'Engagement',
+  post: 'Photo', story: 'Story', reel: 'Vidéo courte', tuto: 'Tutoriel', engagement: 'Interactions',
 }
 
 export default function TodayMission({ mission, todayMissions = [] }: Props) {
@@ -156,7 +156,7 @@ export default function TodayMission({ mission, todayMissions = [] }: Props) {
             <p className="text-3xl mb-3">✨</p>
             <h2 className="text-[17px] font-bold text-text mb-1">Pas de mission aujourd'hui</h2>
             <p className="text-[13px] text-text-muted text-center">
-              Reposez-vous ! Votre prochaine mission arrive bientôt.
+              Repose-toi ! Ta prochaine mission arrive bientôt.
             </p>
           </div>
         )}
@@ -169,7 +169,7 @@ export default function TodayMission({ mission, todayMissions = [] }: Props) {
             <Button onClick={handleAccept} disabled={acceptForm.processing} variant="primary" fullWidth size="lg">
               {acceptForm.processing ? 'Chargement...' : "C'est parti !"}
             </Button>
-            <span className="text-[11px] text-text-muted ml-2">+10 XP</span>
+            <span className="text-[11px] text-text-muted ml-2">+10 points</span>
           </div>
         </div>
       )}

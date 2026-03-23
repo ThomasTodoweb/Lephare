@@ -49,7 +49,7 @@ export default function Notifications({ step, totalSteps, notificationsConfigure
             Notifications
           </h1>
           <p className="text-[15px] text-text-secondary mt-2 leading-relaxed">
-            Recevez un rappel quotidien pour ne jamais oublier votre mission du jour.
+            Recois un rappel quotidien pour ne jamais oublier ta mission du jour.
           </p>
 
           <div className="mt-6">
@@ -75,11 +75,11 @@ export default function Notifications({ step, totalSteps, notificationsConfigure
                   <ul className="text-[13px] text-text-secondary space-y-1.5">
                     <li className="flex items-start gap-2">
                       <span className="text-text-muted mt-0.5">--</span>
-                      <span>Rappel quotidien pour votre mission</span>
+                      <span>Rappel quotidien pour ta mission</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-text-muted mt-0.5">--</span>
-                      <span>Alertes quand vos stats evoluent</span>
+                      <span>Alertes quand tes stats evoluent</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-text-muted mt-0.5">--</span>
@@ -92,7 +92,7 @@ export default function Notifications({ step, totalSteps, notificationsConfigure
                   {!notificationsConfigured ? (
                     <Card variant="flat" className="bg-amber-50">
                       <p className="text-[13px] text-text-secondary leading-relaxed">
-                        Les notifications ne sont pas encore configurees sur cette application. Vous pourrez les activer plus tard depuis votre profil.
+                        Les notifications ne sont pas encore configurees sur cette application. Tu pourras les activer plus tard depuis ton profil.
                       </p>
                     </Card>
                   ) : !isSupported ? (
@@ -105,9 +105,9 @@ export default function Notifications({ step, totalSteps, notificationsConfigure
                             </svg>
                           </div>
                           <div>
-                            <h4 className="text-[14px] font-semibold text-text mb-1">Ouvrez Le Phare depuis votre ecran d'accueil</h4>
+                            <h4 className="text-[14px] font-semibold text-text mb-1">Ouvre Le Phare depuis ton ecran d'accueil</h4>
                             <p className="text-[13px] text-text-secondary leading-relaxed">
-                              Pour activer les notifications, ouvrez l'application directement depuis l'icone Le Phare sur votre ecran d'accueil, puis revenez a cette etape.
+                              Pour activer les notifications, ouvre l'application directement depuis l'icone Le Phare sur ton ecran d'accueil, puis reviens a cette etape.
                             </p>
                           </div>
                         </div>
@@ -121,9 +121,9 @@ export default function Notifications({ step, totalSteps, notificationsConfigure
                             </svg>
                           </div>
                           <div>
-                            <h4 className="text-[14px] font-semibold text-text mb-1">Installez d'abord l'application</h4>
+                            <h4 className="text-[14px] font-semibold text-text mb-1">Installe d'abord l'application</h4>
                             <p className="text-[13px] text-text-secondary leading-relaxed">
-                              Les notifications push ne fonctionnent que depuis l'application installee sur votre ecran d'accueil. Vous pourrez activer les notifications une fois l'app installee.
+                              Les notifications push ne fonctionnent que depuis l'application installee sur ton ecran d'accueil. Tu pourras activer les notifications une fois l'app installee.
                             </p>
                           </div>
                         </div>
@@ -147,7 +147,7 @@ export default function Notifications({ step, totalSteps, notificationsConfigure
                 )}
 
                 <p className="text-[12px] text-text-muted text-center mt-4">
-                  Vous pourrez modifier ces parametres a tout moment dans votre profil.
+                  Tu pourras modifier ces parametres a tout moment dans ton profil.
                 </p>
               </>
             )}
@@ -176,7 +176,7 @@ export default function Notifications({ step, totalSteps, notificationsConfigure
               loading={completeForm.processing}
               onClick={handleComplete}
             >
-              Terminer
+              C'est parti, Popote !
             </Button>
           </div>
         </div>

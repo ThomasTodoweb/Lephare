@@ -13,7 +13,7 @@ export default function ServerError(props: { error: any }) {
             Erreur serveur
           </h1>
           <p className="text-[14px] text-text-secondary mt-2 leading-relaxed">
-            {props.error.message || 'Une erreur inattendue est survenue. Veuillez reessayer plus tard.'}
+            {props.error.message || 'Oups, quelque chose a planté. Réessaie dans quelques minutes.'}
           </p>
           <div className="mt-8">
             <Link href="/dashboard">

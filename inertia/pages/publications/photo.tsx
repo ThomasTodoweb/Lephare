@@ -119,7 +119,7 @@ export default function PhotoCapture({ mission }: Props) {
             &larr; Retour a la mission
           </Link>
           <h1 className="text-[20px] font-bold text-text tracking-tight">
-            Votre photo
+            Ta photo
           </h1>
           <p className="text-[14px] text-text-secondary mt-1">
             {mission.template.title}
@@ -166,7 +166,7 @@ export default function PhotoCapture({ mission }: Props) {
                     <circle cx="12" cy="13" r="4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                 </div>
-                <p className="text-[14px] font-medium text-text-secondary">Appuyez pour choisir une photo</p>
+                <p className="text-[14px] font-medium text-text-secondary">Appuie pour choisir une photo</p>
                 <p className="text-[12px] text-text-muted mt-1">JPG, PNG -- max 10 Mo</p>
               </div>
             )}

@@ -54,7 +54,7 @@ export default function TutorialLocked({ tutorial, userLevel }: Props) {
 
         {/* Tips */}
         <Card variant="flat" className="w-full max-w-sm mb-6 text-left">
-          <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-3">Comment gagner de l'XP ?</p>
+          <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-3">Comment gagner des points ?</p>
           <ul className="space-y-2">
             <li className="flex items-start gap-2.5">
               <span className="w-5 h-5 rounded-md bg-bg-subtle flex items-center justify-center text-[11px] shrink-0 mt-0.5">1</span>
@@ -66,7 +66,7 @@ export default function TutorialLocked({ tutorial, userLevel }: Props) {
             </li>
             <li className="flex items-start gap-2.5">
               <span className="w-5 h-5 rounded-md bg-bg-subtle flex items-center justify-center text-[11px] shrink-0 mt-0.5">3</span>
-              <span className="text-[13px] text-text-secondary">Maintiens ton streak actif</span>
+              <span className="text-[13px] text-text-secondary">Maintiens ta série active</span>
             </li>
           </ul>
         </Card>

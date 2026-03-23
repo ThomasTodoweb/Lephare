@@ -67,7 +67,7 @@ export function PopoteCoach({
               block mb-1
             `}
           >
-            Conseil de Popote
+            Popote
           </span>
 
           <p className="text-[13px] text-text leading-relaxed">

@@ -23,7 +23,7 @@ export default function TutorialBravo({ tutorial }: Props) {
             Bravo !
           </h1>
           <p className="text-[15px] text-text-secondary">
-            Vous avez appris quelque chose de nouveau
+            Tu viens d'apprendre un nouveau trick !
           </p>
         </div>
 
@@ -35,7 +35,7 @@ export default function TutorialBravo({ tutorial }: Props) {
 
         {/* Message */}
         <p className="text-[14px] text-text-secondary text-center mb-8 max-w-xs leading-relaxed">
-          Continuez votre apprentissage pour devenir un pro de la communication Instagram.
+          Continue ton apprentissage pour devenir un pro de la communication Instagram.
         </p>
 
         {/* Action buttons */}

@@ -57,7 +57,7 @@ export default function ReportShow({ report }: Props) {
           </Card>
           <Card className="text-center">
             <p className="text-[22px] font-bold text-text">{report.streakAtEnd}</p>
-            <p className="text-[11px] text-text-muted">streak</p>
+            <p className="text-[11px] text-text-muted">série</p>
           </Card>
         </div>
 
@@ -72,7 +72,7 @@ export default function ReportShow({ report }: Props) {
         {/* Motivation */}
         <Card variant="flat" className="text-center">
           <p className="text-[14px] font-semibold text-text">
-            Cette semaine, vous pouvez faire encore mieux
+            Cette semaine, tu peux faire encore mieux
           </p>
           <Link href="/missions" className="text-[13px] text-text-secondary underline mt-1 inline-block">
             Voir ma mission du jour
