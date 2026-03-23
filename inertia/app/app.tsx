@@ -7,7 +7,7 @@ import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from '@adonisjs/inertia/helpers'
 import { AppWrapper } from '../components/AppWrapper'
 
-const appName = import.meta.env.VITE_APP_NAME || 'AdonisJS'
+const appName = import.meta.env.VITE_APP_NAME || 'Le Phare'
 
 createInertiaApp({
   progress: false, // Disable default progress bar, we use our own loader

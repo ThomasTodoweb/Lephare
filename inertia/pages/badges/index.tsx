@@ -70,7 +70,7 @@ export default function BadgesIndex({ badges, stats }: Props) {
             </div>
             <div className="text-right">
               <p className="text-[15px] font-semibold text-text">{stats.currentStreak} jours</p>
-              <p className="text-[12px] text-text-muted">Streak en cours</p>
+              <p className="text-[12px] text-text-muted">Série en cours</p>
             </div>
           </div>
           <div className="w-full bg-bg-subtle rounded-full h-1.5 mt-4">

@@ -315,11 +315,11 @@ export default function Profile({
           <div className="grid grid-cols-3 gap-2.5">
             <div className="bg-white/80 rounded-xl p-2.5 text-center">
               <p className="text-[16px] font-bold text-text">{streak.longestStreak}</p>
-              <p className="text-[11px] text-text-muted mt-0.5">Streak record</p>
+              <p className="text-[11px] text-text-muted mt-0.5">Record</p>
             </div>
             <div className="bg-white/80 rounded-xl p-2.5 text-center">
               <p className="text-[16px] font-bold text-text">{streak.currentStreak}</p>
-              <p className="text-[11px] text-text-muted mt-0.5">Streak actuel</p>
+              <p className="text-[11px] text-text-muted mt-0.5">Série</p>
             </div>
             <div className="bg-white/80 rounded-xl p-2.5 text-center">
               <p className="text-[16px] font-bold text-text">{daysOnApp}</p>
