@@ -2,13 +2,21 @@ import { Head, Link, useForm, usePage } from '@inertiajs/react'
 import { useState } from 'react'
 import { AppLayout } from '~/components/layout'
 import { Button } from '~/components/ui/Button'
-import { Card } from '~/components/ui/Card'
 import { Toast } from '~/components/ui/Toast'
 import { RHYTHM_LABELS, TYPE_LABELS } from '~/lib/constants'
 import { usePushNotifications } from '~/hooks/use_push_notifications'
 import { usePWAInstall } from '~/hooks/use_pwa_install'
-import { LevelProgressBar } from '~/components/features/home/LevelProgressBar'
-import { ChevronRight, LogOut } from 'lucide-react'
+import {
+  ChevronRight,
+  LogOut,
+  Target,
+  Clock,
+  Utensils,
+  Bell,
+  Mail,
+  Download,
+  CheckCircle,
+} from 'lucide-react'
 
 interface RestaurantType {
   value: string
@@ -100,6 +108,7 @@ export default function Profile({
 }: Props) {
   const { flash } = usePage<{ flash?: { success?: string; error?: string } }>().props
   const [editingField, setEditingField] = useState<EditingField>(null)
+  const [emailPrefsExpanded, setEmailPrefsExpanded] = useState(false)
 
   const disconnectForm = useForm({})
   const logoutForm = useForm({})
@@ -221,6 +230,13 @@ export default function Profile({
     strategyForm.reset()
   }
 
+  // Computed values
+  const daysOnApp = Math.max(1, Math.floor((Date.now() - new Date(user.createdAt).getTime()) / (1000 * 60 * 60 * 24)))
+  const xpNext = level.xpProgressInLevel + level.xpForNextLevel
+  const initials = restaurant?.name
+    ? restaurant.name.split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 2)
+    : '?'
+
   return (
     <AppLayout>
       <Head title="Mon profil - Le Phare" />
@@ -229,93 +245,253 @@ export default function Profile({
       {flash?.success && <Toast message={flash.success} type="success" />}
       {flash?.error && <Toast message={flash.error} type="error" />}
 
-      {/* Header */}
-      <div className="pt-6 pb-2">
-        <h1 className="text-[22px] font-semibold text-text">Mon profil</h1>
-      </div>
-
-      <div className="pb-8 space-y-6">
-        {/* Section 1: Account */}
-        <div>
-          <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-2 px-1">
-            Compte
-          </p>
-          <Card variant="bordered">
-            {/* Level Progress */}
-            <div className="mb-4 pb-4 border-b border-border">
-              <LevelProgressBar
-                currentLevel={level.currentLevel}
-                levelName={level.levelName}
-                levelIcon={level.levelIcon}
-                xpTotal={level.xpTotal}
-                xpProgressInLevel={level.xpProgressInLevel}
-                xpForNextLevel={level.xpForNextLevel}
-                progressPercent={level.progressPercent}
-                isMaxLevel={level.isMaxLevel}
+      <div className="pb-8 pt-6">
+        {/* ===== ZONE 1: Carte de joueur ===== */}
+        <div className="bg-gradient-to-br from-primary-50 to-[#fdf8f3] rounded-3xl p-5">
+          {/* Profile header */}
+          <div className="flex items-center gap-3.5 mb-4">
+            {instagram?.profilePictureUrl ? (
+              <img
+                src={instagram.profilePictureUrl}
+                alt={restaurant?.name || 'Profil'}
+                className="w-14 h-14 rounded-full object-cover"
               />
-            </div>
-
-            {/* Email */}
-            {editingField === 'email' ? (
-              <form onSubmit={handleEmailSubmit} className="space-y-3">
-                <label className="block">
-                  <span className="text-[13px] text-text-secondary">Email</span>
-                  <input
-                    type="email"
-                    value={emailForm.data.email}
-                    onChange={(e) => emailForm.setData('email', e.target.value)}
-                    className="w-full mt-1 px-3 py-2.5 bg-bg-subtle border border-border rounded-xl text-[14px] text-text focus:outline-none focus:ring-2 focus:ring-text/20 focus:border-text/30"
-                    autoFocus
-                  />
-                </label>
-                {emailForm.errors.email && (
-                  <p className="text-[13px] text-red-500">{emailForm.errors.email}</p>
-                )}
-                <div className="flex gap-2">
-                  <Button type="submit" size="sm" loading={emailForm.processing}>
-                    Enregistrer
-                  </Button>
-                  <Button type="button" variant="secondary" size="sm" onClick={cancelEdit}>
-                    Annuler
-                  </Button>
-                </div>
-              </form>
             ) : (
-              <div className="flex items-center justify-between">
-                <div>
-                  <span className="text-[13px] text-text-secondary block">Email</span>
-                  <span className="text-[14px] font-medium text-text">{user.email}</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setEditingField('email')}
-                  className="text-[13px] text-text-secondary hover:text-text transition-colors"
-                >
-                  Modifier
-                </button>
+              <div className="w-14 h-14 rounded-full bg-text flex items-center justify-center">
+                <span className="text-[18px] font-bold text-white">{initials}</span>
               </div>
             )}
-
-            {/* Member since */}
-            <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
-              <span className="text-[13px] text-text-secondary">Membre depuis</span>
-              <span className="text-[14px] font-medium text-text">
-                {new Date(user.createdAt).toLocaleDateString('fr-FR')}
-              </span>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-[20px] font-bold text-text truncate">
+                {restaurant?.name || 'Mon restaurant'}
+              </h1>
+              {restaurant?.type && (
+                <p className="text-[13px] text-text-secondary">
+                  {TYPE_LABELS[restaurant.type] || restaurant.type}
+                </p>
+              )}
+              {instagram ? (
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span
+                    className={`w-2 h-2 rounded-full ${
+                      instagram.status === 'connected'
+                        ? 'bg-green-500'
+                        : 'bg-red-500'
+                    }`}
+                  />
+                  <span className="text-[12px] text-text-muted">@{instagram.username}</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span className="w-2 h-2 rounded-full bg-red-500" />
+                  <span className="text-[12px] text-text-muted">Instagram non connecté</span>
+                </div>
+              )}
             </div>
-          </Card>
+          </div>
+
+          {/* Level progress bar */}
+          <div className="mb-4">
+            <div className="h-2.5 rounded-full bg-bg-subtle overflow-hidden">
+              <div
+                className="h-full bg-text rounded-full transition-all duration-500"
+                style={{ width: `${level.progressPercent}%` }}
+              />
+            </div>
+            <div className="flex items-center justify-between mt-1.5">
+              <span className="text-[12px] text-text-secondary">
+                {level.isMaxLevel
+                  ? 'Niveau max atteint'
+                  : `Niveau ${level.currentLevel} — ${level.levelName}`}
+              </span>
+              {!level.isMaxLevel && (
+                <span className="text-[12px] text-text-muted">
+                  {level.xpProgressInLevel}/{xpNext} XP
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Stats grid */}
+          <div className="grid grid-cols-3 gap-2.5">
+            <div className="bg-white/80 rounded-xl p-2.5 text-center">
+              <p className="text-[16px] font-bold text-text">{streak.longestStreak}</p>
+              <p className="text-[11px] text-text-muted mt-0.5">Streak record</p>
+            </div>
+            <div className="bg-white/80 rounded-xl p-2.5 text-center">
+              <p className="text-[16px] font-bold text-text">{streak.currentStreak}</p>
+              <p className="text-[11px] text-text-muted mt-0.5">Streak actuel</p>
+            </div>
+            <div className="bg-white/80 rounded-xl p-2.5 text-center">
+              <p className="text-[16px] font-bold text-text">{daysOnApp}</p>
+              <p className="text-[11px] text-text-muted mt-0.5">Jours sur l'app</p>
+            </div>
+          </div>
         </div>
 
-        {/* Section 2: Restaurant */}
+        {/* ===== ZONE 2: Réglages en pills ===== */}
         {restaurant && (
-          <div>
-            <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-2 px-1">
-              Restaurant
+          <div className="mt-6">
+            <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-2.5 px-1">
+              Réglages
             </p>
-            <Card variant="bordered">
-              <div className="space-y-0">
-                {/* Restaurant Name */}
-                {editingField === 'name' ? (
+
+            {editingField === null ? (
+              <div className="flex flex-wrap gap-2">
+                {/* Strategy pill */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    strategyForm.setData('strategy_id', strategy?.id || 0)
+                    setEditingField('strategy')
+                  }}
+                  className="bg-bg-card border border-border rounded-2xl px-4 py-2.5 flex items-center gap-2 text-left"
+                >
+                  <Target size={15} className="text-text-muted shrink-0" />
+                  <span className="text-[13px] font-medium text-text">
+                    {strategy ? strategy.name : 'Objectif'}
+                  </span>
+                </button>
+
+                {/* Rhythm pill */}
+                <button
+                  type="button"
+                  onClick={() => setEditingField('rhythm')}
+                  className="bg-bg-card border border-border rounded-2xl px-4 py-2.5 flex items-center gap-2 text-left"
+                >
+                  <Clock size={15} className="text-text-muted shrink-0" />
+                  <span className="text-[13px] font-medium text-text">
+                    {restaurant.publicationRhythm
+                      ? RHYTHM_LABELS[restaurant.publicationRhythm] || restaurant.publicationRhythm
+                      : '3x/semaine'}
+                  </span>
+                </button>
+
+                {/* Type pill */}
+                <button
+                  type="button"
+                  onClick={() => setEditingField('type')}
+                  className="bg-bg-card border border-border rounded-2xl px-4 py-2.5 flex items-center gap-2 text-left"
+                >
+                  <Utensils size={15} className="text-text-muted shrink-0" />
+                  <span className="text-[13px] font-medium text-text">
+                    {TYPE_LABELS[restaurant.type] || restaurant.type}
+                  </span>
+                </button>
+
+                {/* Notifications pill */}
+                {isSupported && (
+                  <button
+                    type="button"
+                    onClick={handleNotificationToggle}
+                    disabled={notifLoading}
+                    className="bg-bg-card border border-border rounded-2xl px-4 py-2.5 flex items-center gap-2 text-left"
+                  >
+                    <Bell size={15} className="text-text-muted shrink-0" />
+                    <span className="text-[13px] font-medium text-text">
+                      {isSubscribed ? selectedTime : 'Désactivées'}
+                    </span>
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="bg-bg-card border border-border rounded-2xl p-4">
+                {/* Strategy editing */}
+                {editingField === 'strategy' && (
+                  <form onSubmit={handleStrategySubmit} className="space-y-3">
+                    <label className="block">
+                      <span className="text-[13px] text-text-secondary">Choisir un objectif</span>
+                      <select
+                        value={strategyForm.data.strategy_id}
+                        onChange={(e) => strategyForm.setData('strategy_id', Number(e.target.value))}
+                        className="w-full mt-1 px-3 py-2.5 bg-bg-subtle border border-border rounded-xl text-[14px] text-text focus:outline-none focus:ring-2 focus:ring-text/20 focus:border-text/30"
+                      >
+                        <option value={0} disabled>Sélectionner un objectif</option>
+                        {strategies.map((s) => (
+                          <option key={s.id} value={s.id}>
+                            {s.icon} {s.name}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    {strategyForm.errors.strategy_id && (
+                      <p className="text-[13px] text-red-500">{strategyForm.errors.strategy_id}</p>
+                    )}
+                    <div className="flex gap-2">
+                      <Button type="submit" size="sm" disabled={strategyForm.processing || strategyForm.data.strategy_id === 0} loading={strategyForm.processing}>
+                        Enregistrer
+                      </Button>
+                      <Button type="button" variant="secondary" size="sm" onClick={cancelEdit}>
+                        Annuler
+                      </Button>
+                    </div>
+                  </form>
+                )}
+
+                {/* Rhythm editing */}
+                {editingField === 'rhythm' && (
+                  <form onSubmit={handleRhythmSubmit} className="space-y-3">
+                    <label className="block">
+                      <span className="text-[13px] text-text-secondary">Rythme de publication</span>
+                      <select
+                        value={rhythmForm.data.publication_rhythm}
+                        onChange={(e) => rhythmForm.setData('publication_rhythm', e.target.value)}
+                        className="w-full mt-1 px-3 py-2.5 bg-bg-subtle border border-border rounded-xl text-[14px] text-text focus:outline-none focus:ring-2 focus:ring-text/20 focus:border-text/30"
+                      >
+                        {publicationRhythms.map((rhythm) => (
+                          <option key={rhythm.value} value={rhythm.value}>
+                            {rhythm.label} - {rhythm.description}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    {rhythmForm.errors.publication_rhythm && (
+                      <p className="text-[13px] text-red-500">{rhythmForm.errors.publication_rhythm}</p>
+                    )}
+                    <div className="flex gap-2">
+                      <Button type="submit" size="sm" loading={rhythmForm.processing}>
+                        Enregistrer
+                      </Button>
+                      <Button type="button" variant="secondary" size="sm" onClick={cancelEdit}>
+                        Annuler
+                      </Button>
+                    </div>
+                  </form>
+                )}
+
+                {/* Type editing */}
+                {editingField === 'type' && (
+                  <form onSubmit={handleTypeSubmit} className="space-y-3">
+                    <label className="block">
+                      <span className="text-[13px] text-text-secondary">Type de restaurant</span>
+                      <select
+                        value={typeForm.data.type}
+                        onChange={(e) => typeForm.setData('type', e.target.value)}
+                        className="w-full mt-1 px-3 py-2.5 bg-bg-subtle border border-border rounded-xl text-[14px] text-text focus:outline-none focus:ring-2 focus:ring-text/20 focus:border-text/30"
+                      >
+                        {restaurantTypes.map((type) => (
+                          <option key={type.value} value={type.value}>
+                            {type.icon} {type.label}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    {typeForm.errors.type && (
+                      <p className="text-[13px] text-red-500">{typeForm.errors.type}</p>
+                    )}
+                    <div className="flex gap-2">
+                      <Button type="submit" size="sm" loading={typeForm.processing}>
+                        Enregistrer
+                      </Button>
+                      <Button type="button" variant="secondary" size="sm" onClick={cancelEdit}>
+                        Annuler
+                      </Button>
+                    </div>
+                  </form>
+                )}
+
+                {/* Name editing */}
+                {editingField === 'name' && (
                   <form onSubmit={handleNameSubmit} className="space-y-3">
                     <label className="block">
                       <span className="text-[13px] text-text-secondary">Nom du restaurant</span>
@@ -339,443 +515,254 @@ export default function Profile({
                       </Button>
                     </div>
                   </form>
-                ) : (
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="text-[13px] text-text-secondary block">Nom</span>
-                      <span className="text-[14px] font-medium text-text">{restaurant.name}</span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setEditingField('name')}
-                      className="text-[13px] text-text-secondary hover:text-text transition-colors"
-                    >
-                      Modifier
-                    </button>
-                  </div>
                 )}
 
-                {/* Restaurant Type */}
-                <div className="mt-4 pt-4 border-t border-border">
-                  {editingField === 'type' ? (
-                    <form onSubmit={handleTypeSubmit} className="space-y-3">
-                      <label className="block">
-                        <span className="text-[13px] text-text-secondary">Type de restaurant</span>
-                        <select
-                          value={typeForm.data.type}
-                          onChange={(e) => typeForm.setData('type', e.target.value)}
-                          className="w-full mt-1 px-3 py-2.5 bg-bg-subtle border border-border rounded-xl text-[14px] text-text focus:outline-none focus:ring-2 focus:ring-text/20 focus:border-text/30"
-                        >
-                          {restaurantTypes.map((type) => (
-                            <option key={type.value} value={type.value}>
-                              {type.icon} {type.label}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                      {typeForm.errors.type && (
-                        <p className="text-[13px] text-red-500">{typeForm.errors.type}</p>
-                      )}
-                      <div className="flex gap-2">
-                        <Button type="submit" size="sm" loading={typeForm.processing}>
-                          Enregistrer
-                        </Button>
-                        <Button type="button" variant="secondary" size="sm" onClick={cancelEdit}>
-                          Annuler
-                        </Button>
-                      </div>
-                    </form>
-                  ) : (
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <span className="text-[13px] text-text-secondary block">Type</span>
-                        <span className="text-[14px] font-medium text-text">
-                          {TYPE_LABELS[restaurant.type] || restaurant.type}
-                        </span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setEditingField('type')}
-                        className="text-[13px] text-text-secondary hover:text-text transition-colors"
-                      >
-                        Modifier
-                      </button>
+                {/* Email editing */}
+                {editingField === 'email' && (
+                  <form onSubmit={handleEmailSubmit} className="space-y-3">
+                    <label className="block">
+                      <span className="text-[13px] text-text-secondary">Email</span>
+                      <input
+                        type="email"
+                        value={emailForm.data.email}
+                        onChange={(e) => emailForm.setData('email', e.target.value)}
+                        className="w-full mt-1 px-3 py-2.5 bg-bg-subtle border border-border rounded-xl text-[14px] text-text focus:outline-none focus:ring-2 focus:ring-text/20 focus:border-text/30"
+                        autoFocus
+                      />
+                    </label>
+                    {emailForm.errors.email && (
+                      <p className="text-[13px] text-red-500">{emailForm.errors.email}</p>
+                    )}
+                    <div className="flex gap-2">
+                      <Button type="submit" size="sm" loading={emailForm.processing}>
+                        Enregistrer
+                      </Button>
+                      <Button type="button" variant="secondary" size="sm" onClick={cancelEdit}>
+                        Annuler
+                      </Button>
                     </div>
-                  )}
-                </div>
+                  </form>
+                )}
 
-                {/* Publication Rhythm */}
-                <div className="mt-4 pt-4 border-t border-border">
-                  {editingField === 'rhythm' ? (
-                    <form onSubmit={handleRhythmSubmit} className="space-y-3">
-                      <label className="block">
-                        <span className="text-[13px] text-text-secondary">Rythme de publication</span>
-                        <select
-                          value={rhythmForm.data.publication_rhythm}
-                          onChange={(e) => rhythmForm.setData('publication_rhythm', e.target.value)}
-                          className="w-full mt-1 px-3 py-2.5 bg-bg-subtle border border-border rounded-xl text-[14px] text-text focus:outline-none focus:ring-2 focus:ring-text/20 focus:border-text/30"
-                        >
-                          {publicationRhythms.map((rhythm) => (
-                            <option key={rhythm.value} value={rhythm.value}>
-                              {rhythm.label} - {rhythm.description}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                      {rhythmForm.errors.publication_rhythm && (
-                        <p className="text-[13px] text-red-500">{rhythmForm.errors.publication_rhythm}</p>
-                      )}
-                      <div className="flex gap-2">
-                        <Button type="submit" size="sm" loading={rhythmForm.processing}>
-                          Enregistrer
-                        </Button>
-                        <Button type="button" variant="secondary" size="sm" onClick={cancelEdit}>
-                          Annuler
-                        </Button>
-                      </div>
-                    </form>
-                  ) : (
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <span className="text-[13px] text-text-secondary block">Rythme</span>
-                        <span className="text-[14px] font-medium text-text">
-                          {restaurant.publicationRhythm
-                            ? RHYTHM_LABELS[restaurant.publicationRhythm] || restaurant.publicationRhythm
-                            : 'Non défini'}
-                        </span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setEditingField('rhythm')}
-                        className="text-[13px] text-text-secondary hover:text-text transition-colors"
-                      >
-                        Modifier
-                      </button>
-                    </div>
-                  )}
-                </div>
+                {/* Notification time editing (shown when subscribed and user taps pill) */}
+                {notifError && <p className="text-[12px] text-red-500 mt-2">{notifError}</p>}
               </div>
-            </Card>
+            )}
+
+            {/* Notification time selector when subscribed */}
+            {isSupported && isSubscribed && editingField === null && (
+              <div className="mt-2 flex items-center gap-2">
+                <span className="text-[12px] text-text-muted">Rappel :</span>
+                <select
+                  value={selectedTime}
+                  onChange={(e) => handleTimeChange(e.target.value)}
+                  className="px-2 py-1 bg-bg-subtle border border-border rounded-lg text-[12px] text-text focus:outline-none"
+                >
+                  <option value="08:00">08:00</option>
+                  <option value="09:00">09:00</option>
+                  <option value="10:00">10:00</option>
+                  <option value="11:00">11:00</option>
+                  <option value="12:00">12:00</option>
+                  <option value="14:00">14:00</option>
+                  <option value="16:00">16:00</option>
+                  <option value="18:00">18:00</option>
+                </select>
+              </div>
+            )}
           </div>
         )}
 
-        {/* Section 3: Strategy */}
-        {restaurant && (
-          <div>
-            <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-2 px-1">
-              Objectif
-            </p>
-            <Card variant="bordered">
-              {editingField === 'strategy' ? (
-                <form onSubmit={handleStrategySubmit} className="space-y-3">
-                  <label className="block">
-                    <span className="text-[13px] text-text-secondary">Choisir un objectif</span>
-                    <select
-                      value={strategyForm.data.strategy_id}
-                      onChange={(e) => strategyForm.setData('strategy_id', Number(e.target.value))}
-                      className="w-full mt-1 px-3 py-2.5 bg-bg-subtle border border-border rounded-xl text-[14px] text-text focus:outline-none focus:ring-2 focus:ring-text/20 focus:border-text/30"
-                    >
-                      <option value={0} disabled>Sélectionner un objectif</option>
-                      {strategies.map((s) => (
-                        <option key={s.id} value={s.id}>
-                          {s.icon} {s.name}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  {strategyForm.errors.strategy_id && (
-                    <p className="text-[13px] text-red-500">{strategyForm.errors.strategy_id}</p>
-                  )}
-                  <div className="flex gap-2">
-                    <Button type="submit" size="sm" disabled={strategyForm.processing || strategyForm.data.strategy_id === 0} loading={strategyForm.processing}>
-                      Enregistrer
-                    </Button>
-                    <Button type="button" variant="secondary" size="sm" onClick={cancelEdit}>
-                      Annuler
-                    </Button>
-                  </div>
-                </form>
-              ) : (
+        {/* ===== ZONE 3: Liens navigables ===== */}
+        <div className="mt-6">
+          <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-2.5 px-1">
+            Compte
+          </p>
+
+          <div className="bg-bg-card border border-border rounded-2xl overflow-hidden">
+            {/* Mon abonnement */}
+            <Link
+              href="/subscription"
+              className="flex items-center justify-between py-3.5 px-4 border-b border-border-light"
+            >
+              <div className="flex items-center gap-2.5">
+                <span className="text-[14px] font-medium text-text">Mon abonnement</span>
+                {subscription?.status === 'trialing' && (
+                  <span className="bg-amber-100 text-amber-700 text-[11px] font-semibold px-2 py-0.5 rounded-full">
+                    Essai {subscription.trialDaysRemaining}j
+                  </span>
+                )}
+              </div>
+              <ChevronRight size={16} className="text-text-muted" />
+            </Link>
+
+            {/* Compte Instagram */}
+            <Link
+              href="/settings/instagram"
+              className="flex items-center justify-between py-3.5 px-4 border-b border-border-light"
+            >
+              <div className="flex items-center gap-2.5">
+                <span className="text-[14px] font-medium text-text">Compte Instagram</span>
+                <span
+                  className={`w-2 h-2 rounded-full ${
+                    instagram?.status === 'connected'
+                      ? 'bg-green-500'
+                      : 'bg-red-500'
+                  }`}
+                />
+              </div>
+              <ChevronRight size={16} className="text-text-muted" />
+            </Link>
+
+            {/* Préférences email */}
+            <button
+              type="button"
+              onClick={() => setEmailPrefsExpanded(!emailPrefsExpanded)}
+              className="w-full flex items-center justify-between py-3.5 px-4 border-b border-border-light text-left"
+            >
+              <span className="text-[14px] font-medium text-text">Préférences email</span>
+              <ChevronRight
+                size={16}
+                className={`text-text-muted transition-transform ${emailPrefsExpanded ? 'rotate-90' : ''}`}
+              />
+            </button>
+
+            {emailPrefsExpanded && (
+              <div className="px-4 py-3 space-y-3 border-b border-border-light bg-bg-subtle/50">
+                {/* Email: Daily Mission */}
                 <div className="flex items-center justify-between">
                   <div>
-                    <span className="text-[13px] text-text-secondary block">Objectif actuel</span>
-                    {strategy ? (
-                      <span className="text-[14px] font-medium text-text flex items-center gap-1.5">
-                        <span>{strategy.icon}</span>
-                        {strategy.name}
-                      </span>
-                    ) : (
-                      <span className="text-[14px] text-text-muted italic">Non défini</span>
-                    )}
+                    <p className="text-[13px] font-medium text-text">Mission quotidienne</p>
+                    <p className="text-[11px] text-text-muted">Rappel par email</p>
                   </div>
                   <button
-                    type="button"
-                    onClick={() => {
-                      strategyForm.setData('strategy_id', strategy?.id || 0)
-                      setEditingField('strategy')
-                    }}
-                    className="text-[13px] text-text-secondary hover:text-text transition-colors"
+                    onClick={() => updateEmailPreference('dailyMission', !emailDailyMission)}
+                    disabled={emailPrefLoading}
+                    className={`relative w-[44px] h-[24px] rounded-full transition-colors ${
+                      emailDailyMission ? 'bg-text' : 'bg-neutral-300'
+                    }`}
                   >
-                    Modifier
+                    <span
+                      className={`absolute top-[2px] left-[2px] w-[20px] h-[20px] rounded-full bg-white transition-transform shadow-sm ${
+                        emailDailyMission ? 'translate-x-[20px]' : ''
+                      }`}
+                    />
                   </button>
                 </div>
-              )}
-            </Card>
-          </div>
-        )}
 
-        {/* Section 4: Instagram */}
-        <div>
-          <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-2 px-1">
-            Instagram
-          </p>
-          <Card variant="bordered">
-            {instagram ? (
-              <Link href="/settings/instagram" className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  {instagram.profilePictureUrl ? (
-                    <img
-                      src={instagram.profilePictureUrl}
-                      alt={instagram.username}
-                      className="w-9 h-9 rounded-xl object-cover"
-                    />
-                  ) : (
-                    <div className="w-9 h-9 bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 rounded-xl flex items-center justify-center">
-                      <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069z" />
-                      </svg>
-                    </div>
-                  )}
+                {/* Email: Weekly Summary */}
+                <div className="flex items-center justify-between pt-2 border-t border-border">
                   <div>
-                    <span className="text-[14px] font-medium text-text block">@{instagram.username}</span>
-                    <div className="flex items-center gap-1.5">
-                      <span
-                        className={`w-1.5 h-1.5 rounded-full ${
-                          instagram.status === 'connected'
-                            ? 'bg-green-500'
-                            : instagram.status === 'error'
-                              ? 'bg-red-500'
-                              : 'bg-yellow-500'
-                        }`}
-                      />
-                      <span className="text-[12px] text-text-muted">
-                        {instagram.status === 'connected'
-                          ? 'Connecté'
-                          : instagram.status === 'error'
-                            ? 'Erreur'
-                            : 'Déconnecté'}
-                      </span>
-                    </div>
+                    <p className="text-[13px] font-medium text-text">Bilan hebdomadaire</p>
+                    <p className="text-[11px] text-text-muted">Analyse IA de votre semaine</p>
                   </div>
-                </div>
-                <ChevronRight size={16} className="text-text-muted" />
-              </Link>
-            ) : (
-              <Link href="/settings/instagram" className="flex items-center justify-between">
-                <span className="text-[14px] text-text-secondary">Connecter Instagram</span>
-                <ChevronRight size={16} className="text-text-muted" />
-              </Link>
-            )}
-          </Card>
-        </div>
-
-        {/* Section 5: Notifications + Emails */}
-        <div>
-          <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-2 px-1">
-            Notifications
-          </p>
-          <Card variant="bordered">
-            <div className="space-y-0">
-              {/* Push notifications */}
-              {isSupported && (
-                <>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-[14px] font-medium text-text">Rappels quotidiens</p>
-                      <p className="text-[12px] text-text-muted">{isSubscribed ? 'Activés' : 'Désactivés'}</p>
-                    </div>
-                    <button
-                      onClick={handleNotificationToggle}
-                      disabled={notifLoading}
-                      className={`relative w-[44px] h-[24px] rounded-full transition-colors ${
-                        isSubscribed ? 'bg-text' : 'bg-neutral-300'
+                  <button
+                    onClick={() => updateEmailPreference('weeklySummary', !emailWeeklySummary)}
+                    disabled={emailPrefLoading}
+                    className={`relative w-[44px] h-[24px] rounded-full transition-colors ${
+                      emailWeeklySummary ? 'bg-text' : 'bg-neutral-300'
+                    }`}
+                  >
+                    <span
+                      className={`absolute top-[2px] left-[2px] w-[20px] h-[20px] rounded-full bg-white transition-transform shadow-sm ${
+                        emailWeeklySummary ? 'translate-x-[20px]' : ''
                       }`}
-                    >
-                      <span
-                        className={`absolute top-[2px] left-[2px] w-[20px] h-[20px] rounded-full bg-white transition-transform shadow-sm ${
-                          isSubscribed ? 'translate-x-[20px]' : ''
-                        }`}
-                      />
-                    </button>
+                    />
+                  </button>
+                </div>
+
+                {/* Email: Account Changes */}
+                <div className="flex items-center justify-between pt-2 border-t border-border">
+                  <div>
+                    <p className="text-[13px] font-medium text-text">Modifications du compte</p>
+                    <p className="text-[11px] text-text-muted">Alertes de sécurité</p>
                   </div>
-
-                  {isSubscribed && (
-                    <div className="mt-3 pt-3 border-t border-border">
-                      <label className="flex items-center justify-between">
-                        <span className="text-[13px] text-text-secondary">Heure de rappel</span>
-                        <select
-                          value={selectedTime}
-                          onChange={(e) => handleTimeChange(e.target.value)}
-                          className="px-3 py-1.5 bg-bg-subtle border border-border rounded-lg text-[13px] text-text focus:outline-none"
-                        >
-                          <option value="08:00">08:00</option>
-                          <option value="09:00">09:00</option>
-                          <option value="10:00">10:00</option>
-                          <option value="11:00">11:00</option>
-                          <option value="12:00">12:00</option>
-                          <option value="14:00">14:00</option>
-                          <option value="16:00">16:00</option>
-                          <option value="18:00">18:00</option>
-                        </select>
-                      </label>
-                    </div>
-                  )}
-
-                  {notifError && <p className="text-[12px] text-red-500 mt-2">{notifError}</p>}
-
-                  <div className="my-4 border-t border-border" />
-                </>
-              )}
-
-              {/* Email: Daily Mission */}
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-[14px] font-medium text-text">Mission quotidienne</p>
-                  <p className="text-[12px] text-text-muted">Rappel par email</p>
-                </div>
-                <button
-                  onClick={() => updateEmailPreference('dailyMission', !emailDailyMission)}
-                  disabled={emailPrefLoading}
-                  className={`relative w-[44px] h-[24px] rounded-full transition-colors ${
-                    emailDailyMission ? 'bg-text' : 'bg-neutral-300'
-                  }`}
-                >
-                  <span
-                    className={`absolute top-[2px] left-[2px] w-[20px] h-[20px] rounded-full bg-white transition-transform shadow-sm ${
-                      emailDailyMission ? 'translate-x-[20px]' : ''
+                  <button
+                    onClick={() => updateEmailPreference('accountChanges', !emailAccountChanges)}
+                    disabled={emailPrefLoading}
+                    className={`relative w-[44px] h-[24px] rounded-full transition-colors ${
+                      emailAccountChanges ? 'bg-text' : 'bg-neutral-300'
                     }`}
-                  />
-                </button>
-              </div>
-
-              {/* Email: Weekly Summary */}
-              <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
-                <div>
-                  <p className="text-[14px] font-medium text-text">Bilan hebdomadaire</p>
-                  <p className="text-[12px] text-text-muted">Analyse IA de votre semaine</p>
+                  >
+                    <span
+                      className={`absolute top-[2px] left-[2px] w-[20px] h-[20px] rounded-full bg-white transition-transform shadow-sm ${
+                        emailAccountChanges ? 'translate-x-[20px]' : ''
+                      }`}
+                    />
+                  </button>
                 </div>
-                <button
-                  onClick={() => updateEmailPreference('weeklySummary', !emailWeeklySummary)}
-                  disabled={emailPrefLoading}
-                  className={`relative w-[44px] h-[24px] rounded-full transition-colors ${
-                    emailWeeklySummary ? 'bg-text' : 'bg-neutral-300'
-                  }`}
-                >
-                  <span
-                    className={`absolute top-[2px] left-[2px] w-[20px] h-[20px] rounded-full bg-white transition-transform shadow-sm ${
-                      emailWeeklySummary ? 'translate-x-[20px]' : ''
-                    }`}
-                  />
-                </button>
               </div>
+            )}
 
-              {/* Email: Account Changes */}
-              <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
-                <div>
-                  <p className="text-[14px] font-medium text-text">Modifications du compte</p>
-                  <p className="text-[12px] text-text-muted">Alertes de sécurité</p>
-                </div>
-                <button
-                  onClick={() => updateEmailPreference('accountChanges', !emailAccountChanges)}
-                  disabled={emailPrefLoading}
-                  className={`relative w-[44px] h-[24px] rounded-full transition-colors ${
-                    emailAccountChanges ? 'bg-text' : 'bg-neutral-300'
-                  }`}
-                >
-                  <span
-                    className={`absolute top-[2px] left-[2px] w-[20px] h-[20px] rounded-full bg-white transition-transform shadow-sm ${
-                      emailAccountChanges ? 'translate-x-[20px]' : ''
-                    }`}
-                  />
-                </button>
+            {/* Modifier email */}
+            <button
+              type="button"
+              onClick={() => setEditingField('email')}
+              className="w-full flex items-center justify-between py-3.5 px-4 border-b border-border-light text-left"
+            >
+              <div>
+                <span className="text-[14px] font-medium text-text block">Email</span>
+                <span className="text-[12px] text-text-muted">{user.email}</span>
               </div>
-            </div>
-          </Card>
-        </div>
+              <ChevronRight size={16} className="text-text-muted" />
+            </button>
 
-        {/* Section 6: Subscription */}
-        <div>
-          <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-2 px-1">
-            Abonnement
-          </p>
-          <Link href="/subscription" className="block">
-            <Card variant="bordered">
-              <div className="flex items-center justify-between">
+            {/* Modifier nom restaurant */}
+            {restaurant && (
+              <button
+                type="button"
+                onClick={() => setEditingField('name')}
+                className="w-full flex items-center justify-between py-3.5 px-4 border-b border-border-light text-left"
+              >
                 <div>
-                  <p className="text-[14px] font-medium text-text">Mon abonnement</p>
-                  <p className="text-[12px] text-text-muted">
-                    {subscription?.status === 'trialing'
-                      ? `Période d'essai (${subscription.trialDaysRemaining}j restants)`
-                      : subscription?.status === 'active'
-                        ? 'Abonnement actif'
-                        : 'Gérer mon abonnement'}
-                  </p>
+                  <span className="text-[14px] font-medium text-text block">Nom du restaurant</span>
+                  <span className="text-[12px] text-text-muted">{restaurant.name}</span>
                 </div>
                 <ChevronRight size={16} className="text-text-muted" />
+              </button>
+            )}
+
+            {/* Installer l'app */}
+            {(isInstallable || isIOS) && !isInstalled && (
+              <button
+                type="button"
+                onClick={isIOS ? undefined : install}
+                className="w-full flex items-center justify-between py-3.5 px-4 text-left"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Download size={15} className="text-text-muted" />
+                  <div>
+                    <span className="text-[14px] font-medium text-text block">Installer l'app</span>
+                    <span className="text-[12px] text-text-muted">
+                      {isIOS
+                        ? "Partager > Sur l'écran d'accueil"
+                        : "Ajouter à l'écran d'accueil"}
+                    </span>
+                  </div>
+                </div>
+                <ChevronRight size={16} className="text-text-muted" />
+              </button>
+            )}
+
+            {isInstalled && (
+              <div className="flex items-center gap-2.5 py-3.5 px-4">
+                <CheckCircle size={15} className="text-green-500" />
+                <span className="text-[14px] text-text-secondary">Application installée</span>
               </div>
-            </Card>
-          </Link>
+            )}
+          </div>
         </div>
 
-        {/* Section 7: PWA Install */}
-        {(isInstallable || isIOS) && !isInstalled && (
-          <div>
-            <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-2 px-1">
-              Application
-            </p>
-            <Card variant="bordered">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-[14px] font-medium text-text">Installer l'application</p>
-                  <p className="text-[12px] text-text-muted">
-                    {isIOS
-                      ? "Partager > Sur l'écran d'accueil"
-                      : "Ajouter à l'écran d'accueil"}
-                  </p>
-                </div>
-                {!isIOS && (
-                  <Button onClick={install} size="sm">
-                    Installer
-                  </Button>
-                )}
-              </div>
-            </Card>
-          </div>
-        )}
-
-        {isInstalled && (
-          <div>
-            <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-2 px-1">
-              Application
-            </p>
-            <Card variant="bordered">
-              <div className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                <p className="text-[14px] text-text-secondary">Application installée</p>
-              </div>
-            </Card>
-          </div>
-        )}
-
-        {/* Logout */}
-        <div className="pt-2">
+        {/* ===== ZONE 4: Déconnexion ===== */}
+        <div className="mt-8">
           <button
             onClick={handleLogout}
             disabled={logoutForm.processing}
-            className="flex items-center gap-2 text-[14px] text-text-secondary hover:text-text transition-colors mx-auto"
+            className="text-[14px] text-text-muted text-center w-full"
           >
-            <LogOut size={15} />
-            <span>Déconnexion</span>
+            <span className="flex items-center justify-center gap-1.5">
+              <LogOut size={14} />
+              Déconnexion
+            </span>
           </button>
         </div>
       </div>

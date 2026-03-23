@@ -1,7 +1,8 @@
 import { Head, Link } from '@inertiajs/react'
 import { useState, useEffect, useCallback, useMemo } from 'react'
+import { ChevronDown, ChevronUp, ArrowUpRight, ArrowDownRight } from 'lucide-react'
 import { AppLayout } from '~/components/layout'
-import { Card, PopoteMessage } from '~/components/ui'
+import { Card, Button } from '~/components/ui'
 
 interface KeyMetric {
   type: string
@@ -89,6 +90,46 @@ function getXsrfToken(): string | null {
   return match ? decodeURIComponent(match[1]) : null
 }
 
+function Sparkline({ data, maxValue }: { data: EvolutionPoint[]; maxValue: number }) {
+  if (data.length < 2) return null
+
+  const width = 300
+  const height = 60
+  const padding = 4
+
+  const points = data.map((point, i) => {
+    const x = padding + (i / (data.length - 1)) * (width - padding * 2)
+    const y = height - padding - (point.value / maxValue) * (height - padding * 2)
+    return { x, y }
+  })
+
+  // Build smooth cubic bezier path
+  let d = `M ${points[0].x} ${points[0].y}`
+  for (let i = 0; i < points.length - 1; i++) {
+    const current = points[i]
+    const next = points[i + 1]
+    const cpx = (current.x + next.x) / 2
+    d += ` C ${cpx} ${current.y}, ${cpx} ${next.y}, ${next.x} ${next.y}`
+  }
+
+  // Fill area path
+  const lastPoint = points[points.length - 1]
+  const fillD = `${d} L ${lastPoint.x} ${height} L ${points[0].x} ${height} Z`
+
+  return (
+    <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-[60px]" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="sparkFill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#dd2c0c" stopOpacity="0.15" />
+          <stop offset="100%" stopColor="#dd2c0c" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path d={fillD} fill="url(#sparkFill)" />
+      <path d={d} fill="none" stroke="#dd2c0c" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
 export default function StatisticsIndex({ keyMetrics, summary, comparison, instagram: initialInstagram, instagramComparison: initialInstagramComparison }: Props) {
   const [selectedPeriod, setSelectedPeriod] = useState<'7' | '30' | '90'>('30')
   const [evolution, setEvolution] = useState<EvolutionPoint[]>([])
@@ -98,6 +139,7 @@ export default function StatisticsIndex({ keyMetrics, summary, comparison, insta
   const [instagram, setInstagram] = useState<InstagramStats | null>(initialInstagram)
   const [instagramComparison, setInstagramComparison] = useState<InstagramComparison | null>(initialInstagramComparison)
   const [isRefreshingInstagram, setIsRefreshingInstagram] = useState(false)
+  const [detailOpen, setDetailOpen] = useState(false)
 
   // ─── useMemo hooks ────────────────────────────────────────────────────────────
   const chartData = useMemo(() => evolution.slice(-CHART_DISPLAY_DAYS), [evolution])
@@ -106,6 +148,14 @@ export default function StatisticsIndex({ keyMetrics, summary, comparison, insta
     if (evolution.length === 0) return 1
     return Math.max(...evolution.map((p) => p.value), 1)
   }, [evolution])
+
+  const trendIsUp = useMemo(() => {
+    if (chartData.length < 2) return true
+    const mid = Math.floor(chartData.length / 2)
+    const firstHalf = chartData.slice(0, mid).reduce((s, p) => s + p.value, 0) / mid
+    const secondHalf = chartData.slice(mid).reduce((s, p) => s + p.value, 0) / (chartData.length - mid)
+    return secondHalf >= firstHalf
+  }, [chartData])
 
   // ─── useCallback hooks ────────────────────────────────────────────────────────
   const refreshInstagramStats = useCallback(async () => {
@@ -195,97 +245,150 @@ export default function StatisticsIndex({ keyMetrics, summary, comparison, insta
     }
   }, [selectedPeriod])
 
+  const sentimentEmoji = interpretation?.sentiment === 'positive' ? '\u{1F680}' : interpretation?.sentiment === 'negative' ? '\u{1F4AA}' : '\u{1F44D}'
+
   return (
     <AppLayout>
       <Head title="Mes Statistiques - Le Phare" />
 
-      <div className="pt-6 pb-8">
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-[22px] font-bold text-text">Mes stats</h1>
-          <p className="text-[14px] text-text-secondary mt-1">
-            Suivez votre progression
-          </p>
-        </div>
+      <div className="pt-6 pb-8 space-y-4">
 
-        {/* Popote AI Interpretation */}
-        {isLoadingInterpretation ? (
-          <Card className="mb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-white border border-border flex items-center justify-center">
-                <img src="/images/popote.png" alt="Popote" className="w-full h-full object-contain p-0.5" />
+        {/* ─── Zone 1 — Le Verdict (hero) ─────────────────────────────── */}
+        <div className="bg-bg-card rounded-3xl shadow-md p-5">
+          {isLoadingInterpretation ? (
+            <div className="flex flex-col items-center gap-3 py-4">
+              <div className="w-8 h-8 rounded-full overflow-hidden border border-border">
+                <img src="/images/popote.png" alt="Popote" className="w-full h-full object-contain" />
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 border-2 border-text border-t-transparent rounded-full animate-spin" />
                 <span className="text-[13px] text-text-muted">Popote analyse tes stats...</span>
               </div>
             </div>
-          </Card>
-        ) : (
-          <div className="mb-6">
-            <PopoteMessage
-              message={
-                interpretation?.text ||
-                (instagram
-                  ? `Bienvenue ! Avec ${(instagram.followers?.current ?? 0).toLocaleString('fr-FR')} abonnés et ${(instagram.engagement?.impressions ?? 0).toLocaleString('fr-FR')} impressions, tu as une belle base pour progresser ensemble.`
-                  : "Continue à utiliser l'app pour que je puisse t'analyser tes stats !")
-              }
-              variant={interpretation?.sentiment === 'positive' ? 'happy' : 'default'}
-              size="md"
-            />
-          </div>
-        )}
-
-        {/* Key Metrics */}
-        <div className="grid grid-cols-3 gap-2 mb-6">
-          {keyMetrics.map((metric) => (
-            <Card key={metric.type} className="text-center">
-              <p className="text-[22px] font-bold text-text">{metric.value}</p>
-              <p className="text-[11px] text-text-muted mt-0.5">{metric.label}</p>
-            </Card>
-          ))}
+          ) : (
+            <div className="flex flex-col items-center gap-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full overflow-hidden border border-border">
+                  <img src="/images/popote.png" alt="Popote" className="w-full h-full object-contain" />
+                </div>
+                <span className="text-[11px] font-semibold text-text-muted uppercase tracking-wider">Bilan</span>
+              </div>
+              <p className="text-[17px] font-bold text-text text-center leading-snug">
+                {interpretation?.text ||
+                  (instagram
+                    ? `Avec ${(instagram.followers?.current ?? 0).toLocaleString('fr-FR')} abonnés et ${(instagram.engagement?.impressions ?? 0).toLocaleString('fr-FR')} impressions, tu as une belle base pour progresser.`
+                    : "Continue tes missions pour que je puisse analyser tes stats !")}
+              </p>
+              <span className="text-[28px]">{sentimentEmoji}</span>
+            </div>
+          )}
         </div>
 
-        {/* Comparison card */}
-        <Card variant="bordered" className="mb-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-[12px] text-text-muted">Cette semaine</p>
-              <p className="text-[20px] font-bold text-text">{comparison.current} <span className="text-[13px] font-normal text-text-secondary">missions</span></p>
+        {/* ─── Zone 2 — 3 chiffres clés ───────────────────────────────── */}
+        <div className="grid grid-cols-3 gap-2">
+          {/* Abonnés */}
+          <div className="bg-bg-card rounded-2xl p-3 text-center shadow-xs">
+            <p className="text-[22px] font-black text-text">
+              {instagram ? (instagram.followers?.current ?? 0).toLocaleString('fr-FR') : '—'}
+            </p>
+            <p className="text-[11px] text-text-muted mt-0.5">Abonnés</p>
+            {instagramComparison && (instagramComparison.changes?.followersPercent ?? 0) !== 0 && (
+              <div className={`flex items-center justify-center gap-0.5 mt-1 ${(instagramComparison.changes?.followersPercent ?? 0) >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+                {(instagramComparison.changes?.followersPercent ?? 0) >= 0
+                  ? <ArrowUpRight size={12} />
+                  : <ArrowDownRight size={12} />}
+                <span className="text-[11px] font-medium">
+                  {(instagramComparison.changes?.followersPercent ?? 0) >= 0 ? '+' : ''}{instagramComparison.changes?.followersPercent ?? 0}%
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Portée */}
+          <div className="bg-bg-card rounded-2xl p-3 text-center shadow-xs">
+            <p className="text-[22px] font-black text-text">
+              {instagram ? (instagram.engagement?.reach ?? 0).toLocaleString('fr-FR') : '—'}
+            </p>
+            <p className="text-[11px] text-text-muted mt-0.5">Portée</p>
+            {instagramComparison && (instagramComparison.changes?.reachPercent ?? 0) !== 0 && (
+              <div className={`flex items-center justify-center gap-0.5 mt-1 ${(instagramComparison.changes?.reachPercent ?? 0) >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+                {(instagramComparison.changes?.reachPercent ?? 0) >= 0
+                  ? <ArrowUpRight size={12} />
+                  : <ArrowDownRight size={12} />}
+                <span className="text-[11px] font-medium">
+                  {(instagramComparison.changes?.reachPercent ?? 0) >= 0 ? '+' : ''}{instagramComparison.changes?.reachPercent ?? 0}%
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Engagement % */}
+          <div className="bg-bg-card rounded-2xl p-3 text-center shadow-xs">
+            <p className="text-[22px] font-black text-text">
+              {instagram ? `${Number(instagram.engagement?.averageRate ?? 0).toFixed(1)}%` : '—'}
+            </p>
+            <p className="text-[11px] text-text-muted mt-0.5">Engagement</p>
+            {instagramComparison && (instagramComparison.changes?.engagementRate ?? 0) !== 0 && (
+              <div className={`flex items-center justify-center gap-0.5 mt-1 ${(instagramComparison.changes?.engagementRate ?? 0) >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+                {(instagramComparison.changes?.engagementRate ?? 0) >= 0
+                  ? <ArrowUpRight size={12} />
+                  : <ArrowDownRight size={12} />}
+                <span className="text-[11px] font-medium">
+                  {(instagramComparison.changes?.engagementRate ?? 0) >= 0 ? '+' : ''}{Number(instagramComparison.changes?.engagementRate ?? 0).toFixed(1)}%
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ─── Zone 3 — Conseil Popote ─────────────────────────────────── */}
+        <div className="bg-primary-50 border border-primary-100 rounded-2xl p-4">
+          <div className="flex items-start gap-3">
+            <div className="w-8 h-8 rounded-full overflow-hidden border border-primary-100 shrink-0">
+              <img src="/images/popote.png" alt="Popote" className="w-full h-full object-contain" />
             </div>
-            <div className="text-right">
-              {comparison.change >= 0 ? (
-                <span className="text-[14px] font-semibold text-emerald-600">
-                  +{comparison.changePercent}%
-                </span>
-              ) : (
-                <span className="text-[14px] font-semibold text-red-500">
-                  {comparison.changePercent}%
-                </span>
-              )}
-              <p className="text-[11px] text-text-muted">vs semaine passée</p>
+            <div className="flex-1 min-w-0">
+              <p className="text-[13px] text-text leading-relaxed">
+                {instagram
+                  ? Number(instagram.engagement?.averageRate ?? 0) >= 3
+                    ? 'Ton engagement est excellent ! Continue de publier régulièrement pour garder ce rythme.'
+                    : Number(instagram.engagement?.averageRate ?? 0) >= 1
+                      ? 'Ton engagement est bon. Essaie de poser plus de questions en story pour booster les interactions.'
+                      : 'Publie au moins 3 fois par semaine et réponds à chaque commentaire pour relancer ton engagement.'
+                  : 'Connecte ton compte Instagram pour recevoir des conseils personnalisés.'}
+              </p>
+              <Link href="/missions">
+                <Button variant="ghost" size="sm" className="mt-2 px-0 text-[13px] text-text-secondary">
+                  Appliquer
+                </Button>
+              </Link>
             </div>
           </div>
-        </Card>
+        </div>
 
-        {/* Instagram Stats */}
+        {/* ─── Zone 4 — Détail Instagram (accordéon) ───────────────────── */}
         {instagram && (
-          <>
-            <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-3">Instagram</p>
-            <Card className="mb-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 rounded-lg flex items-center justify-center">
-                    <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069z" />
-                    </svg>
-                  </div>
-                  <span className="text-[15px] font-semibold text-text">Instagram</span>
+          <div className="bg-bg-card rounded-2xl shadow-xs overflow-hidden">
+            <button
+              onClick={() => setDetailOpen((prev) => !prev)}
+              className="w-full flex items-center justify-between p-4 active:bg-bg-subtle transition-colors"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="w-7 h-7 bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 rounded-lg flex items-center justify-center">
+                  <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069z" />
+                  </svg>
                 </div>
+                <span className="text-[14px] font-semibold text-text">Voir le détail</span>
+              </div>
+              <div className="flex items-center gap-2">
                 <button
-                  onClick={refreshInstagramStats}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    refreshInstagramStats()
+                  }}
                   disabled={isRefreshingInstagram}
-                  className="p-2 rounded-lg hover:bg-bg-subtle transition-colors disabled:opacity-50"
+                  className="p-1.5 rounded-lg hover:bg-bg-subtle transition-colors disabled:opacity-50"
                   title="Actualiser les stats"
                 >
                   <svg
@@ -302,216 +405,129 @@ export default function StatisticsIndex({ keyMetrics, summary, comparison, insta
                     />
                   </svg>
                 </button>
+                {detailOpen ? <ChevronUp size={18} className="text-text-muted" /> : <ChevronDown size={18} className="text-text-muted" />}
               </div>
+            </button>
 
-              {/* Followers */}
-              <div className="bg-bg-subtle rounded-xl p-4 mb-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-[12px] text-text-muted">Abonnés</p>
-                    <p className="text-[26px] font-bold text-text">
-                      {(instagram.followers?.current ?? 0).toLocaleString('fr-FR')}
+            {detailOpen && (
+              <div className="px-4 pb-4 space-y-3">
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="bg-bg-subtle rounded-xl p-3 text-center">
+                    <p className="text-[18px] font-bold text-text">
+                      {(instagram.engagement?.impressions ?? 0).toLocaleString('fr-FR')}
                     </p>
-                  </div>
-                  <div className="text-right">
-                    {(instagram.followers?.growthWeekly ?? 0) >= 0 ? (
-                      <span className="text-[15px] font-semibold text-emerald-600">
-                        +{instagram.followers?.growthWeekly ?? 0}
-                      </span>
-                    ) : (
-                      <span className="text-[15px] font-semibold text-red-500">
-                        {instagram.followers?.growthWeekly ?? 0}
-                      </span>
+                    <p className="text-[11px] text-text-muted">Impressions</p>
+                    {instagramComparison && (
+                      <p className={`text-[11px] font-medium ${(instagramComparison.changes?.impressionsPercent ?? 0) >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+                        {(instagramComparison.changes?.impressionsPercent ?? 0) >= 0 ? '+' : ''}{instagramComparison.changes?.impressionsPercent ?? 0}%
+                      </p>
                     )}
-                    <p className="text-[11px] text-text-muted">cette semaine</p>
+                  </div>
+                  <div className="bg-bg-subtle rounded-xl p-3 text-center">
+                    <p className="text-[18px] font-bold text-text">
+                      {(instagram.engagement?.reach ?? 0).toLocaleString('fr-FR')}
+                    </p>
+                    <p className="text-[11px] text-text-muted">Portée</p>
+                    {instagramComparison && (
+                      <p className={`text-[11px] font-medium ${(instagramComparison.changes?.reachPercent ?? 0) >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+                        {(instagramComparison.changes?.reachPercent ?? 0) >= 0 ? '+' : ''}{instagramComparison.changes?.reachPercent ?? 0}%
+                      </p>
+                    )}
                   </div>
                 </div>
-              </div>
 
-              {/* Engagement Metrics Grid */}
-              <div className="grid grid-cols-2 gap-2 mb-3">
-                <div className="bg-bg-subtle rounded-xl p-3 text-center">
-                  <p className="text-[18px] font-bold text-text">
-                    {(instagram.engagement?.impressions ?? 0).toLocaleString('fr-FR')}
-                  </p>
-                  <p className="text-[11px] text-text-muted">Impressions</p>
-                  {instagramComparison && (
-                    <p className={`text-[11px] font-medium ${(instagramComparison.changes?.impressionsPercent ?? 0) >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
-                      {(instagramComparison.changes?.impressionsPercent ?? 0) >= 0 ? '+' : ''}{instagramComparison.changes?.impressionsPercent ?? 0}%
-                    </p>
-                  )}
-                </div>
-                <div className="bg-bg-subtle rounded-xl p-3 text-center">
-                  <p className="text-[18px] font-bold text-text">
-                    {(instagram.engagement?.reach ?? 0).toLocaleString('fr-FR')}
-                  </p>
-                  <p className="text-[11px] text-text-muted">Portée</p>
-                  {instagramComparison && (
-                    <p className={`text-[11px] font-medium ${(instagramComparison.changes?.reachPercent ?? 0) >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
-                      {(instagramComparison.changes?.reachPercent ?? 0) >= 0 ? '+' : ''}{instagramComparison.changes?.reachPercent ?? 0}%
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Engagement Details */}
-              <div className="grid grid-cols-4 gap-2 text-center mb-3">
-                <div className="py-2">
-                  <p className="text-[14px] font-bold text-text">{(instagram.engagement?.likes ?? 0).toLocaleString('fr-FR')}</p>
-                  <p className="text-[11px] text-text-muted">Likes</p>
-                </div>
-                <div className="py-2">
-                  <p className="text-[14px] font-bold text-text">{(instagram.engagement?.comments ?? 0).toLocaleString('fr-FR')}</p>
-                  <p className="text-[11px] text-text-muted">Comm.</p>
-                </div>
-                <div className="py-2">
-                  <p className="text-[14px] font-bold text-text">{(instagram.engagement?.shares ?? 0).toLocaleString('fr-FR')}</p>
-                  <p className="text-[11px] text-text-muted">Partages</p>
-                </div>
-                <div className="py-2">
-                  <p className="text-[14px] font-bold text-text">{(instagram.engagement?.saves ?? 0).toLocaleString('fr-FR')}</p>
-                  <p className="text-[11px] text-text-muted">Saves</p>
-                </div>
-              </div>
-
-              {/* Engagement Rate */}
-              <div className="bg-bg-subtle rounded-xl p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-[12px] text-text-muted">Taux d'engagement</p>
-                    <p className="text-[20px] font-bold text-text">
-                      {Number(instagram.engagement?.averageRate ?? 0).toFixed(2)}%
-                    </p>
+                <div className="grid grid-cols-4 gap-2 text-center">
+                  <div className="py-2">
+                    <p className="text-[14px] font-bold text-text">{(instagram.engagement?.likes ?? 0).toLocaleString('fr-FR')}</p>
+                    <p className="text-[11px] text-text-muted">Likes</p>
                   </div>
-                  <div className="text-right">
-                    <p className="text-[12px] text-text-secondary">
+                  <div className="py-2">
+                    <p className="text-[14px] font-bold text-text">{(instagram.engagement?.comments ?? 0).toLocaleString('fr-FR')}</p>
+                    <p className="text-[11px] text-text-muted">Comm.</p>
+                  </div>
+                  <div className="py-2">
+                    <p className="text-[14px] font-bold text-text">{(instagram.engagement?.shares ?? 0).toLocaleString('fr-FR')}</p>
+                    <p className="text-[11px] text-text-muted">Partages</p>
+                  </div>
+                  <div className="py-2">
+                    <p className="text-[14px] font-bold text-text">{(instagram.engagement?.saves ?? 0).toLocaleString('fr-FR')}</p>
+                    <p className="text-[11px] text-text-muted">Saves</p>
+                  </div>
+                </div>
+
+                <div className="bg-bg-subtle rounded-xl p-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-[12px] text-text-muted">Taux d'engagement</p>
+                      <p className="text-[18px] font-bold text-text">
+                        {Number(instagram.engagement?.averageRate ?? 0).toFixed(2)}%
+                      </p>
+                    </div>
+                    <span className="text-[12px] text-text-secondary">
                       {Number(instagram.engagement?.averageRate ?? 0) >= 3
                         ? 'Excellent'
                         : Number(instagram.engagement?.averageRate ?? 0) >= 1
                           ? 'Bon'
                           : 'A améliorer'}
-                    </p>
+                    </span>
                   </div>
                 </div>
-              </div>
 
-              {instagram.lastUpdated && (
-                <p className="text-[11px] text-text-muted mt-3 text-center">
-                  Mis à jour : {new Date(instagram.lastUpdated).toLocaleString('fr-FR')}
-                </p>
-              )}
-            </Card>
-          </>
-        )}
-
-        {/* Activity Summary */}
-        <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-3">Récapitulatif</p>
-        <Card className="mb-6">
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-[14px] text-text-secondary">Total missions</span>
-              <span className="text-[14px] font-semibold text-text">{summary.totalMissions}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-[14px] text-text-secondary">Total tutoriels</span>
-              <span className="text-[14px] font-semibold text-text">{summary.totalTutorials}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-[14px] text-text-secondary">Total publications</span>
-              <span className="text-[14px] font-semibold text-text">{summary.totalPublications}</span>
-            </div>
-          </div>
-
-          {/* Breakdown by type */}
-          <div className="mt-4 pt-4 border-t border-border">
-            <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-3">Par type</p>
-            <div className="grid grid-cols-4 gap-2 text-center">
-              <div>
-                <p className="text-[15px] font-bold text-text">{summary.byType.posts}</p>
-                <p className="text-[11px] text-text-muted">Posts</p>
+                {instagram.lastUpdated && (
+                  <p className="text-[11px] text-text-muted text-center">
+                    Mis à jour : {new Date(instagram.lastUpdated).toLocaleString('fr-FR')}
+                  </p>
+                )}
               </div>
-              <div>
-                <p className="text-[15px] font-bold text-text">{summary.byType.stories}</p>
-                <p className="text-[11px] text-text-muted">Stories</p>
-              </div>
-              <div>
-                <p className="text-[15px] font-bold text-text">{summary.byType.reels}</p>
-                <p className="text-[11px] text-text-muted">Réels</p>
-              </div>
-              <div>
-                <p className="text-[15px] font-bold text-text">{summary.byType.tutos}</p>
-                <p className="text-[11px] text-text-muted">Tutos</p>
-              </div>
-            </div>
-          </div>
-        </Card>
-
-        {/* Period selector for charts */}
-        <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-3">Évolution</p>
-        <Card className="mb-6">
-          <div className="flex gap-2 mb-4">
-            {(['7', '30', '90'] as const).map((period) => (
-              <button
-                key={period}
-                onClick={() => setSelectedPeriod(period)}
-                className={`px-4 py-1.5 rounded-xl text-[13px] font-medium transition-colors ${
-                  selectedPeriod === period
-                    ? 'bg-text text-white'
-                    : 'bg-bg-subtle text-text-secondary'
-                }`}
-              >
-                {period}j
-              </button>
-            ))}
-          </div>
-
-          {/* Evolution data display */}
-          <div className="bg-bg-subtle rounded-xl p-5 text-center">
-            {isLoadingEvolution ? (
-              <div className="flex justify-center py-4">
-                <div className="w-5 h-5 border-2 border-text border-t-transparent rounded-full animate-spin" />
-              </div>
-            ) : evolution.length > 0 ? (
-              <div>
-                <div className="flex justify-between items-end h-24 gap-1 mb-3">
-                  {chartData.map((point, index) => {
-                    const height = (point.value / maxValue) * 100
-                    return (
-                      <div
-                        key={index}
-                        className="flex-1 bg-text rounded-t"
-                        style={{ height: `${Math.max(height, 5)}%` }}
-                        title={`${point.date}: ${point.value}`}
-                      />
-                    )
-                  })}
-                </div>
-                <p className="text-[12px] text-text-muted">
-                  {evolution.length} points sur {selectedPeriod} jours
-                </p>
-              </div>
-            ) : (
-              <>
-                <p className="text-[14px] text-text-secondary">
-                  Aucune donnée sur {selectedPeriod} jours
-                </p>
-                <p className="text-[12px] text-text-muted mt-1">
-                  Continuez vos missions pour voir votre progression
-                </p>
-              </>
             )}
           </div>
-        </Card>
+        )}
 
-        {/* Motivation */}
-        <Card variant="flat" className="text-center">
-          <p className="text-[14px] font-semibold text-text">
-            Chaque mission compte
-          </p>
-          <Link href="/missions" className="text-[13px] text-text-secondary underline mt-1 inline-block">
-            Faire ma mission du jour
-          </Link>
-        </Card>
+        {/* ─── Zone 5 — Sparkline simple (SVG) ─────────────────────────── */}
+        <div className="bg-bg-card rounded-2xl shadow-xs p-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex gap-2">
+              {(['7', '30', '90'] as const).map((period) => (
+                <button
+                  key={period}
+                  onClick={() => setSelectedPeriod(period)}
+                  className={`px-3 py-1 rounded-xl text-[12px] font-medium transition-colors ${
+                    selectedPeriod === period
+                      ? 'bg-text text-white'
+                      : 'bg-bg-subtle text-text-secondary'
+                  }`}
+                >
+                  {period}j
+                </button>
+              ))}
+            </div>
+            {!isLoadingEvolution && chartData.length >= 2 && (
+              <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
+                trendIsUp ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-500'
+              }`}>
+                {trendIsUp ? 'En progression' : 'Ralentissement'}
+              </span>
+            )}
+          </div>
+
+          {isLoadingEvolution ? (
+            <div className="flex justify-center py-6">
+              <div className="w-5 h-5 border-2 border-text border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : chartData.length >= 2 ? (
+            <Sparkline data={chartData} maxValue={maxValue} />
+          ) : (
+            <div className="text-center py-6">
+              <p className="text-[13px] text-text-secondary">
+                Pas assez de données sur {selectedPeriod} jours
+              </p>
+              <p className="text-[11px] text-text-muted mt-1">
+                Continue tes missions pour voir ta progression
+              </p>
+            </div>
+          )}
+        </div>
+
       </div>
     </AppLayout>
   )
