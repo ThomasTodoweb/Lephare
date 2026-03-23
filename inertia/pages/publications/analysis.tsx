@@ -40,28 +40,31 @@ const CONTENT_TYPE_LABELS: Record<string, string> = {
 
 const SCORE_CONFIG = {
   green: {
-    bg: 'bg-green-50',
-    border: 'border-green-500',
-    text: 'text-green-700',
+    bg: 'bg-emerald-50',
+    border: 'border-emerald-200',
+    text: 'text-emerald-700',
+    dot: 'bg-emerald-500',
     icon: CheckCircle,
-    label: 'Parfait !',
-    description: 'Votre média est prêt pour la publication.',
+    label: 'Parfait',
+    description: 'Votre media est pret pour la publication.',
   },
   yellow: {
     bg: 'bg-amber-50',
-    border: 'border-amber-500',
+    border: 'border-amber-200',
     text: 'text-amber-700',
+    dot: 'bg-amber-500',
     icon: AlertTriangle,
     label: 'Attention',
-    description: 'Quelques points à améliorer, mais vous pouvez continuer.',
+    description: 'Quelques points a ameliorer, mais vous pouvez continuer.',
   },
   red: {
     bg: 'bg-red-50',
-    border: 'border-red-500',
+    border: 'border-red-200',
     text: 'text-red-700',
+    dot: 'bg-red-500',
     icon: XCircle,
-    label: 'À refaire',
-    description: 'Ce média ne respecte pas les standards de qualité.',
+    label: 'A refaire',
+    description: 'Ce media ne respecte pas les standards de qualite.',
   },
 }
 
@@ -126,7 +129,7 @@ export default function MediaAnalysis({ publication, mission, totalSteps = 3, cu
       }
       console.error('Analysis error:', err)
       if (!signal.aborted) {
-        setError('Impossible d\'analyser le média. Veuillez réessayer.')
+        setError('Impossible d\'analyser le media. Veuillez reessayer.')
         // Default to green to not block the user
         setScore('green')
         setFeedback('Analyse non disponible, vous pouvez continuer.')
@@ -180,50 +183,48 @@ export default function MediaAnalysis({ publication, mission, totalSteps = 3, cu
 
   return (
     <>
-      <Head title="Analyse du média - Le Phare" />
-      <div className="min-h-screen bg-background flex flex-col">
+      <Head title="Analyse du media - Le Phare" />
+      <div className="min-h-screen bg-bg flex flex-col">
         {/* Header */}
-        <div className="px-6 pt-6 pb-4 pwa-safe-area-top">
-          <div className="flex items-center justify-between mb-4">
+        <div className="px-5 pt-6 pb-4 pwa-safe-area-top">
+          <div className="flex items-center justify-between mb-5">
             <button
               onClick={() => mission ? router.visit(`/missions/${mission.id}/photo`) : router.visit('/dashboard')}
-              className="p-2 -ml-2 text-neutral-500 hover:text-neutral-700"
+              className="p-2 -ml-2 text-text-muted hover:text-text transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-black text-neutral-900 uppercase tracking-tight font-display">
-              Mission du jour
-            </h1>
-            <span className="text-lg font-bold text-neutral-500">
+            <span className="text-[13px] font-medium text-text-muted">
               {currentStep}/{totalSteps}
             </span>
           </div>
+
+          <h1 className="text-[20px] font-bold text-text tracking-tight">
+            Analyse qualite
+          </h1>
         </div>
 
         {/* Content Type Badge + Title */}
-        <div className="px-6 pb-4">
-          <div className="flex items-center gap-3">
-            <span className="bg-neutral-900 text-white px-3 py-1.5 rounded-lg text-sm font-bold font-display tracking-wide">
+        <div className="px-5 pb-4">
+          <div className="flex items-center gap-2.5">
+            <span className="bg-text text-white px-2.5 py-1 rounded-lg text-[12px] font-semibold tracking-wide">
               {CONTENT_TYPE_LABELS[publication.contentType] || 'POST'}
             </span>
-            <span className="text-neutral-800 font-medium">
-              {mission?.template.title || 'Analyse qualité'}
+            <span className="text-[14px] text-text-secondary">
+              {mission?.template.title || 'Analyse qualite'}
             </span>
           </div>
         </div>
 
         {/* Content */}
-        <div className="flex-1 px-6 py-6 pb-40">
+        <div className="flex-1 px-5 py-4 pb-44">
           {/* Media preview */}
           <div className="mb-6 flex justify-center">
             <div className="relative max-w-xs w-full">
               {isVideo ? (
                 <video
                   src={getPreviewUrl()}
-                  className="w-full aspect-[4/5] object-cover rounded-xl border border-neutral-200"
+                  className="w-full aspect-[4/5] object-cover rounded-2xl border border-border"
                   controls={false}
                   muted
                   playsInline
@@ -231,27 +232,27 @@ export default function MediaAnalysis({ publication, mission, totalSteps = 3, cu
               ) : (
                 <img
                   src={getPreviewUrl()}
-                  alt="Aperçu"
-                  className="w-full aspect-[4/5] object-cover rounded-xl border border-neutral-200"
+                  alt="Apercu"
+                  className="w-full aspect-[4/5] object-cover rounded-2xl border border-border"
                 />
               )}
 
               {/* Score badge on image */}
               {config && !isAnalyzing && (
-                <div className={`absolute top-3 right-3 ${config.bg} ${config.text} px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm`}>
-                  <config.icon className="w-4 h-4" />
-                  <span className="text-sm font-medium">{config.label}</span>
+                <div className={`absolute top-3 right-3 ${config.bg} border ${config.border} ${config.text} px-3 py-1.5 rounded-xl flex items-center gap-2`}>
+                  <div className={`w-2 h-2 rounded-full ${config.dot}`} />
+                  <span className="text-[13px] font-medium">{config.label}</span>
                 </div>
               )}
 
-              {/* Loading overlay with Popote */}
+              {/* Loading overlay */}
               {isAnalyzing && (
-                <div className="absolute inset-0 bg-white/90 rounded-xl flex flex-col items-center justify-center">
-                  <div className="w-16 h-16 rounded-full bg-white border-2 border-neutral flex items-center justify-center animate-bounce-subtle mb-3">
-                    <img src="/images/popote.png" alt="Popote" className="w-full h-full object-contain p-1" />
+                <div className="absolute inset-0 bg-bg-card/90 backdrop-blur-sm rounded-2xl flex flex-col items-center justify-center">
+                  <div className="w-14 h-14 rounded-2xl bg-bg-card shadow-card flex items-center justify-center animate-bounce-subtle mb-3">
+                    <img src="/images/popote.png" alt="Popote" className="w-full h-full object-contain p-1.5" />
                   </div>
-                  <p className="text-neutral-600 font-medium">Popote analyse ton média...</p>
-                  <p className="text-sm text-neutral-400 mt-1">Cela prend quelques secondes</p>
+                  <p className="text-[14px] font-medium text-text">Popote analyse ton media...</p>
+                  <p className="text-[12px] text-text-muted mt-1">Cela prend quelques secondes</p>
                 </div>
               )}
             </div>
@@ -259,12 +260,12 @@ export default function MediaAnalysis({ publication, mission, totalSteps = 3, cu
 
           {/* Error message */}
           {error && (
-            <p className="text-red-600 text-sm text-center mb-4">{error}</p>
+            <p className="text-red-600 text-[13px] text-center mb-4">{error}</p>
           )}
 
           {/* Analysis result with Popote */}
           {config && !isAnalyzing && (
-            <div className="mb-6">
+            <div className="mb-5">
               <PopoteMessage
                 message={feedback || config.description}
                 variant={score === 'green' ? 'happy' : 'default'}
@@ -275,44 +276,42 @@ export default function MediaAnalysis({ publication, mission, totalSteps = 3, cu
 
           {/* Explanation for red score */}
           {score === 'red' && !isAnalyzing && (
-            <div className="bg-neutral-50 rounded-xl p-4 mb-6">
-              <p className="text-sm text-neutral-600">
-                Pour obtenir les meilleurs résultats sur Instagram, votre média doit être de bonne qualité :
-                luminosité correcte, image nette, bon cadrage.
+            <div className="bg-bg-subtle rounded-xl p-4 mb-5">
+              <p className="text-[13px] text-text-secondary leading-relaxed">
+                Pour obtenir les meilleurs resultats sur Instagram, votre media doit etre de bonne qualite :
+                luminosite correcte, image nette, bon cadrage.
               </p>
               {mission?.template.tutorialId && (
-                <p className="text-sm text-neutral-600 mt-2">
-                  Besoin d'aide ? Consultez le tutoriel associé à cette mission.
+                <p className="text-[13px] text-text-secondary mt-2">
+                  Besoin d'aide ? Consultez le tutoriel associe a cette mission.
                 </p>
               )}
             </div>
           )}
-
-          </div>
+        </div>
 
         {/* Fixed bottom buttons */}
-        <div className="fixed bottom-0 left-0 right-0 p-6 bg-white border-t border-neutral-100 space-y-3">
+        <div className="fixed bottom-0 left-0 right-0 p-5 bg-bg/80 backdrop-blur-lg border-t border-border space-y-3">
           {isAnalyzing || isPublishing ? (
-            <p className="text-center text-sm text-neutral-500 py-3">
+            <p className="text-center text-[13px] text-text-muted py-3">
               {isPublishing ? 'Publication en cours...' : 'Veuillez patienter...'}
             </p>
           ) : canContinue ? (
-            <Button onClick={handleContinue} disabled={isPublishing} className="w-full">
+            <Button onClick={handleContinue} disabled={isPublishing} loading={isPublishing} fullWidth>
               {skipDescription ? 'Publier la story' : 'Continuer'}
             </Button>
           ) : (
             <>
-              <Button onClick={handleRetake} className="w-full flex items-center justify-center gap-2">
-                <RotateCcw className="w-4 h-4" />
+              <Button onClick={handleRetake} icon={RotateCcw} fullWidth>
                 Recommencer
               </Button>
               {mission?.template.tutorialId && (
                 <Button
-                  variant="outlined"
+                  variant="secondary"
                   onClick={handleHelp}
-                  className="w-full flex items-center justify-center gap-2"
+                  icon={HelpCircle}
+                  fullWidth
                 >
-                  <HelpCircle className="w-4 h-4" />
                   Besoin d'aide ?
                 </Button>
               )}
@@ -321,8 +320,8 @@ export default function MediaAnalysis({ publication, mission, totalSteps = 3, cu
 
           {/* Option to continue anyway for yellow */}
           {score === 'yellow' && !isAnalyzing && (
-            <p className="text-center text-xs text-neutral-400">
-              Vous pouvez continuer malgré l'avertissement
+            <p className="text-center text-[12px] text-text-muted">
+              Vous pouvez continuer malgre l'avertissement
             </p>
           )}
         </div>

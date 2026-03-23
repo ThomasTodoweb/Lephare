@@ -1,27 +1,36 @@
 import { type HTMLAttributes } from 'react'
 
 interface CardProps extends HTMLAttributes<HTMLDivElement> {
-  variant?: 'default' | 'bordered' | 'elevated' | 'ghost'
+  variant?: 'default' | 'bordered' | 'flat' | 'interactive'
+  padding?: 'none' | 'sm' | 'md' | 'lg'
 }
 
 export function Card({
   variant = 'default',
+  padding = 'md',
   className = '',
   children,
   ...props
 }: CardProps) {
-  const baseClasses = 'rounded-[var(--radius-lg)] p-5'
+  const base = 'rounded-2xl'
 
-  const variantClasses = {
-    default: 'bg-surface shadow-xs',
-    bordered: 'bg-surface border-2 border-primary shadow-xs',
-    elevated: 'bg-surface-elevated shadow-md',
-    ghost: 'bg-transparent',
+  const variants = {
+    default: 'bg-bg-card shadow-card',
+    bordered: 'bg-bg-card border border-border',
+    flat: 'bg-bg-subtle',
+    interactive: 'bg-bg-card shadow-card hover:shadow-card-hover transition-shadow cursor-pointer',
+  }
+
+  const paddings = {
+    none: '',
+    sm: 'p-3',
+    md: 'p-4',
+    lg: 'p-5',
   }
 
   return (
     <div
-      className={`${baseClasses} ${variantClasses[variant]} ${className}`}
+      className={`${base} ${variants[variant]} ${paddings[padding]} ${className}`}
       {...props}
     >
       {children}

@@ -1,5 +1,3 @@
-import { StreakCounter } from './StreakCounter'
-
 interface StreakRestaurantBarProps {
   restaurantName: string
   currentStreak: number
@@ -16,10 +14,17 @@ export function StreakRestaurantBar({
   return (
     <div className="flex items-center justify-between">
       <div>
-        <p className="text-sm text-text-muted">Bienvenue</p>
-        <p className="font-bold text-text text-lg truncate max-w-[200px]">{restaurantName}</p>
+        <p className="text-[13px] text-text-muted font-medium">Bonjour</p>
+        <p className="text-[18px] font-bold text-text leading-tight truncate max-w-[220px]">
+          {restaurantName}
+        </p>
       </div>
-      <StreakCounter currentStreak={currentStreak} longestStreak={longestStreak} isAtRisk={isAtRisk} />
+      {currentStreak > 0 && (
+        <div className="flex items-center gap-1.5 bg-orange-50 px-3 py-1.5 rounded-xl">
+          <span className="text-lg">🔥</span>
+          <span className="text-[15px] font-bold text-orange-600">{currentStreak}</span>
+        </div>
+      )}
     </div>
   )
 }

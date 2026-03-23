@@ -14,27 +14,30 @@ export function Input({
   id,
   ...props
 }: InputProps) {
-  const baseClasses = 'w-full px-4 py-3 bg-surface border-2 border-neutral-200 rounded-[var(--radius-md)] text-text placeholder-text-muted transition-colors duration-[var(--duration-fast)]'
-  const focusClasses = 'focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10'
-  const errorClasses = error ? 'border-error focus:border-error focus:ring-error/10' : ''
-  const disabledClasses = 'disabled:bg-neutral disabled:border-neutral-200 disabled:text-text-muted'
-
   const inputId = id || label?.toLowerCase().replace(/\s+/g, '-')
 
   return (
     <div className="w-full">
       {label && (
-        <label htmlFor={inputId} className="block mb-2 text-sm font-medium text-text">
+        <label htmlFor={inputId} className="block mb-1.5 text-[13px] font-medium text-text-secondary">
           {label}
         </label>
       )}
       <input
         id={inputId}
-        className={`${baseClasses} ${focusClasses} ${errorClasses} ${disabledClasses} ${className}`}
+        className={`
+          w-full h-11 px-3.5 bg-bg-card border border-border rounded-xl
+          text-[15px] text-text placeholder-text-muted
+          transition-colors duration-[var(--duration-fast)]
+          focus:outline-none focus:border-text focus:ring-1 focus:ring-text/10
+          disabled:opacity-50 disabled:bg-bg-subtle
+          ${error ? 'border-error focus:border-error focus:ring-error/10' : ''}
+          ${className}
+        `}
         {...props}
       />
-      {hint && !error && <p className="mt-1.5 text-xs text-text-muted">{hint}</p>}
-      {error && <p className="mt-1.5 text-xs text-error font-medium">{error}</p>}
+      {hint && !error && <p className="mt-1 text-[12px] text-text-muted">{hint}</p>}
+      {error && <p className="mt-1 text-[12px] text-error font-medium">{error}</p>}
     </div>
   )
 }

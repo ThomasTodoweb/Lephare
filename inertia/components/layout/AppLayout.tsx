@@ -8,9 +8,9 @@ interface AppLayoutProps {
 
 export function AppLayout({ children, showBottomNav = true }: AppLayoutProps) {
   return (
-    <div className="min-h-screen bg-background pt-[calc(env(safe-area-inset-top)*0.7)]">
-      <main className={showBottomNav ? 'pb-20' : ''}>
-        <div className="max-w-[428px] mx-auto px-5 py-4">
+    <div className="min-h-screen bg-bg pt-[calc(env(safe-area-inset-top)*0.5)]">
+      <main className={showBottomNav ? 'pb-28' : ''}>
+        <div className="max-w-[430px] mx-auto px-5 pt-3 pb-4">
           {children}
         </div>
       </main>

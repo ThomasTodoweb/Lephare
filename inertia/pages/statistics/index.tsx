@@ -100,17 +100,14 @@ export default function StatisticsIndex({ keyMetrics, summary, comparison, insta
   const [isRefreshingInstagram, setIsRefreshingInstagram] = useState(false)
 
   // ─── useMemo hooks ────────────────────────────────────────────────────────────
-  // Memoize chart data to avoid recalculating on every render
   const chartData = useMemo(() => evolution.slice(-CHART_DISPLAY_DAYS), [evolution])
 
-  // Memoize maxValue - was previously calculated inside map() loop (14 iterations per render)
   const maxValue = useMemo(() => {
     if (evolution.length === 0) return 1
     return Math.max(...evolution.map((p) => p.value), 1)
   }, [evolution])
 
   // ─── useCallback hooks ────────────────────────────────────────────────────────
-  // Memoized handler - state setters are stable, no dependencies needed
   const refreshInstagramStats = useCallback(async () => {
     setIsRefreshingInstagram(true)
     try {
@@ -134,7 +131,6 @@ export default function StatisticsIndex({ keyMetrics, summary, comparison, insta
   }, [])
 
   // ─── useEffect hooks ──────────────────────────────────────────────────────────
-  // Fetch AI interpretation on mount
   useEffect(() => {
     const controller = new AbortController()
 
@@ -150,7 +146,7 @@ export default function StatisticsIndex({ keyMetrics, summary, comparison, insta
         }
       } catch (error) {
         if (error instanceof Error && error.name === 'AbortError') {
-          return // Request was aborted, ignore silently
+          return
         }
         console.error('Failed to fetch interpretation:', error)
       } finally {
@@ -182,7 +178,7 @@ export default function StatisticsIndex({ keyMetrics, summary, comparison, insta
         }
       } catch (error) {
         if (error instanceof Error && error.name === 'AbortError') {
-          return // Request was aborted, ignore silently
+          return
         }
         console.error('Failed to fetch evolution:', error)
       } finally {
@@ -203,14 +199,12 @@ export default function StatisticsIndex({ keyMetrics, summary, comparison, insta
     <AppLayout>
       <Head title="Mes Statistiques - Le Phare" />
 
-      <div className="py-4">
+      <div className="pt-6 pb-8">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bolota font-bold text-neutral-900 uppercase">
-            Mes Stats
-          </h1>
-          <p className="text-neutral-600 mt-1">
-            Suivez votre progression !
+          <h1 className="text-[22px] font-bold text-text">Mes stats</h1>
+          <p className="text-[14px] text-text-secondary mt-1">
+            Suivez votre progression
           </p>
         </div>
 
@@ -218,12 +212,12 @@ export default function StatisticsIndex({ keyMetrics, summary, comparison, insta
         {isLoadingInterpretation ? (
           <Card className="mb-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-white border-2 border-neutral flex items-center justify-center animate-bounce-subtle">
+              <div className="w-10 h-10 rounded-full bg-white border border-border flex items-center justify-center">
                 <img src="/images/popote.png" alt="Popote" className="w-full h-full object-contain p-0.5" />
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                <span className="text-sm text-neutral-500">Popote analyse tes stats...</span>
+                <div className="w-4 h-4 border-2 border-text border-t-transparent rounded-full animate-spin" />
+                <span className="text-[13px] text-text-muted">Popote analyse tes stats...</span>
               </div>
             </div>
           </Card>
@@ -243,235 +237,227 @@ export default function StatisticsIndex({ keyMetrics, summary, comparison, insta
         )}
 
         {/* Key Metrics */}
-        <div className="grid grid-cols-3 gap-3 mb-6">
+        <div className="grid grid-cols-3 gap-2 mb-6">
           {keyMetrics.map((metric) => (
             <Card key={metric.type} className="text-center">
-              <span className="text-2xl block mb-1">{metric.icon}</span>
-              <p className="text-2xl font-bold text-neutral-900">{metric.value}</p>
-              <p className="text-xs text-neutral-500">{metric.label}</p>
+              <p className="text-[22px] font-bold text-text">{metric.value}</p>
+              <p className="text-[11px] text-text-muted mt-0.5">{metric.label}</p>
             </Card>
           ))}
         </div>
 
         {/* Comparison card */}
-        <Card className="mb-6 bg-primary/5 border-primary">
+        <Card variant="bordered" className="mb-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-neutral-600">Cette semaine</p>
-              <p className="text-2xl font-bold text-neutral-900">{comparison.current} missions</p>
+              <p className="text-[12px] text-text-muted">Cette semaine</p>
+              <p className="text-[20px] font-bold text-text">{comparison.current} <span className="text-[13px] font-normal text-text-secondary">missions</span></p>
             </div>
             <div className="text-right">
               {comparison.change >= 0 ? (
-                <span className="text-green-600 font-bold">
+                <span className="text-[14px] font-semibold text-emerald-600">
                   +{comparison.changePercent}%
                 </span>
               ) : (
-                <span className="text-red-500 font-bold">
+                <span className="text-[14px] font-semibold text-red-500">
                   {comparison.changePercent}%
                 </span>
               )}
-              <p className="text-xs text-neutral-500">vs semaine passée</p>
+              <p className="text-[11px] text-text-muted">vs semaine passée</p>
             </div>
           </div>
         </Card>
 
         {/* Instagram Stats */}
         {instagram && (
-          <Card className="mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 rounded-lg flex items-center justify-center">
-                  <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069z" />
-                  </svg>
+          <>
+            <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-3">Instagram</p>
+            <Card className="mb-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 rounded-lg flex items-center justify-center">
+                    <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069z" />
+                    </svg>
+                  </div>
+                  <span className="text-[15px] font-semibold text-text">Instagram</span>
                 </div>
-                <h2 className="font-bold text-lg text-neutral-900">Instagram</h2>
-              </div>
-              <button
-                onClick={refreshInstagramStats}
-                disabled={isRefreshingInstagram}
-                className="p-2 rounded-lg hover:bg-neutral-100 transition-colors disabled:opacity-50"
-                title="Actualiser les stats"
-              >
-                <svg
-                  className={`w-5 h-5 text-neutral-600 ${isRefreshingInstagram ? 'animate-spin' : ''}`}
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
+                <button
+                  onClick={refreshInstagramStats}
+                  disabled={isRefreshingInstagram}
+                  className="p-2 rounded-lg hover:bg-bg-subtle transition-colors disabled:opacity-50"
+                  title="Actualiser les stats"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                  />
-                </svg>
-              </button>
-            </div>
+                  <svg
+                    className={`w-4 h-4 text-text-muted ${isRefreshingInstagram ? 'animate-spin' : ''}`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                    />
+                  </svg>
+                </button>
+              </div>
 
-            {/* Followers */}
-            <div className="bg-neutral-50 rounded-xl p-4 mb-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-neutral-600">Abonnés</p>
-                  <p className="text-3xl font-bold text-neutral-900">
-                    {(instagram.followers?.current ?? 0).toLocaleString('fr-FR')}
-                  </p>
+              {/* Followers */}
+              <div className="bg-bg-subtle rounded-xl p-4 mb-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-[12px] text-text-muted">Abonnés</p>
+                    <p className="text-[26px] font-bold text-text">
+                      {(instagram.followers?.current ?? 0).toLocaleString('fr-FR')}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    {(instagram.followers?.growthWeekly ?? 0) >= 0 ? (
+                      <span className="text-[15px] font-semibold text-emerald-600">
+                        +{instagram.followers?.growthWeekly ?? 0}
+                      </span>
+                    ) : (
+                      <span className="text-[15px] font-semibold text-red-500">
+                        {instagram.followers?.growthWeekly ?? 0}
+                      </span>
+                    )}
+                    <p className="text-[11px] text-text-muted">cette semaine</p>
+                  </div>
                 </div>
-                <div className="text-right">
-                  {(instagram.followers?.growthWeekly ?? 0) >= 0 ? (
-                    <span className="text-green-600 font-bold text-lg">
-                      +{instagram.followers?.growthWeekly ?? 0}
-                    </span>
-                  ) : (
-                    <span className="text-red-500 font-bold text-lg">
-                      {instagram.followers?.growthWeekly ?? 0}
-                    </span>
+              </div>
+
+              {/* Engagement Metrics Grid */}
+              <div className="grid grid-cols-2 gap-2 mb-3">
+                <div className="bg-bg-subtle rounded-xl p-3 text-center">
+                  <p className="text-[18px] font-bold text-text">
+                    {(instagram.engagement?.impressions ?? 0).toLocaleString('fr-FR')}
+                  </p>
+                  <p className="text-[11px] text-text-muted">Impressions</p>
+                  {instagramComparison && (
+                    <p className={`text-[11px] font-medium ${(instagramComparison.changes?.impressionsPercent ?? 0) >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+                      {(instagramComparison.changes?.impressionsPercent ?? 0) >= 0 ? '+' : ''}{instagramComparison.changes?.impressionsPercent ?? 0}%
+                    </p>
                   )}
-                  <p className="text-xs text-neutral-500">cette semaine</p>
+                </div>
+                <div className="bg-bg-subtle rounded-xl p-3 text-center">
+                  <p className="text-[18px] font-bold text-text">
+                    {(instagram.engagement?.reach ?? 0).toLocaleString('fr-FR')}
+                  </p>
+                  <p className="text-[11px] text-text-muted">Portée</p>
+                  {instagramComparison && (
+                    <p className={`text-[11px] font-medium ${(instagramComparison.changes?.reachPercent ?? 0) >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+                      {(instagramComparison.changes?.reachPercent ?? 0) >= 0 ? '+' : ''}{instagramComparison.changes?.reachPercent ?? 0}%
+                    </p>
+                  )}
                 </div>
               </div>
-            </div>
 
-            {/* Engagement Metrics Grid */}
-            <div className="grid grid-cols-2 gap-3 mb-4">
-              <div className="bg-neutral-50 rounded-xl p-3 text-center">
-                <p className="text-xl font-bold text-neutral-900">
-                  {(instagram.engagement?.impressions ?? 0).toLocaleString('fr-FR')}
+              {/* Engagement Details */}
+              <div className="grid grid-cols-4 gap-2 text-center mb-3">
+                <div className="py-2">
+                  <p className="text-[14px] font-bold text-text">{(instagram.engagement?.likes ?? 0).toLocaleString('fr-FR')}</p>
+                  <p className="text-[11px] text-text-muted">Likes</p>
+                </div>
+                <div className="py-2">
+                  <p className="text-[14px] font-bold text-text">{(instagram.engagement?.comments ?? 0).toLocaleString('fr-FR')}</p>
+                  <p className="text-[11px] text-text-muted">Comm.</p>
+                </div>
+                <div className="py-2">
+                  <p className="text-[14px] font-bold text-text">{(instagram.engagement?.shares ?? 0).toLocaleString('fr-FR')}</p>
+                  <p className="text-[11px] text-text-muted">Partages</p>
+                </div>
+                <div className="py-2">
+                  <p className="text-[14px] font-bold text-text">{(instagram.engagement?.saves ?? 0).toLocaleString('fr-FR')}</p>
+                  <p className="text-[11px] text-text-muted">Saves</p>
+                </div>
+              </div>
+
+              {/* Engagement Rate */}
+              <div className="bg-bg-subtle rounded-xl p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-[12px] text-text-muted">Taux d'engagement</p>
+                    <p className="text-[20px] font-bold text-text">
+                      {Number(instagram.engagement?.averageRate ?? 0).toFixed(2)}%
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[12px] text-text-secondary">
+                      {Number(instagram.engagement?.averageRate ?? 0) >= 3
+                        ? 'Excellent'
+                        : Number(instagram.engagement?.averageRate ?? 0) >= 1
+                          ? 'Bon'
+                          : 'A améliorer'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {instagram.lastUpdated && (
+                <p className="text-[11px] text-text-muted mt-3 text-center">
+                  Mis à jour : {new Date(instagram.lastUpdated).toLocaleString('fr-FR')}
                 </p>
-                <p className="text-xs text-neutral-500">Impressions</p>
-                {instagramComparison && (
-                  <p className={`text-xs font-medium ${(instagramComparison.changes?.impressionsPercent ?? 0) >= 0 ? 'text-green-600' : 'text-red-500'}`}>
-                    {(instagramComparison.changes?.impressionsPercent ?? 0) >= 0 ? '+' : ''}{instagramComparison.changes?.impressionsPercent ?? 0}%
-                  </p>
-                )}
-              </div>
-              <div className="bg-neutral-50 rounded-xl p-3 text-center">
-                <p className="text-xl font-bold text-neutral-900">
-                  {(instagram.engagement?.reach ?? 0).toLocaleString('fr-FR')}
-                </p>
-                <p className="text-xs text-neutral-500">Portée</p>
-                {instagramComparison && (
-                  <p className={`text-xs font-medium ${(instagramComparison.changes?.reachPercent ?? 0) >= 0 ? 'text-green-600' : 'text-red-500'}`}>
-                    {(instagramComparison.changes?.reachPercent ?? 0) >= 0 ? '+' : ''}{instagramComparison.changes?.reachPercent ?? 0}%
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* Engagement Details */}
-            <div className="grid grid-cols-4 gap-2 text-center mb-4">
-              <div>
-                <span className="text-lg block">❤️</span>
-                <p className="font-bold text-sm">{(instagram.engagement?.likes ?? 0).toLocaleString('fr-FR')}</p>
-                <p className="text-xs text-neutral-500">Likes</p>
-              </div>
-              <div>
-                <span className="text-lg block">💬</span>
-                <p className="font-bold text-sm">{(instagram.engagement?.comments ?? 0).toLocaleString('fr-FR')}</p>
-                <p className="text-xs text-neutral-500">Commentaires</p>
-              </div>
-              <div>
-                <span className="text-lg block">🔁</span>
-                <p className="font-bold text-sm">{(instagram.engagement?.shares ?? 0).toLocaleString('fr-FR')}</p>
-                <p className="text-xs text-neutral-500">Partages</p>
-              </div>
-              <div>
-                <span className="text-lg block">🔖</span>
-                <p className="font-bold text-sm">{(instagram.engagement?.saves ?? 0).toLocaleString('fr-FR')}</p>
-                <p className="text-xs text-neutral-500">Saves</p>
-              </div>
-            </div>
-
-            {/* Engagement Rate */}
-            <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-neutral-600">Taux d'engagement</p>
-                  <p className="text-2xl font-bold text-neutral-900">
-                    {Number(instagram.engagement?.averageRate ?? 0).toFixed(2)}%
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs text-neutral-500">
-                    {Number(instagram.engagement?.averageRate ?? 0) >= 3
-                      ? '🔥 Excellent !'
-                      : Number(instagram.engagement?.averageRate ?? 0) >= 1
-                        ? '👍 Bon'
-                        : '📈 À améliorer'}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {instagram.lastUpdated && (
-              <p className="text-xs text-neutral-400 mt-3 text-center">
-                Dernière mise à jour : {new Date(instagram.lastUpdated).toLocaleString('fr-FR')}
-              </p>
-            )}
-          </Card>
+              )}
+            </Card>
+          </>
         )}
 
         {/* Activity Summary */}
+        <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-3">Récapitulatif</p>
         <Card className="mb-6">
-          <h2 className="font-bold text-lg text-neutral-900 mb-4">Récapitulatif</h2>
-
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-neutral-600">Total missions</span>
-              <span className="font-bold text-neutral-900">{summary.totalMissions}</span>
+              <span className="text-[14px] text-text-secondary">Total missions</span>
+              <span className="text-[14px] font-semibold text-text">{summary.totalMissions}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-neutral-600">Total tutoriels</span>
-              <span className="font-bold text-neutral-900">{summary.totalTutorials}</span>
+              <span className="text-[14px] text-text-secondary">Total tutoriels</span>
+              <span className="text-[14px] font-semibold text-text">{summary.totalTutorials}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-neutral-600">Total publications</span>
-              <span className="font-bold text-neutral-900">{summary.totalPublications}</span>
+              <span className="text-[14px] text-text-secondary">Total publications</span>
+              <span className="text-[14px] font-semibold text-text">{summary.totalPublications}</span>
             </div>
           </div>
 
           {/* Breakdown by type */}
-          <div className="mt-6 pt-4 border-t border-neutral-100">
-            <h3 className="text-sm font-medium text-neutral-600 mb-3">Par type</h3>
+          <div className="mt-4 pt-4 border-t border-border">
+            <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-3">Par type</p>
             <div className="grid grid-cols-4 gap-2 text-center">
               <div>
-                <span className="text-lg block">📸</span>
-                <p className="font-bold text-sm">{summary.byType.posts}</p>
-                <p className="text-xs text-neutral-500">Posts</p>
+                <p className="text-[15px] font-bold text-text">{summary.byType.posts}</p>
+                <p className="text-[11px] text-text-muted">Posts</p>
               </div>
               <div>
-                <span className="text-lg block">📱</span>
-                <p className="font-bold text-sm">{summary.byType.stories}</p>
-                <p className="text-xs text-neutral-500">Stories</p>
+                <p className="text-[15px] font-bold text-text">{summary.byType.stories}</p>
+                <p className="text-[11px] text-text-muted">Stories</p>
               </div>
               <div>
-                <span className="text-lg block">🎬</span>
-                <p className="font-bold text-sm">{summary.byType.reels}</p>
-                <p className="text-xs text-neutral-500">Réels</p>
+                <p className="text-[15px] font-bold text-text">{summary.byType.reels}</p>
+                <p className="text-[11px] text-text-muted">Réels</p>
               </div>
               <div>
-                <span className="text-lg block">📚</span>
-                <p className="font-bold text-sm">{summary.byType.tutos}</p>
-                <p className="text-xs text-neutral-500">Tutos</p>
+                <p className="text-[15px] font-bold text-text">{summary.byType.tutos}</p>
+                <p className="text-[11px] text-text-muted">Tutos</p>
               </div>
             </div>
           </div>
         </Card>
 
         {/* Period selector for charts */}
+        <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-3">Évolution</p>
         <Card className="mb-6">
-          <h2 className="font-bold text-lg text-neutral-900 mb-4">Évolution</h2>
-
           <div className="flex gap-2 mb-4">
             {(['7', '30', '90'] as const).map((period) => (
               <button
                 key={period}
                 onClick={() => setSelectedPeriod(period)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                className={`px-4 py-1.5 rounded-xl text-[13px] font-medium transition-colors ${
                   selectedPeriod === period
-                    ? 'bg-primary text-white'
-                    : 'bg-neutral-100 text-neutral-600'
+                    ? 'bg-text text-white'
+                    : 'bg-bg-subtle text-text-secondary'
                 }`}
               >
                 {period}j
@@ -480,36 +466,37 @@ export default function StatisticsIndex({ keyMetrics, summary, comparison, insta
           </div>
 
           {/* Evolution data display */}
-          <div className="bg-neutral-50 rounded-xl p-6 text-center">
+          <div className="bg-bg-subtle rounded-xl p-5 text-center">
             {isLoadingEvolution ? (
-              <p className="text-neutral-500">Chargement...</p>
+              <div className="flex justify-center py-4">
+                <div className="w-5 h-5 border-2 border-text border-t-transparent rounded-full animate-spin" />
+              </div>
             ) : evolution.length > 0 ? (
               <div>
-                <div className="flex justify-between items-end h-24 gap-1 mb-2">
+                <div className="flex justify-between items-end h-24 gap-1 mb-3">
                   {chartData.map((point, index) => {
                     const height = (point.value / maxValue) * 100
                     return (
                       <div
                         key={index}
-                        className="flex-1 bg-primary rounded-t"
+                        className="flex-1 bg-text rounded-t"
                         style={{ height: `${Math.max(height, 5)}%` }}
                         title={`${point.date}: ${point.value}`}
                       />
                     )
                   })}
                 </div>
-                <p className="text-neutral-600 text-sm">
+                <p className="text-[12px] text-text-muted">
                   {evolution.length} points sur {selectedPeriod} jours
                 </p>
               </div>
             ) : (
               <>
-                <span className="text-4xl mb-2 block">📈</span>
-                <p className="text-neutral-600 text-sm">
+                <p className="text-[14px] text-text-secondary">
                   Aucune donnée sur {selectedPeriod} jours
                 </p>
-                <p className="text-xs text-neutral-400 mt-2">
-                  Continuez vos missions pour voir votre progression !
+                <p className="text-[12px] text-text-muted mt-1">
+                  Continuez vos missions pour voir votre progression
                 </p>
               </>
             )}
@@ -517,16 +504,14 @@ export default function StatisticsIndex({ keyMetrics, summary, comparison, insta
         </Card>
 
         {/* Motivation */}
-        <Card className="text-center bg-primary/5 border-primary">
-          <span className="text-4xl block mb-2">💪</span>
-          <p className="font-bold text-primary">
-            Chaque mission compte !
+        <Card variant="flat" className="text-center">
+          <p className="text-[14px] font-semibold text-text">
+            Chaque mission compte
           </p>
-          <Link href="/missions" className="text-sm text-primary underline mt-2 inline-block">
-            Faire ma mission du jour →
+          <Link href="/missions" className="text-[13px] text-text-secondary underline mt-1 inline-block">
+            Faire ma mission du jour
           </Link>
         </Card>
-
       </div>
     </AppLayout>
   )

@@ -1,48 +1,51 @@
-import { type ButtonHTMLAttributes } from 'react'
+import { type ButtonHTMLAttributes, forwardRef } from 'react'
 import { Loader2 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'filled' | 'outlined' | 'ghost' | 'danger'
+  variant?: 'primary' | 'secondary' | 'ghost' | 'danger'
   size?: 'sm' | 'md' | 'lg'
   loading?: boolean
   icon?: LucideIcon
   iconPosition?: 'left' | 'right'
+  fullWidth?: boolean
 }
 
-export function Button({
-  variant = 'filled',
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button({
+  variant = 'primary',
   size = 'md',
   loading = false,
   disabled = false,
   icon: Icon,
   iconPosition = 'left',
+  fullWidth = false,
   className = '',
   children,
   ...props
-}: ButtonProps) {
+}, ref) {
   const isDisabled = disabled || loading
 
-  const baseClasses = 'inline-flex items-center justify-center gap-2 font-semibold rounded-[var(--radius-sm)] transition-all duration-[var(--duration-fast)] active:scale-[0.97]'
+  const base = 'inline-flex items-center justify-center gap-2 font-semibold transition-all active:scale-[0.98]'
 
-  const variantClasses = {
-    filled: 'bg-primary text-white hover:bg-primary-dark shadow-sm hover:shadow-md disabled:bg-primary/40 disabled:shadow-none',
-    outlined: 'bg-white border-2 border-neutral-200 text-text hover:border-neutral-300 hover:bg-neutral-50 disabled:border-neutral-100 disabled:text-text-muted',
-    ghost: 'bg-transparent text-text-secondary hover:bg-neutral-100 disabled:text-text-muted',
-    danger: 'bg-error text-white hover:bg-red-700 shadow-sm disabled:bg-error/40',
+  const variants = {
+    primary: 'bg-text text-white hover:bg-neutral-800 disabled:opacity-40',
+    secondary: 'bg-bg-subtle text-text border border-border hover:bg-bg-inset disabled:opacity-40',
+    ghost: 'bg-transparent text-text-secondary hover:bg-bg-subtle disabled:opacity-40',
+    danger: 'bg-error text-white hover:bg-red-600 disabled:opacity-40',
   }
 
-  const sizeClasses = {
-    sm: 'px-4 py-2 text-sm min-h-[40px]',
-    md: 'px-6 py-3 text-[15px] min-h-[48px]',
-    lg: 'px-8 py-4 text-base min-h-[52px]',
+  const sizes = {
+    sm: 'h-9 px-3.5 text-[13px] rounded-lg',
+    md: 'h-11 px-5 text-[15px] rounded-xl',
+    lg: 'h-[52px] px-6 text-base rounded-xl',
   }
 
-  const iconSize = size === 'sm' ? 16 : size === 'lg' ? 22 : 18
+  const iconSize = size === 'sm' ? 14 : size === 'lg' ? 20 : 16
 
   return (
     <button
-      className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
+      ref={ref}
+      className={`${base} ${variants[variant]} ${sizes[size]} ${fullWidth ? 'w-full' : ''} ${className}`}
       disabled={isDisabled}
       {...props}
     >
@@ -57,4 +60,4 @@ export function Button({
       ) : null}
     </button>
   )
-}
+})

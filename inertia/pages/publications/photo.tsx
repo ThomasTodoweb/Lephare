@@ -112,26 +112,26 @@ export default function PhotoCapture({ mission }: Props) {
   return (
     <>
       <Head title="Prendre une photo - Le Phare" />
-      <div className="min-h-screen bg-background flex flex-col">
+      <div className="min-h-screen bg-bg flex flex-col">
         {/* Header */}
-        <div className="px-6 pt-8 pb-4">
-          <Link href="/missions" className="text-primary text-sm mb-2 inline-block">
-            ← Retour à la mission
+        <div className="px-5 pt-8 pb-2">
+          <Link href="/missions" className="text-[13px] font-medium text-text-muted mb-4 inline-block hover:text-text-secondary transition-colors">
+            &larr; Retour a la mission
           </Link>
-          <h1 className="text-2xl font-extrabold text-neutral-900 uppercase tracking-tight">
+          <h1 className="text-[20px] font-bold text-text tracking-tight">
             Votre photo
           </h1>
-          <p className="text-neutral-600 mt-2">
+          <p className="text-[14px] text-text-secondary mt-1">
             {mission.template.title}
           </p>
         </div>
 
         {/* Content */}
-        <div className="flex-1 px-6 pb-32">
+        <div className="flex-1 px-5 pb-36 pt-4">
           {/* Tip Card */}
-          <Card className="mb-6 bg-neutral-50">
-            <h3 className="font-bold text-neutral-900 mb-2">💡 Conseil</h3>
-            <p className="text-neutral-700 text-sm">{mission.template.contentIdea}</p>
+          <Card variant="flat" padding="md" className="mb-5">
+            <p className="text-[13px] font-medium text-text-secondary mb-1">Conseil</p>
+            <p className="text-[14px] text-text leading-relaxed">{mission.template.contentIdea}</p>
           </Card>
 
           {/* Photo preview or placeholder */}
@@ -140,8 +140,8 @@ export default function PhotoCapture({ mission }: Props) {
               <div className="relative">
                 <img
                   src={preview}
-                  alt="Aperçu"
-                  className="w-full max-h-[70vh] object-contain rounded-2xl border-4 border-primary bg-neutral-100"
+                  alt="Apercu"
+                  className="w-full max-h-[70vh] object-contain rounded-2xl border border-border bg-bg-subtle"
                 />
                 <button
                   type="button"
@@ -150,19 +150,24 @@ export default function PhotoCapture({ mission }: Props) {
                     setSelectedFile(null)
                     form.setData('photo', null)
                   }}
-                  className="absolute top-3 right-3 bg-white rounded-full p-2 shadow-lg"
+                  className="absolute top-3 right-3 bg-bg-card rounded-full w-8 h-8 flex items-center justify-center shadow-card text-text-secondary hover:text-text transition-colors"
                 >
-                  ✕
+                  <span className="text-[14px]">&times;</span>
                 </button>
               </div>
             ) : (
               <div
                 onClick={handleChooseFromGallery}
-                className="w-full aspect-[4/5] bg-neutral-100 rounded-2xl border-4 border-dashed border-neutral-300 flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors"
+                className="w-full aspect-[4/5] bg-bg-subtle rounded-2xl border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-text-muted transition-colors"
               >
-                <span className="text-5xl mb-4">📷</span>
-                <p className="text-neutral-600 font-medium">Appuyez pour choisir une photo</p>
-                <p className="text-neutral-500 text-sm mt-1">ou utilisez les boutons ci-dessous</p>
+                <div className="w-14 h-14 rounded-2xl bg-bg-card shadow-card flex items-center justify-center mb-4">
+                  <svg width="24" height="24" fill="none" viewBox="0 0 24 24" className="text-text-muted">
+                    <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    <circle cx="12" cy="13" r="4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+                <p className="text-[14px] font-medium text-text-secondary">Appuyez pour choisir une photo</p>
+                <p className="text-[12px] text-text-muted mt-1">JPG, PNG -- max 10 Mo</p>
               </div>
             )}
           </div>
@@ -186,28 +191,24 @@ export default function PhotoCapture({ mission }: Props) {
         </div>
 
         {/* Fixed bottom buttons */}
-        <div className="fixed bottom-0 left-0 right-0 p-6 bg-background border-t border-neutral-200 space-y-3">
+        <div className="fixed bottom-0 left-0 right-0 p-5 bg-bg/80 backdrop-blur-lg border-t border-border">
           {isCompressing ? (
-            <div className="text-center py-4">
-              <p className="text-neutral-600">Optimisation de l'image...</p>
+            <div className="text-center py-3">
+              <p className="text-[14px] text-text-secondary">Optimisation de l'image...</p>
             </div>
           ) : preview ? (
             <Button
               onClick={handleSubmit}
               disabled={form.processing}
-              className="w-full"
+              loading={form.processing}
+              fullWidth
             >
-              {form.processing ? 'Chargement...' : 'Continuer'}
+              Continuer
             </Button>
           ) : (
-            <>
-              <Button onClick={handleChooseFromGallery} className="w-full">
-                Choisir depuis la galerie
-              </Button>
-              <Button variant="outlined" onClick={handleTakePhoto} className="w-full">
-                Prendre une photo
-              </Button>
-            </>
+            <Button onClick={handleChooseFromGallery} fullWidth>
+              Choisir une photo
+            </Button>
           )}
         </div>
       </div>

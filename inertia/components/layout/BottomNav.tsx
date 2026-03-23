@@ -15,13 +15,12 @@ export function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 bg-surface/95 backdrop-blur-lg border-t border-neutral-100 z-50 safe-area-inset-bottom"
+      className="fixed bottom-5 left-5 right-5 glass rounded-2xl shadow-float z-50 safe-area-inset-bottom"
       aria-label="Navigation principale"
     >
-      <div className="max-w-[428px] mx-auto flex justify-around items-center h-[56px] px-1">
+      <div className="flex justify-around items-center h-14 px-1">
         {NAV_ITEMS.map((item) => {
           const isActive = url === item.href || url.startsWith(`${item.href}/`)
-
           return (
             <NavItem
               key={item.href}

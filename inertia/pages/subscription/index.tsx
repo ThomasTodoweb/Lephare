@@ -1,7 +1,9 @@
 import { Head, Link, router } from '@inertiajs/react'
 import { useState, useEffect, useRef } from 'react'
 import { AppLayout } from '~/components/layout'
-import { Button, Card } from '~/components/ui'
+import { Button } from '~/components/ui/Button'
+import { Card } from '~/components/ui/Card'
+import { ArrowLeft, Check, Download } from 'lucide-react'
 
 interface Invoice {
   id: string
@@ -202,25 +204,27 @@ export default function SubscriptionIndex({ subscription, trialInfo, pricing, is
       <div className="py-4">
         {/* Header */}
         <div className="mb-6">
-          <Link href="/profile" className="text-primary text-sm mb-2 inline-block">
-            ← Retour au profil
+          <Link
+            href="/profile"
+            className="inline-flex items-center gap-1.5 text-[13px] text-text-secondary hover:text-text transition-colors mb-3"
+          >
+            <ArrowLeft size={15} />
+            <span>Retour au profil</span>
           </Link>
-          <h1 className="text-2xl font-extrabold text-neutral-900 uppercase tracking-tight">
-            Mon Abonnement
-          </h1>
+          <h1 className="text-[22px] font-semibold text-text">Mon abonnement</h1>
         </div>
 
         {/* Trial Banner */}
         {isTrialing && trialInfo && (
-          <Card className="mb-6 bg-primary/10 border-primary">
+          <Card variant="bordered" className="mb-5 bg-amber-50/50">
             <div className="flex items-center gap-3">
-              <span className="text-3xl">⏳</span>
+              <span className="text-[22px]">⏳</span>
               <div>
-                <p className="font-bold text-primary">Période d'essai</p>
-                <p className="text-sm text-neutral-600">
+                <p className="text-[14px] font-semibold text-text">Période d'essai</p>
+                <p className="text-[13px] text-text-secondary">
                   Il vous reste <strong>{trialInfo.daysRemaining} jours</strong> d'essai gratuit
                 </p>
-                <p className="text-xs text-neutral-500 mt-1">
+                <p className="text-[12px] text-text-muted mt-0.5">
                   Se termine le {formatDate(trialInfo.endsAt)}
                 </p>
               </div>
@@ -230,128 +234,140 @@ export default function SubscriptionIndex({ subscription, trialInfo, pricing, is
 
         {/* Current Subscription */}
         {(isActive || isCanceled) && subscription && (
-          <Card className="mb-6">
-            <h2 className="font-bold text-lg text-neutral-900 mb-4">Votre abonnement</h2>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-neutral-600">Plan</span>
-                <span className="font-bold">
-                  {subscription.planType === 'monthly' ? 'Mensuel' : 'Annuel'}
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-neutral-600">Statut</span>
-                <span
-                  className={`font-bold ${isActive ? 'text-green-600' : 'text-red-500'}`}
-                >
-                  {isActive ? 'Actif' : 'Annulé'}
-                </span>
-              </div>
-              {subscription.currentPeriodEnd && (
+          <div className="mb-5">
+            <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-2 px-1">
+              Votre abonnement
+            </p>
+            <Card variant="bordered">
+              <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-neutral-600">
-                    {isActive ? 'Prochain renouvellement' : 'Accès jusqu\'au'}
+                  <span className="text-[13px] text-text-secondary">Plan</span>
+                  <span className="text-[14px] font-medium text-text">
+                    {subscription.planType === 'monthly' ? 'Mensuel' : 'Annuel'}
                   </span>
-                  <span className="font-medium">{formatDate(subscription.currentPeriodEnd)}</span>
+                </div>
+                <div className="flex justify-between items-center pt-3 border-t border-border">
+                  <span className="text-[13px] text-text-secondary">Statut</span>
+                  <span className="flex items-center gap-1.5">
+                    <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-green-500' : 'bg-red-400'}`} />
+                    <span className={`text-[14px] font-medium ${isActive ? 'text-green-600' : 'text-red-500'}`}>
+                      {isActive ? 'Actif' : 'Annulé'}
+                    </span>
+                  </span>
+                </div>
+                {subscription.currentPeriodEnd && (
+                  <div className="flex justify-between items-center pt-3 border-t border-border">
+                    <span className="text-[13px] text-text-secondary">
+                      {isActive ? 'Prochain renouvellement' : 'Accès jusqu\'au'}
+                    </span>
+                    <span className="text-[14px] font-medium text-text">{formatDate(subscription.currentPeriodEnd)}</span>
+                  </div>
+                )}
+              </div>
+
+              {isActive && (
+                <div className="space-y-2 mt-5 pt-4 border-t border-border">
+                  <Button
+                    variant="secondary"
+                    onClick={handleOpenBillingPortal}
+                    loading={isOpeningPortal}
+                    fullWidth
+                  >
+                    Gérer mon abonnement
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={handleCancel}
+                    loading={isCanceling}
+                    fullWidth
+                    className="!text-red-500"
+                  >
+                    Annuler l'abonnement
+                  </Button>
                 </div>
               )}
-            </div>
-
-            {isActive && (
-              <div className="space-y-2 mt-4">
-                <Button
-                  variant="outlined"
-                  onClick={handleOpenBillingPortal}
-                  disabled={isOpeningPortal}
-                  className="w-full"
-                >
-                  {isOpeningPortal ? 'Chargement...' : 'Gérer mon abonnement'}
-                </Button>
-                <Button
-                  variant="outlined"
-                  onClick={handleCancel}
-                  disabled={isCanceling}
-                  className="w-full !border-red-500 !text-red-500"
-                >
-                  {isCanceling ? 'Annulation...' : 'Annuler l\'abonnement'}
-                </Button>
-              </div>
-            )}
-          </Card>
+            </Card>
+          </div>
         )}
 
         {/* Invoices History */}
         {(isActive || isCanceled) && (
-          <Card className="mb-6">
-            <h2 className="font-bold text-lg text-neutral-900 mb-4">Historique des factures</h2>
-            {loadingInvoices ? (
-              <p className="text-neutral-500 text-sm">Chargement...</p>
-            ) : invoices.length === 0 ? (
-              <p className="text-neutral-500 text-sm">Aucune facture disponible</p>
-            ) : (
-              <div className="space-y-3">
-                {invoices.map((invoice) => (
-                  <div
-                    key={invoice.id}
-                    className="flex items-center justify-between py-2 border-b border-neutral-100 last:border-0"
-                  >
-                    <div>
-                      <p className="font-medium text-neutral-900">
-                        {invoice.number || 'Facture'}
-                      </p>
-                      <p className="text-sm text-neutral-500">
-                        {new Date(invoice.date).toLocaleDateString('fr-FR')}
-                      </p>
+          <div className="mb-5">
+            <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-2 px-1">
+              Factures
+            </p>
+            <Card variant="bordered">
+              {loadingInvoices ? (
+                <p className="text-[13px] text-text-muted">Chargement...</p>
+              ) : invoices.length === 0 ? (
+                <p className="text-[13px] text-text-muted">Aucune facture disponible</p>
+              ) : (
+                <div className="space-y-0">
+                  {invoices.map((invoice, idx) => (
+                    <div
+                      key={invoice.id}
+                      className={`flex items-center justify-between py-3 ${
+                        idx > 0 ? 'border-t border-border' : ''
+                      }`}
+                    >
+                      <div>
+                        <p className="text-[14px] font-medium text-text">
+                          {invoice.number || 'Facture'}
+                        </p>
+                        <p className="text-[12px] text-text-muted">
+                          {new Date(invoice.date).toLocaleDateString('fr-FR')}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-[14px] font-semibold text-text">
+                          {invoice.amount}€
+                        </span>
+                        {invoice.pdfUrl && (
+                          <a
+                            href={invoice.pdfUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-text-secondary hover:text-text transition-colors"
+                          >
+                            <Download size={15} />
+                          </a>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className="font-bold text-neutral-900">
-                        {invoice.amount}€
-                      </span>
-                      {invoice.pdfUrl && (
-                        <a
-                          href={invoice.pdfUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary text-sm hover:underline"
-                        >
-                          PDF
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </Card>
+                  ))}
+                </div>
+              )}
+            </Card>
+          </div>
         )}
 
         {/* Pricing Plans */}
         {(!subscription || isTrialing || isCanceled) && (
           <>
-            <h2 className="font-bold text-lg text-neutral-900 mb-4">
+            <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-3 px-1">
               {isTrialing ? 'Choisissez votre plan' : 'Nos offres'}
-            </h2>
+            </p>
 
-            <div className="space-y-3 mb-6">
+            <div className="space-y-3 mb-5">
               {/* Monthly Plan */}
               <button
                 onClick={() => setSelectedPlan('monthly')}
-                className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
+                className={`w-full p-4 rounded-xl border text-left transition-all ${
                   selectedPlan === 'monthly'
-                    ? 'border-primary bg-primary/5'
-                    : 'border-neutral-200 bg-white'
+                    ? 'border-text bg-bg-card shadow-card'
+                    : 'border-border bg-bg-card'
                 }`}
               >
                 <div className="flex justify-between items-center">
                   <div>
-                    <p className="font-bold text-neutral-900">Mensuel</p>
-                    <p className="text-sm text-neutral-500">Facturation chaque mois</p>
+                    <p className="text-[15px] font-semibold text-text">Mensuel</p>
+                    <p className="text-[13px] text-text-muted">Facturation chaque mois</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold text-neutral-900">
+                    <p className="text-[22px] font-bold text-text">
                       {pricing.monthly.price}€
                     </p>
-                    <p className="text-sm text-neutral-500">/{pricing.monthly.interval}</p>
+                    <p className="text-[12px] text-text-muted">/{pricing.monthly.interval}</p>
                   </div>
                 </div>
               </button>
@@ -359,37 +375,37 @@ export default function SubscriptionIndex({ subscription, trialInfo, pricing, is
               {/* Yearly Plan */}
               <button
                 onClick={() => setSelectedPlan('yearly')}
-                className={`w-full p-4 rounded-xl border-2 text-left transition-all relative ${
+                className={`w-full p-4 rounded-xl border text-left transition-all relative ${
                   selectedPlan === 'yearly'
-                    ? 'border-primary bg-primary/5'
-                    : 'border-neutral-200 bg-white'
+                    ? 'border-text bg-bg-card shadow-card'
+                    : 'border-border bg-bg-card'
                 }`}
               >
-                <div className="absolute -top-2 right-4 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                <div className="absolute -top-2 right-4 bg-text text-white text-[11px] font-semibold px-2.5 py-0.5 rounded-full">
                   -{pricing.yearly.savings}€
                 </div>
                 <div className="flex justify-between items-center">
                   <div>
-                    <p className="font-bold text-neutral-900">Annuel</p>
-                    <p className="text-sm text-neutral-500">2 mois offerts</p>
+                    <p className="text-[15px] font-semibold text-text">Annuel</p>
+                    <p className="text-[13px] text-text-muted">2 mois offerts</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold text-neutral-900">
+                    <p className="text-[22px] font-bold text-text">
                       {pricing.yearly.price}€
                     </p>
-                    <p className="text-sm text-neutral-500">/{pricing.yearly.interval}</p>
+                    <p className="text-[12px] text-text-muted">/{pricing.yearly.interval}</p>
                   </div>
                 </div>
               </button>
             </div>
 
             {/* Subscribe Button */}
-            <Button onClick={handleSubscribe} disabled={isLoading} className="w-full">
-              {isLoading ? 'Chargement...' : `S'abonner - ${selectedPlan === 'monthly' ? pricing.monthly.price : pricing.yearly.price}€`}
+            <Button onClick={handleSubscribe} loading={isLoading} fullWidth>
+              S'abonner - {selectedPlan === 'monthly' ? pricing.monthly.price : pricing.yearly.price}€
             </Button>
 
             {!isConfigured && (
-              <p className="text-xs text-amber-600 text-center mt-2">
+              <p className="text-[12px] text-amber-600 text-center mt-2">
                 Mode démo - Paiement non configuré
               </p>
             )}
@@ -397,59 +413,55 @@ export default function SubscriptionIndex({ subscription, trialInfo, pricing, is
         )}
 
         {/* Features */}
-        <Card className="mt-6">
-          <h2 className="font-bold text-lg text-neutral-900 mb-4">Inclus dans l'abonnement</h2>
-          <ul className="space-y-3">
-            <li className="flex items-center gap-3">
-              <span className="text-green-500">✓</span>
-              <span className="text-neutral-700">Missions quotidiennes personnalisées</span>
-            </li>
-            <li className="flex items-center gap-3">
-              <span className="text-green-500">✓</span>
-              <span className="text-neutral-700">Accès à tous les tutoriels</span>
-            </li>
-            <li className="flex items-center gap-3">
-              <span className="text-green-500">✓</span>
-              <span className="text-neutral-700">Statistiques détaillées</span>
-            </li>
-            <li className="flex items-center gap-3">
-              <span className="text-green-500">✓</span>
-              <span className="text-neutral-700">Système de badges et gamification</span>
-            </li>
-            <li className="flex items-center gap-3">
-              <span className="text-green-500">✓</span>
-              <span className="text-neutral-700">Rappels quotidiens</span>
-            </li>
-            <li className="flex items-center gap-3">
-              <span className="text-green-500">✓</span>
-              <span className="text-neutral-700">Support prioritaire</span>
-            </li>
-          </ul>
-        </Card>
+        <div className="mt-6">
+          <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-2 px-1">
+            Inclus dans l'abonnement
+          </p>
+          <Card variant="bordered">
+            <ul className="space-y-3">
+              {[
+                'Missions quotidiennes personnalisées',
+                'Accès à tous les tutoriels',
+                'Statistiques détaillées',
+                'Système de badges et gamification',
+                'Rappels quotidiens',
+                'Support prioritaire',
+              ].map((feature) => (
+                <li key={feature} className="flex items-center gap-2.5">
+                  <Check size={14} className="text-green-500 flex-shrink-0" />
+                  <span className="text-[14px] text-text">{feature}</span>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        </div>
 
         {/* FAQ */}
-        <Card className="mt-6">
-          <h2 className="font-bold text-lg text-neutral-900 mb-4">Questions fréquentes</h2>
-          <div className="space-y-4">
-            <div>
-              <p className="font-medium text-neutral-900">
-                Puis-je annuler à tout moment ?
-              </p>
-              <p className="text-sm text-neutral-600 mt-1">
-                Oui, vous pouvez annuler votre abonnement quand vous le souhaitez. Vous garderez l'accès jusqu'à la fin de la période payée.
-              </p>
+        <div className="mt-5">
+          <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-2 px-1">
+            Questions fréquentes
+          </p>
+          <Card variant="bordered">
+            <div className="space-y-4">
+              <div>
+                <p className="text-[14px] font-medium text-text">
+                  Puis-je annuler à tout moment ?
+                </p>
+                <p className="text-[13px] text-text-secondary mt-1">
+                  Oui, vous pouvez annuler votre abonnement quand vous le souhaitez. Vous garderez l'accès jusqu'à la fin de la période payée.
+                </p>
+              </div>
+              <div className="pt-4 border-t border-border">
+                <p className="text-[14px] font-medium text-text">
+                  Comment fonctionne la période d'essai ?
+                </p>
+                <p className="text-[13px] text-text-secondary mt-1">
+                  Vous bénéficiez de 7 jours d'essai gratuit pour découvrir toutes les fonctionnalités de Le Phare.
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="font-medium text-neutral-900">
-                Comment fonctionne la période d'essai ?
-              </p>
-              <p className="text-sm text-neutral-600 mt-1">
-                Vous bénéficiez de 7 jours d'essai gratuit pour découvrir toutes les fonctionnalités de Le Phare.
-              </p>
-            </div>
-          </div>
-        </Card>
-
+          </Card>
+        </div>
       </div>
     </AppLayout>
   )

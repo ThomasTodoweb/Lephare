@@ -1,6 +1,6 @@
 import { Head, Link } from '@inertiajs/react'
 import { useState } from 'react'
-import { Lock } from 'lucide-react'
+import { Lock, Search } from 'lucide-react'
 import { AppLayout } from '~/components/layout'
 import { Card } from '~/components/ui/Card'
 
@@ -27,17 +27,7 @@ interface Props {
   userLevel: number
 }
 
-const CATEGORY_ICONS: Record<string, string> = {
-  'premiers-pas': '🚀',
-  'photos-videos': '📸',
-  'stories-reels': '🎬',
-  post: '📸',
-  story: '📱',
-  reel: '🎬',
-}
-
 export default function TutorialsIndex({ categories, userLevel }: Props) {
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('grid')
   const [lockedMessage, setLockedMessage] = useState<string | null>(null)
   const totalTutorials = categories.reduce((acc, cat) => acc + cat.tutorials.length, 0)
   const completedTutorials = categories.reduce(
@@ -53,201 +43,116 @@ export default function TutorialsIndex({ categories, userLevel }: Props) {
   return (
     <AppLayout>
       <Head title="Tutoriels - Le Phare" />
+
       {/* Header */}
-      <div className="pt-4 pb-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bolota font-bold text-neutral-900 uppercase">
-            Formations
-          </h1>
-          {/* View mode toggle */}
-          <div className="flex items-center gap-1 bg-neutral-100 rounded-lg p-1">
-            <button
-              onClick={() => setViewMode('list')}
-              className={`p-2 rounded-md transition-colors ${
-                viewMode === 'list'
-                  ? 'bg-white shadow-sm text-primary'
-                  : 'text-neutral-500 hover:text-neutral-700'
-              }`}
-              title="Vue liste"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`p-2 rounded-md transition-colors ${
-                viewMode === 'grid'
-                  ? 'bg-white shadow-sm text-primary'
-                  : 'text-neutral-500 hover:text-neutral-700'
-              }`}
-              title="Vue grille"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-              </svg>
-            </button>
-          </div>
-        </div>
-        <p className="text-neutral-600 mt-2">
+      <div className="pt-6 pb-2">
+        <h1 className="text-[22px] font-bold text-text">Formations</h1>
+        <p className="text-[14px] text-text-secondary mt-1">
           Apprenez à créer du contenu qui engage
         </p>
-
-        {/* Progress */}
-        <div className="mt-4 bg-white rounded-xl p-4 border-2 border-neutral-200">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-neutral-700">Votre progression</span>
-            <span className="text-sm font-bold text-primary">
-              {completedTutorials}/{totalTutorials} tutos
-            </span>
-          </div>
-          <div className="w-full bg-neutral-200 rounded-full h-2">
-            <div
-              className="bg-primary rounded-full h-2 transition-all"
-              style={{ width: `${totalTutorials > 0 ? (completedTutorials / totalTutorials) * 100 : 0}%` }}
-            />
-          </div>
-        </div>
       </div>
 
+      {/* Progress */}
+      <Card variant="bordered" className="mt-4">
+        <div className="flex items-center justify-between mb-2.5">
+          <span className="text-[13px] font-medium text-text-secondary">Votre progression</span>
+          <span className="text-[13px] font-semibold text-text">
+            {completedTutorials}/{totalTutorials}
+          </span>
+        </div>
+        <div className="w-full bg-bg-subtle rounded-full h-1.5">
+          <div
+            className="bg-text rounded-full h-1.5 transition-all"
+            style={{ width: `${totalTutorials > 0 ? (completedTutorials / totalTutorials) * 100 : 0}%` }}
+          />
+        </div>
+      </Card>
+
       {/* Search link */}
-      <div className="mb-4">
-        <Link
-          href="/tutorials/search"
-          className="flex items-center gap-3 w-full px-4 py-3 bg-white border-2 border-neutral-200 rounded-xl text-neutral-500 hover:border-primary transition-colors"
-        >
-          <span className="text-xl">🔍</span>
-          <span>Rechercher un tutoriel...</span>
+      <div className="mt-4">
+        <Link href="/tutorials/search">
+          <Card variant="flat" className="flex items-center gap-3">
+            <Search className="w-4 h-4 text-text-muted" />
+            <span className="text-[14px] text-text-muted">Rechercher un tutoriel...</span>
+          </Card>
         </Link>
       </div>
 
       {/* Categories */}
-      <div className="pb-8">
-          {categories.map((category) => (
-            <div key={category.id} className="mb-6">
-              {/* Category header */}
-              <div className="flex items-center gap-3 mb-3">
-                <span className="text-2xl">{CATEGORY_ICONS[category.slug] || '📚'}</span>
-                <div>
-                  <h2 className="text-lg font-bold text-neutral-900">{category.name}</h2>
-                  <p className="text-sm text-neutral-500">
-                    {category.tutorials.filter((t) => t.isCompleted).length}/{category.tutorials.length} vus
-                  </p>
-                </div>
+      <div className="mt-6 pb-8">
+        {categories.map((category) => (
+          <div key={category.id} className="mb-8">
+            {/* Category header */}
+            <div className="mb-3">
+              <div className="flex items-center justify-between">
+                <h2 className="text-[15px] font-semibold text-text">{category.name}</h2>
+                <span className="text-[12px] text-text-muted">
+                  {category.tutorials.filter((t) => t.isCompleted).length}/{category.tutorials.length}
+                </span>
               </div>
+            </div>
 
-              {/* Tutorials - List or Grid view */}
-              {viewMode === 'list' ? (
-                <div className="flex flex-col gap-3">
-                  {category.tutorials.map((tutorial) =>
-                    tutorial.isLocked ? (
-                      <div key={tutorial.id} className="block cursor-pointer" onClick={() => handleLockedClick(tutorial)}>
-                        <Card className="bg-neutral-50 border-neutral-200 opacity-70">
-                          <div className="flex items-start gap-3">
-                            <div className="w-10 h-10 rounded-full flex items-center justify-center bg-neutral-200">
-                              <Lock className="w-4 h-4 text-neutral-400" />
-                            </div>
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2">
-                                <h3 className="font-bold text-neutral-500">{tutorial.title}</h3>
-                                <span className="text-xs bg-neutral-200 text-neutral-500 px-2 py-0.5 rounded-full">
-                                  Niveau {tutorial.requiredLevel} requis
-                                </span>
-                              </div>
-                              {tutorial.description && (
-                                <p className="text-sm text-neutral-400 line-clamp-2 mt-1">
-                                  {tutorial.description}
-                                </p>
-                              )}
-                              <p className="text-xs text-neutral-400 mt-2">
-                                ⏱ {tutorial.durationMinutes} min
-                              </p>
-                            </div>
-                          </div>
-                        </Card>
+            {/* Tutorials list */}
+            <div className="flex flex-col gap-2">
+              {category.tutorials.map((tutorial) =>
+                tutorial.isLocked ? (
+                  <div key={tutorial.id} className="block cursor-pointer" onClick={() => handleLockedClick(tutorial)}>
+                    <Card variant="bordered" className="opacity-50">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-bg-subtle shrink-0">
+                          <Lock className="w-3.5 h-3.5 text-text-muted" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-[14px] font-semibold text-text-muted truncate">{tutorial.title}</h3>
+                          <p className="text-[12px] text-text-muted mt-0.5">
+                            Niveau {tutorial.requiredLevel} requis · {tutorial.durationMinutes} min
+                          </p>
+                        </div>
                       </div>
-                    ) : (
-                      <Link key={tutorial.id} href={`/tutorials/${tutorial.id}`} className="block">
-                        <Card className={`${tutorial.isCompleted ? 'bg-green-50 border-green-200' : ''}`}>
-                          <div className="flex items-start gap-3">
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${tutorial.isCompleted ? 'bg-green-100' : 'bg-neutral-100'}`}>
-                              {tutorial.isCompleted ? (
-                                <span className="text-green-600">✓</span>
-                              ) : (
-                                <span className="text-neutral-400">▶</span>
-                              )}
-                            </div>
-                            <div className="flex-1">
-                              <h3 className="font-bold text-neutral-900">{tutorial.title}</h3>
-                              {tutorial.description && (
-                                <p className="text-sm text-neutral-600 line-clamp-2 mt-1">
-                                  {tutorial.description}
-                                </p>
-                              )}
-                              <p className="text-xs text-neutral-500 mt-2">
-                                ⏱ {tutorial.durationMinutes} min
-                              </p>
-                            </div>
-                          </div>
-                        </Card>
-                      </Link>
-                    )
-                  )}
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 gap-3">
-                  {category.tutorials.map((tutorial) =>
-                    tutorial.isLocked ? (
-                      <div key={tutorial.id} className="cursor-pointer" onClick={() => handleLockedClick(tutorial)}>
-                        <Card className="h-full bg-neutral-50 border-neutral-200 opacity-70">
-                          <div className="flex flex-col items-center text-center">
-                            <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3 bg-neutral-200">
-                              <Lock className="w-5 h-5 text-neutral-400" />
-                            </div>
-                            <h3 className="font-bold text-neutral-500 text-sm line-clamp-2">{tutorial.title}</h3>
-                            <span className="text-xs bg-neutral-200 text-neutral-500 px-2 py-0.5 rounded-full mt-2">
-                              Niv. {tutorial.requiredLevel}
-                            </span>
-                          </div>
-                        </Card>
-                      </div>
-                    ) : (
-                      <Link key={tutorial.id} href={`/tutorials/${tutorial.id}`}>
-                        <Card className={`h-full ${tutorial.isCompleted ? 'bg-green-50 border-green-200' : ''}`}>
-                          <div className="flex flex-col items-center text-center">
-                            <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 ${tutorial.isCompleted ? 'bg-green-100' : 'bg-neutral-100'}`}>
-                              {tutorial.isCompleted ? (
-                                <span className="text-green-600 text-xl">✓</span>
-                              ) : (
-                                <span className="text-neutral-400 text-xl">▶</span>
-                              )}
-                            </div>
-                            <h3 className="font-bold text-neutral-900 text-sm line-clamp-2">{tutorial.title}</h3>
-                            <p className="text-xs text-neutral-500 mt-2">
-                              ⏱ {tutorial.durationMinutes} min
+                    </Card>
+                  </div>
+                ) : (
+                  <Link key={tutorial.id} href={`/tutorials/${tutorial.id}`} className="block">
+                    <Card variant={tutorial.isCompleted ? 'bordered' : 'default'}>
+                      <div className="flex items-center gap-3">
+                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${tutorial.isCompleted ? 'bg-emerald-50' : 'bg-bg-subtle'}`}>
+                          {tutorial.isCompleted ? (
+                            <span className="text-emerald-600 text-[13px] font-bold">✓</span>
+                          ) : (
+                            <span className="text-text-muted text-[12px]">▶</span>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-[14px] font-semibold text-text truncate">{tutorial.title}</h3>
+                          {tutorial.description && (
+                            <p className="text-[13px] text-text-secondary line-clamp-1 mt-0.5">
+                              {tutorial.description}
                             </p>
-                          </div>
-                        </Card>
-                      </Link>
-                    )
-                  )}
-                </div>
+                          )}
+                          <p className="text-[12px] text-text-muted mt-1">
+                            {tutorial.durationMinutes} min
+                          </p>
+                        </div>
+                      </div>
+                    </Card>
+                  </Link>
+                )
               )}
             </div>
-          ))}
+          </div>
+        ))}
 
         {categories.length === 0 && (
-          <div className="text-center py-12">
-            <span className="text-5xl mb-4 block">📚</span>
-            <p className="text-neutral-600">Aucun tutoriel disponible pour le moment</p>
+          <div className="text-center py-16">
+            <p className="text-[14px] text-text-secondary">Aucun tutoriel disponible pour le moment</p>
           </div>
         )}
       </div>
 
       {/* Locked tutorial toast */}
       {lockedMessage && (
-        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 bg-neutral-900 text-white px-4 py-3 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2 animate-fade-in">
-          <Lock className="w-4 h-4 text-amber-400" />
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 bg-text text-white px-4 py-3 rounded-xl shadow-card text-[13px] font-medium flex items-center gap-2 animate-fade-in max-w-[380px]">
+          <Lock className="w-3.5 h-3.5 shrink-0" />
           {lockedMessage}
         </div>
       )}

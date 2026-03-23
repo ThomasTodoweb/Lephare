@@ -1,8 +1,8 @@
 import { Head, Link, router } from '@inertiajs/react'
 import { useState, useEffect } from 'react'
+import { ChevronLeft, Search } from 'lucide-react'
 import { AppLayout } from '~/components/layout'
 import { Card } from '~/components/ui/Card'
-import { Input } from '~/components/ui/Input'
 
 interface Tutorial {
   id: number
@@ -39,82 +39,83 @@ export default function TutorialsSearch({ query: initialQuery, tutorials }: Prop
   return (
     <AppLayout>
       <Head title="Rechercher - Tutoriels - Le Phare" />
+
       {/* Header */}
-      <div className="pb-4">
-        <Link href="/tutorials" className="text-primary text-sm mb-2 inline-block">
-          ← Retour aux tutoriels
+      <div className="pt-4 pb-4">
+        <Link href="/tutorials" className="inline-flex items-center gap-1 text-[13px] text-text-secondary mb-3">
+          <ChevronLeft className="w-4 h-4" />
+          Tutoriels
         </Link>
-        <h1 className="text-2xl font-extrabold text-neutral-900 uppercase tracking-tight">
-          Rechercher
-        </h1>
+        <h1 className="text-[20px] font-bold text-text">Rechercher</h1>
       </div>
 
       {/* Search input */}
       <div className="mb-6">
-        <Input
-          type="text"
-          placeholder="Tapez votre recherche..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          autoFocus
-        />
+        <Card variant="flat" className="flex items-center gap-3">
+          <Search className="w-4 h-4 text-text-muted shrink-0" />
+          <input
+            type="text"
+            placeholder="Tapez votre recherche..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            autoFocus
+            className="flex-1 bg-transparent text-[14px] text-text placeholder:text-text-muted outline-none"
+          />
+        </Card>
       </div>
 
       {/* Results */}
       <div className="pb-8">
-          {isSearching && (
-            <div className="text-center py-8">
-              <div className="animate-spin inline-block w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
-              <p className="text-neutral-600 mt-2">Recherche en cours...</p>
-            </div>
-          )}
+        {isSearching && (
+          <div className="text-center py-12">
+            <div className="w-6 h-6 border-2 border-text border-t-transparent rounded-full animate-spin mx-auto" />
+            <p className="text-[13px] text-text-muted mt-3">Recherche en cours...</p>
+          </div>
+        )}
 
-          {!isSearching && query.length >= 2 && tutorials.length === 0 && (
-            <div className="text-center py-12">
-              <span className="text-5xl mb-4 block">🔍</span>
-              <p className="text-neutral-600">Aucun tutoriel trouvé pour "{query}"</p>
-            </div>
-          )}
+        {!isSearching && query.length >= 2 && tutorials.length === 0 && (
+          <div className="text-center py-16">
+            <p className="text-[14px] text-text-secondary">Aucun tutoriel trouvé pour "{query}"</p>
+          </div>
+        )}
 
-          {!isSearching && query.length < 2 && (
-            <div className="text-center py-12">
-              <span className="text-5xl mb-4 block">✨</span>
-              <p className="text-neutral-600">Tapez au moins 2 caractères pour rechercher</p>
-            </div>
-          )}
+        {!isSearching && query.length < 2 && (
+          <div className="text-center py-16">
+            <p className="text-[14px] text-text-muted">Tapez au moins 2 caractères pour rechercher</p>
+          </div>
+        )}
 
-          {!isSearching && tutorials.length > 0 && (
-            <div className="space-y-3">
-              <p className="text-sm text-neutral-500 mb-4">
-                {tutorials.length} résultat{tutorials.length > 1 ? 's' : ''} trouvé{tutorials.length > 1 ? 's' : ''}
-              </p>
+        {!isSearching && tutorials.length > 0 && (
+          <div>
+            <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-3">
+              {tutorials.length} résultat{tutorials.length > 1 ? 's' : ''}
+            </p>
+            <div className="flex flex-col gap-2">
               {tutorials.map((tutorial) => (
                 <Link key={tutorial.id} href={`/tutorials/${tutorial.id}`}>
-                  <Card className={`${tutorial.isCompleted ? 'bg-green-50 border-green-200' : ''}`}>
-                    <div className="flex items-start gap-3">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${tutorial.isCompleted ? 'bg-green-100' : 'bg-neutral-100'}`}>
+                  <Card variant={tutorial.isCompleted ? 'bordered' : 'default'}>
+                    <div className="flex items-center gap-3">
+                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${tutorial.isCompleted ? 'bg-emerald-50' : 'bg-bg-subtle'}`}>
                         {tutorial.isCompleted ? (
-                          <span className="text-green-600">✓</span>
+                          <span className="text-emerald-600 text-[13px] font-bold">✓</span>
                         ) : (
-                          <span className="text-neutral-400">▶</span>
+                          <span className="text-text-muted text-[12px]">▶</span>
                         )}
                       </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-bold text-neutral-900">{tutorial.title}</h3>
-                        </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-[14px] font-semibold text-text truncate">{tutorial.title}</h3>
                         {tutorial.categoryName && (
-                          <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                          <span className="text-[11px] font-medium text-text-muted">
                             {tutorial.categoryName}
                           </span>
                         )}
                         {tutorial.description && (
-                          <p className="text-sm text-neutral-600 line-clamp-2 mt-1">
+                          <p className="text-[13px] text-text-secondary line-clamp-1 mt-0.5">
                             {tutorial.description}
                           </p>
                         )}
-                        <p className="text-xs text-neutral-500 mt-2">
-                          ⏱ {tutorial.durationMinutes} min
+                        <p className="text-[12px] text-text-muted mt-1">
+                          {tutorial.durationMinutes} min
                         </p>
                       </div>
                     </div>
@@ -122,6 +123,7 @@ export default function TutorialsSearch({ query: initialQuery, tutorials }: Prop
                 </Link>
               ))}
             </div>
+          </div>
         )}
       </div>
     </AppLayout>

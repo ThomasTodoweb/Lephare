@@ -1,5 +1,3 @@
-import { Star } from 'lucide-react'
-
 interface LevelProgressBarProps {
   currentLevel: number
   levelName: string
@@ -22,43 +20,43 @@ export function LevelProgressBar({
   isMaxLevel,
 }: LevelProgressBarProps) {
   return (
-    <div className="bg-white rounded-2xl p-4 shadow-sm border border-neutral-100">
-      {/* Level header */}
-      <div className="flex items-center justify-between mb-3">
-        <div>
-          <p className="text-sm font-bold text-neutral-900">Niveau {currentLevel}</p>
-          <p className="text-xs text-neutral-500">{levelName}</p>
+    <div>
+      {/* Level info */}
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <span className="text-[15px]">{levelIcon}</span>
+          <span className="text-[15px] font-semibold text-text">
+            Niveau {currentLevel}
+          </span>
+          <span className="text-[13px] text-text-secondary">{levelName}</span>
         </div>
-        <div className="flex items-center gap-1 bg-amber-50 px-2 py-1 rounded-full">
-          <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
-          <span className="text-sm font-bold text-amber-700">{xpTotal} XP</span>
-        </div>
+        <span className="text-[13px] font-medium text-text-secondary">
+          {xpTotal} XP
+        </span>
       </div>
 
       {/* Progress bar */}
-      <div className="relative">
-        <div className="h-3 bg-neutral-100 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-gradient-to-r from-primary to-accent rounded-full transition-all duration-500"
-            style={{ width: `${progressPercent}%` }}
-          />
-        </div>
+      <div className="h-1.5 bg-bg-subtle rounded-full overflow-hidden">
+        <div
+          className="h-full bg-text rounded-full transition-all duration-500"
+          style={{ width: `${progressPercent}%` }}
+        />
+      </div>
 
-        {/* Progress text */}
-        <div className="flex justify-between mt-1.5">
-          {isMaxLevel ? (
-            <span className="text-xs text-primary font-medium">Niveau maximum atteint !</span>
-          ) : (
-            <>
-              <span className="text-xs text-neutral-500">
-                {xpProgressInLevel} / {xpProgressInLevel + xpForNextLevel} XP
-              </span>
-              <span className="text-xs text-neutral-500">
-                Plus que {xpForNextLevel} XP
-              </span>
-            </>
-          )}
-        </div>
+      {/* Progress text */}
+      <div className="flex justify-between mt-1.5">
+        {isMaxLevel ? (
+          <span className="text-[12px] text-text-secondary">Niveau maximum atteint</span>
+        ) : (
+          <>
+            <span className="text-[12px] text-text-muted">
+              {xpProgressInLevel} / {xpProgressInLevel + xpForNextLevel} XP
+            </span>
+            <span className="text-[12px] text-text-muted">
+              Plus que {xpForNextLevel} XP
+            </span>
+          </>
+        )}
       </div>
     </div>
   )

@@ -8,19 +8,14 @@ export function OnboardingProgress({ currentStep, totalSteps, showBar = true }: 
   const progress = (currentStep / totalSteps) * 100
 
   return (
-    <div className="mb-4">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-sm text-neutral-600">
-          Etape {currentStep}/{totalSteps}
-        </span>
-        <span className="text-sm text-neutral-400">
-          {Math.round(progress)}%
-        </span>
-      </div>
+    <div className="mb-6">
+      <p className="text-[13px] font-medium text-text-muted mb-2">
+        Etape {currentStep} sur {totalSteps}
+      </p>
       {showBar && (
-        <div className="h-2 bg-neutral-200 rounded-full overflow-hidden">
+        <div className="h-1 bg-bg-subtle rounded-full overflow-hidden">
           <div
-            className="h-full bg-primary rounded-full transition-all duration-300"
+            className="h-full bg-text rounded-full transition-all duration-500 ease-out"
             style={{ width: `${progress}%` }}
           />
         </div>

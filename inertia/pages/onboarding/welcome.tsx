@@ -25,23 +25,20 @@ export default function Welcome({ step, totalSteps, videoUrl }: Props) {
   return (
     <>
       <Head title="Bienvenue - Le Phare" />
-      <div className="min-h-screen bg-background flex flex-col">
-        {/* Header */}
-        <div className="px-6 pt-8 pb-4">
+      <div className="min-h-screen bg-bg flex flex-col">
+        <div className="flex-1 px-5 pt-12 pb-32 max-w-lg mx-auto w-full">
           <OnboardingProgress currentStep={step} totalSteps={totalSteps} />
-          <h1 className="text-2xl font-extrabold text-neutral-900 uppercase tracking-tight">
-            Bienvenue sur Le Phare !
-          </h1>
-          <p className="text-neutral-600 mt-2">
-            Regardez cette courte vidéo pour découvrir comment booster votre restaurant sur Instagram.
-          </p>
-        </div>
 
-        {/* Content */}
-        <div className="flex-1 px-6 pb-32">
+          <h1 className="text-[22px] font-bold text-text tracking-tight">
+            Bienvenue sur Le Phare
+          </h1>
+          <p className="text-[15px] text-text-secondary mt-2 leading-relaxed">
+            Regardez cette courte video pour decouvrir comment booster votre restaurant sur Instagram.
+          </p>
+
           {/* Video */}
-          <Card className="mb-6 overflow-hidden p-0">
-            <div className="aspect-video bg-neutral-900 flex items-center justify-center relative">
+          <Card padding="none" className="mt-6 overflow-hidden">
+            <div className="aspect-video bg-text flex items-center justify-center relative">
               {embedUrl.match(/^https:\/\/(www\.)?(youtube\.com|youtube-nocookie\.com)\/embed\/[\w-]+(\?.*)?$/) ? (
                 <iframe
                   src={embedUrl}
@@ -53,51 +50,48 @@ export default function Welcome({ step, totalSteps, videoUrl }: Props) {
                 />
               ) : (
                 <div className="text-center text-white">
-                  <Play className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                  <p className="text-neutral-400">Vidéo de formation non configurée</p>
+                  <Play className="w-12 h-12 mx-auto mb-3 opacity-40" />
+                  <p className="text-[14px] text-white/50">Video de formation non configuree</p>
                 </div>
               )}
             </div>
           </Card>
 
           {/* Benefits */}
-          <div className="space-y-3">
-            <h2 className="font-bold text-neutral-900">Ce que vous allez apprendre :</h2>
-            <ul className="space-y-2">
-              <li className="flex items-start gap-3">
-                <span className="text-primary text-xl">1</span>
-                <div>
-                  <p className="font-medium text-neutral-900">Missions quotidiennes</p>
-                  <p className="text-sm text-neutral-600">Des idées de publications adaptées à votre restaurant</p>
+          <div className="mt-8 space-y-4">
+            <h2 className="text-[15px] font-semibold text-text">Ce que vous allez apprendre</h2>
+            <div className="space-y-3">
+              {[
+                { num: '1', title: 'Missions quotidiennes', desc: 'Des idees de publications adaptees a votre restaurant' },
+                { num: '2', title: 'Tutoriels pratiques', desc: 'Apprenez les meilleures techniques Instagram' },
+                { num: '3', title: 'Suivi de progression', desc: 'Gagnez des XP et debloquez de nouveaux contenus' },
+              ].map((item) => (
+                <div key={item.num} className="flex items-start gap-3">
+                  <div className="w-7 h-7 rounded-lg bg-bg-subtle flex items-center justify-center flex-shrink-0">
+                    <span className="text-[13px] font-semibold text-text">{item.num}</span>
+                  </div>
+                  <div>
+                    <p className="text-[14px] font-medium text-text">{item.title}</p>
+                    <p className="text-[13px] text-text-muted mt-0.5">{item.desc}</p>
+                  </div>
                 </div>
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="text-primary text-xl">2</span>
-                <div>
-                  <p className="font-medium text-neutral-900">Tutoriels pratiques</p>
-                  <p className="text-sm text-neutral-600">Apprenez les meilleures techniques Instagram</p>
-                </div>
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="text-primary text-xl">3</span>
-                <div>
-                  <p className="font-medium text-neutral-900">Suivi de progression</p>
-                  <p className="text-sm text-neutral-600">Gagnez des XP et débloquez de nouveaux contenus</p>
-                </div>
-              </li>
-            </ul>
+              ))}
+            </div>
           </div>
         </div>
 
         {/* Fixed bottom button */}
-        <div className="fixed bottom-0 left-0 right-0 p-6 bg-background border-t border-neutral-200">
-          <Button
-            onClick={handleContinue}
-            disabled={continueForm.processing}
-            className="w-full"
-          >
-            {continueForm.processing ? 'Chargement...' : "C'est parti !"}
-          </Button>
+        <div className="fixed bottom-0 left-0 right-0 p-5 bg-bg/80 backdrop-blur-lg">
+          <div className="max-w-lg mx-auto">
+            <Button
+              variant="primary"
+              fullWidth
+              loading={continueForm.processing}
+              onClick={handleContinue}
+            >
+              C'est parti !
+            </Button>
+          </div>
         </div>
       </div>
     </>

@@ -2,6 +2,7 @@ import { Head, useForm } from '@inertiajs/react'
 import { Button } from '~/components/ui/Button'
 import { Card } from '~/components/ui/Card'
 import { OnboardingProgress } from '~/components/OnboardingProgress'
+import { Check } from 'lucide-react'
 
 interface Strategy {
   id: number
@@ -34,75 +35,65 @@ export default function Strategy({ strategies, currentStrategyId, step, totalSte
 
   return (
     <>
-      <Head title="Choisissez votre stratégie - Le Phare" />
-      <div className="min-h-screen bg-background flex flex-col">
-        {/* Header */}
-        <div className="px-6 pt-8 pb-4">
+      <Head title="Choisissez votre strategie - Le Phare" />
+      <div className="min-h-screen bg-bg flex flex-col">
+        <form onSubmit={handleSubmit} className="flex-1 px-5 pt-12 pb-32 max-w-lg mx-auto w-full">
           <OnboardingProgress currentStep={step} totalSteps={totalSteps} />
-          <h1 className="text-2xl font-extrabold text-neutral-900 uppercase tracking-tight">
+
+          <h1 className="text-[22px] font-bold text-text tracking-tight">
             Votre objectif ?
           </h1>
-          <p className="text-neutral-600 mt-2">
+          <p className="text-[15px] text-text-secondary mt-2 leading-relaxed">
             Choisissez ce qui vous correspond le mieux, on adapte votre parcours.
           </p>
-        </div>
 
-        {/* Strategies */}
-        <form onSubmit={handleSubmit} className="flex-1 px-6 pb-32">
-          <div className="space-y-4">
-            {strategies.map((strategy) => (
-              <Card
-                key={strategy.id}
-                className={`cursor-pointer transition-all ${
-                  data.strategy_id === strategy.id
-                    ? 'ring-4 ring-primary border-primary'
-                    : 'hover:border-primary/50'
-                }`}
-                onClick={() => handleSelect(strategy.id)}
-              >
-                <div className="flex items-start gap-4">
-                  <div className="text-4xl">{strategy.icon}</div>
-                  <div className="flex-1">
-                    <h3 className="font-bold text-lg text-neutral-900">{strategy.name}</h3>
-                    <p className="text-neutral-600 text-sm mt-1">{strategy.description}</p>
-                  </div>
-                  {data.strategy_id === strategy.id && (
-                    <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
-                      <svg
-                        className="w-4 h-4 text-white"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={3}
-                          d="M5 13l4 4L19 7"
-                        />
-                      </svg>
+          <div className="mt-6 space-y-3">
+            {strategies.map((strategy) => {
+              const isSelected = data.strategy_id === strategy.id
+              return (
+                <Card
+                  key={strategy.id}
+                  variant="interactive"
+                  className={`transition-all ${
+                    isSelected ? 'border-2 border-text' : 'border-2 border-transparent'
+                  }`}
+                  onClick={() => handleSelect(strategy.id)}
+                >
+                  <div className="flex items-start gap-3.5">
+                    <span className="text-[28px] leading-none">{strategy.icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-[15px] font-semibold text-text">{strategy.name}</h3>
+                      <p className="text-[13px] text-text-muted mt-0.5 leading-relaxed">{strategy.description}</p>
                     </div>
-                  )}
-                </div>
-              </Card>
-            ))}
+                    {isSelected && (
+                      <div className="w-6 h-6 bg-text rounded-full flex items-center justify-center flex-shrink-0">
+                        <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+                      </div>
+                    )}
+                  </div>
+                </Card>
+              )
+            })}
           </div>
 
           {errors.strategy_id && (
-            <p className="text-red-500 text-sm mt-4">{errors.strategy_id}</p>
+            <p className="text-[12px] text-error font-medium mt-3">{errors.strategy_id}</p>
           )}
         </form>
 
         {/* Fixed bottom button */}
-        <div className="fixed bottom-0 left-0 right-0 p-6 bg-background border-t border-neutral-200">
-          <Button
-            type="submit"
-            onClick={handleSubmit}
-            disabled={!data.strategy_id || processing}
-            className="w-full"
-          >
-            {processing ? 'Enregistrement...' : 'Continuer'}
-          </Button>
+        <div className="fixed bottom-0 left-0 right-0 p-5 bg-bg/80 backdrop-blur-lg">
+          <div className="max-w-lg mx-auto">
+            <Button
+              variant="primary"
+              fullWidth
+              loading={processing}
+              disabled={!data.strategy_id}
+              onClick={handleSubmit}
+            >
+              Continuer
+            </Button>
+          </div>
         </div>
       </div>
     </>

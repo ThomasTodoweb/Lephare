@@ -9,32 +9,21 @@ interface NavItemProps {
   isActive: boolean
 }
 
-export const NavItem = memo(function NavItem({
-  icon: Icon,
-  label,
-  href,
-  isActive,
-}: NavItemProps) {
+export const NavItem = memo(function NavItem({ icon: Icon, label, href, isActive }: NavItemProps) {
   return (
     <Link
       href={href}
       className={`
-        flex flex-col items-center justify-center gap-0.5 px-3 py-1.5 min-w-[56px]
-        transition-all duration-[var(--duration-fast)]
-        active:scale-[0.92]
-        ${isActive ? 'text-primary' : 'text-text-muted hover:text-text-secondary'}
+        flex flex-col items-center justify-center w-14 h-10 rounded-xl
+        transition-all duration-150
+        active:scale-90
+        ${isActive ? 'text-text' : 'text-text-muted'}
       `}
       aria-label={label}
       aria-current={isActive ? 'page' : undefined}
     >
-      <Icon
-        size={22}
-        strokeWidth={isActive ? 2.5 : 1.8}
-        className="transition-all duration-[var(--duration-fast)]"
-      />
-      <span
-        className={`text-[10px] font-medium transition-colors ${isActive ? 'text-primary' : 'text-text-muted'}`}
-      >
+      <Icon size={21} strokeWidth={isActive ? 2.2 : 1.6} />
+      <span className={`text-[10px] mt-0.5 ${isActive ? 'font-semibold' : 'font-medium'}`}>
         {label}
       </span>
     </Link>

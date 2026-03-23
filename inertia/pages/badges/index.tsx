@@ -1,4 +1,5 @@
 import { Head, Link } from '@inertiajs/react'
+import { ChevronLeft } from 'lucide-react'
 import { AppLayout } from '~/components/layout'
 import { Card } from '~/components/ui'
 
@@ -45,37 +46,36 @@ export default function BadgesIndex({ badges, stats }: Props) {
     <AppLayout>
       <Head title="Mes Badges - Le Phare" />
 
-      <div className="py-4">
+      <div className="pt-4 pb-8">
         {/* Header */}
         <div className="mb-6">
-          <Link href="/profile" className="text-primary text-sm mb-2 inline-block">
-            ← Retour au profil
+          <Link href="/profile" className="inline-flex items-center gap-1 text-[13px] text-text-secondary mb-3">
+            <ChevronLeft className="w-4 h-4" />
+            Profil
           </Link>
-          <h1 className="text-2xl font-extrabold text-neutral-900 uppercase tracking-tight">
-            Mes Badges
-          </h1>
-          <p className="text-neutral-600 mt-1">
-            Collectionnez les badges en progressant !
+          <h1 className="text-[22px] font-bold text-text">Mes badges</h1>
+          <p className="text-[14px] text-text-secondary mt-1">
+            Collectionnez les badges en progressant
           </p>
         </div>
 
         {/* Progress overview */}
-        <Card className="mb-6 bg-primary/5 border-primary">
+        <Card variant="bordered" className="mb-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-3xl font-extrabold text-primary">
-                {stats.unlockedCount}/{stats.totalCount}
+              <p className="text-[28px] font-bold text-text">
+                {stats.unlockedCount}<span className="text-[16px] text-text-muted font-normal">/{stats.totalCount}</span>
               </p>
-              <p className="text-sm text-neutral-600">badges débloqués</p>
+              <p className="text-[13px] text-text-secondary">badges débloqués</p>
             </div>
             <div className="text-right">
-              <p className="text-lg font-bold text-neutral-900">🔥 {stats.currentStreak} jours</p>
-              <p className="text-xs text-neutral-500">Record : {stats.longestStreak} jours</p>
+              <p className="text-[15px] font-semibold text-text">{stats.currentStreak} jours</p>
+              <p className="text-[12px] text-text-muted">Streak en cours</p>
             </div>
           </div>
-          <div className="w-full bg-neutral-200 rounded-full h-2 mt-4">
+          <div className="w-full bg-bg-subtle rounded-full h-1.5 mt-4">
             <div
-              className="bg-primary rounded-full h-2 transition-all"
+              className="bg-text rounded-full h-1.5 transition-all"
               style={{ width: `${stats.totalCount > 0 ? (stats.unlockedCount / stats.totalCount) * 100 : 0}%` }}
             />
           </div>
@@ -86,40 +86,35 @@ export default function BadgesIndex({ badges, stats }: Props) {
           {badges.map((badge) => (
             <Card
               key={badge.id}
-              className={`text-center ${
-                badge.unlocked
-                  ? 'bg-white border-green-300'
-                  : 'bg-neutral-100 border-neutral-200 opacity-60'
-              }`}
+              variant={badge.unlocked ? 'default' : 'flat'}
+              className={!badge.unlocked ? 'opacity-50' : ''}
             >
-              <div
-                className={`text-4xl mb-2 ${badge.unlocked ? '' : 'grayscale'}`}
-              >
-                {badge.icon}
+              <div className="text-center">
+                <div className={`text-[32px] mb-2 ${badge.unlocked ? '' : 'grayscale'}`}>
+                  {badge.icon}
+                </div>
+                <h3 className="text-[13px] font-semibold text-text">
+                  {badge.name}
+                </h3>
+                {badge.unlocked && badge.unlockedAt ? (
+                  <p className="text-[11px] text-emerald-600 mt-1">
+                    Débloqué le {formatDate(badge.unlockedAt)}
+                  </p>
+                ) : (
+                  <p className="text-[11px] text-text-muted mt-1">
+                    {badge.criteriaValue} {CRITERIA_LABELS[badge.criteriaType] || badge.criteriaType}
+                  </p>
+                )}
               </div>
-              <h3 className={`font-bold text-sm ${badge.unlocked ? 'text-neutral-900' : 'text-neutral-500'}`}>
-                {badge.name}
-              </h3>
-              {badge.unlocked && badge.unlockedAt ? (
-                <p className="text-xs text-green-600 mt-1">
-                  ✓ Débloqué le {formatDate(badge.unlockedAt)}
-                </p>
-              ) : (
-                <p className="text-xs text-neutral-400 mt-1">
-                  {badge.criteriaValue} {CRITERIA_LABELS[badge.criteriaType] || badge.criteriaType}
-                </p>
-              )}
             </Card>
           ))}
         </div>
 
         {badges.length === 0 && (
-          <div className="text-center py-12">
-            <span className="text-5xl mb-4 block">🏆</span>
-            <p className="text-neutral-600">Aucun badge disponible pour le moment</p>
+          <div className="text-center py-16">
+            <p className="text-[14px] text-text-secondary">Aucun badge disponible pour le moment</p>
           </div>
         )}
-
       </div>
     </AppLayout>
   )
