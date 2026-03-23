@@ -1,6 +1,7 @@
 import { Head, router } from '@inertiajs/react'
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { AppLayout } from '~/components/layout'
+import { Button } from '~/components/ui/Button'
 import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, Camera, Smartphone, Film, BookOpen, MessageCircle, Images } from 'lucide-react'
 
 interface DayStats {
@@ -504,12 +505,12 @@ export default function CalendarPage({ year, month, missionsByDay: initialMissio
                     <span className="text-[11px] text-text-muted">Passé</span>
                   )}
                   {isPending && (
-                    <button
+                    <Button
+                      size="sm"
                       onClick={() => router.visit(`/missions/${mission.id}`)}
-                      className="px-3 py-1.5 bg-text text-white text-[12px] font-semibold rounded-lg shrink-0"
                     >
                       Faire
-                    </button>
+                    </Button>
                   )}
                 </div>
               )

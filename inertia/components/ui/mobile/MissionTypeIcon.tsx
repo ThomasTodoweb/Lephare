@@ -1,4 +1,4 @@
-import { Camera, Circle, Film, BookOpen, Heart } from 'lucide-react'
+import { Camera, Smartphone, Film, BookOpen, MessageCircle } from 'lucide-react'
 import { type ReactNode } from 'react'
 
 export type MissionType = 'post' | 'story' | 'reel' | 'tuto' | 'engagement'
@@ -14,10 +14,10 @@ export interface MissionTypeIconProps {
 
 const ICON_MAP: Record<MissionType, (props: { size: number; className?: string }) => ReactNode> = {
   post: ({ size, className }) => <Camera size={size} className={className} />,
-  story: ({ size, className }) => <Circle size={size} fill="currentColor" className={className} />,
+  story: ({ size, className }) => <Smartphone size={size} className={className} />,
   reel: ({ size, className }) => <Film size={size} className={className} />,
   tuto: ({ size, className }) => <BookOpen size={size} className={className} />,
-  engagement: ({ size, className }) => <Heart size={size} className={className} />,
+  engagement: ({ size, className }) => <MessageCircle size={size} className={className} />,
 }
 
 const BG_COLORS: Record<MissionType, string> = {

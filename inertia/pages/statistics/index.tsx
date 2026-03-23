@@ -254,7 +254,7 @@ export default function StatisticsIndex({ keyMetrics, summary, comparison, insta
       <div className="pt-4 pb-8 space-y-4">
 
         {/* ─── Zone 1 — Le Verdict (hero) ─────────────────────────────── */}
-        <div className="bg-bg-card rounded-3xl shadow-md p-5">
+        <div className="bg-bg-card rounded-3xl shadow-md p-5 animate-fade-up">
           {isLoadingInterpretation ? (
             <div className="flex flex-col items-center gap-3 py-4">
               <div className="w-8 h-8 rounded-full overflow-hidden border border-border">

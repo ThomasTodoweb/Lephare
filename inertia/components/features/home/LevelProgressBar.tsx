@@ -38,7 +38,7 @@ export function LevelProgressBar({
       {/* Progress bar */}
       <div className="h-1.5 bg-bg-subtle rounded-full overflow-hidden">
         <div
-          className="h-full bg-text rounded-full transition-all duration-500"
+          className="h-full bg-primary rounded-full transition-all duration-500"
           style={{ width: `${progressPercent}%` }}
         />
       </div>

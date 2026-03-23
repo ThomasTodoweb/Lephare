@@ -4,6 +4,8 @@ import { AppLayout } from '~/components/layout'
 import { Button } from '~/components/ui/Button'
 import { Card } from '~/components/ui/Card'
 import { Badge } from '~/components/ui/Badge'
+import { MissionTypeIcon } from '~/components/ui/mobile/MissionTypeIcon'
+import type { MissionType } from '~/components/ui/mobile/MissionTypeIcon'
 
 interface MissionTemplate {
   type: 'post' | 'story' | 'reel' | 'tuto' | 'engagement'
@@ -24,9 +26,7 @@ interface Props {
   todayMissions?: Mission[]
 }
 
-const TYPE_ICONS: Record<string, string> = {
-  post: '📸', story: '📱', reel: '🎬', tuto: '🎓', engagement: '💬',
-}
+// Icons now rendered via MissionTypeIcon component
 
 const TYPE_LABELS: Record<string, string> = {
   post: 'Post', story: 'Story', reel: 'Réel', tuto: 'Tutoriel', engagement: 'Engagement',
@@ -89,10 +89,10 @@ export default function TodayMission({ mission, todayMissions = [] }: Props) {
         {mission ? (
           <>
             {/* Mission Card */}
-            <Card variant="bordered" padding="lg" className="mb-4">
+            <Card variant="bordered" padding="lg" className="mb-4 animate-fade-up">
               <div className="flex items-start gap-3.5">
-                <div className={`w-12 h-12 ${isRequired ? 'bg-text' : 'bg-bg-subtle'} rounded-xl flex items-center justify-center text-xl`}>
-                  {TYPE_ICONS[mission.template.type]}
+                <div className={`w-12 h-12 ${isRequired ? 'bg-text text-white' : 'bg-bg-subtle text-text-secondary'} rounded-xl flex items-center justify-center`}>
+                  <MissionTypeIcon type={mission.template.type as MissionType} size={22} />
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
@@ -136,7 +136,7 @@ export default function TodayMission({ mission, todayMissions = [] }: Props) {
                       `}
                     >
                       <div className="flex items-center gap-2">
-                        <span className="text-lg">{TYPE_ICONS[m.template.type]}</span>
+                        <MissionTypeIcon type={m.template.type as MissionType} size={18} />
                         <div>
                           <p className="text-[11px] font-medium text-text-muted">
                             {m.isRecommended ? 'Objectif' : 'Bonus'}
@@ -165,9 +165,12 @@ export default function TodayMission({ mission, todayMissions = [] }: Props) {
       {/* Fixed bottom buttons */}
       {mission && mission.status === 'pending' && (
         <div className="fixed bottom-20 left-0 right-0 p-5 bg-bg/80 backdrop-blur-lg">
-          <Button onClick={handleAccept} disabled={acceptForm.processing} variant="primary" fullWidth size="lg">
-            {acceptForm.processing ? 'Chargement...' : "C'est parti !"}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button onClick={handleAccept} disabled={acceptForm.processing} variant="primary" fullWidth size="lg">
+              {acceptForm.processing ? 'Chargement...' : "C'est parti !"}
+            </Button>
+            <span className="text-[11px] text-text-muted ml-2">+10 XP</span>
+          </div>
         </div>
       )}
 

@@ -54,7 +54,7 @@ export default function TutorialsIndex({ categories, userLevel }: Props) {
       <Head title="Tutoriels - Le Phare" />
 
       {/* Header */}
-      <div className="bg-gradient-to-br from-violet-500 to-purple-600 rounded-b-3xl -mx-4 px-5 pt-8 pb-6">
+      <div className="bg-gradient-to-br from-[#dd2c0c] to-[#ff6b4f] rounded-b-3xl -mx-4 px-5 pt-8 pb-6">
         <h1 className="text-[22px] font-black text-white">Apprendre</h1>
         <p className="text-[14px] text-white/80 mt-1">Deviens un pro d'Instagram</p>
         <div className="bg-white/20 rounded-2xl px-3 py-2 mt-3 inline-flex items-center gap-2">
@@ -149,7 +149,7 @@ export default function TutorialsIndex({ categories, userLevel }: Props) {
                           className="relative flex items-center gap-4 pl-12 py-2.5"
                         >
                           {/* Circle - current */}
-                          <div className="absolute left-2 w-10 h-10 rounded-full bg-violet-500 ring-4 ring-violet-100 flex items-center justify-center">
+                          <div className="absolute left-2 w-10 h-10 rounded-full bg-primary ring-4 ring-primary/20 flex items-center justify-center">
                             <Play size={14} className="text-white ml-0.5" />
                           </div>
                           {/* Content */}
@@ -211,7 +211,7 @@ export default function TutorialsIndex({ categories, userLevel }: Props) {
             <span className="text-[11px] text-text-muted font-medium">{nextTutorial.durationMinutes} min</span>
             <p className="text-[14px] font-semibold text-text truncate mt-0.5">{nextTutorial.title}</p>
           </div>
-          <div className="w-11 h-11 rounded-full bg-violet-500 flex items-center justify-center shrink-0">
+          <div className="w-11 h-11 rounded-full bg-primary flex items-center justify-center shrink-0">
             <Play size={18} className="text-white ml-0.5" />
           </div>
         </Link>

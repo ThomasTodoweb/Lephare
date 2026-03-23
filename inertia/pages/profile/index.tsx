@@ -246,7 +246,7 @@ export default function Profile({
 
       <div className="pb-8 pt-4">
         {/* ===== ZONE 1: Carte de joueur ===== */}
-        <div className="bg-gradient-to-br from-primary-50 to-[#fdf8f3] rounded-3xl p-5">
+        <div className="bg-gradient-to-br from-primary-50 to-[#fdf8f3] rounded-3xl p-5 animate-fade-up">
           {/* Profile header */}
           <div className="flex items-center gap-3.5 mb-4">
             {instagram?.profilePictureUrl ? (

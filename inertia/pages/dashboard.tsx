@@ -135,15 +135,17 @@ export default function Dashboard({ restaurant, todayMissions, streak, calendarM
 
         {/* Popote Coach — contextual, dismissable */}
         {popoteMessage && (
+          <div className="animate-fade-up" style={{ animationDelay: '100ms' }}>
           <PopoteCoach
             message={popoteMessage}
             variant={streak.isAtRisk ? 'warning' : pendingMissions.length === 0 ? 'positive' : 'default'}
           />
+          </div>
         )}
 
         {/* Hero Mission — THE one thing to do */}
         {heroMission ? (
-          <div>
+          <div className="animate-fade-up" style={{ animationDelay: '150ms' }}>
             <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-2">
               {heroMission.isRecommended ? 'Objectif du jour' : 'Mission disponible'}
             </p>
@@ -166,7 +168,7 @@ export default function Dashboard({ restaurant, todayMissions, streak, calendarM
 
         {/* Other missions — compact list */}
         {otherMissions.length > 0 && (
-          <div>
+          <div className="animate-fade-up" style={{ animationDelay: '200ms' }}>
             <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-2">
               Autres missions
             </p>
@@ -201,12 +203,14 @@ export default function Dashboard({ restaurant, todayMissions, streak, calendarM
 
         {/* Quick stats link */}
         {completedCount > 0 && (
+          <div className="animate-fade-up" style={{ animationDelay: '250ms' }}>
           <InsightCard
             type="stat"
             message={`${completedCount} mission${completedCount > 1 ? 's' : ''} complétée${completedCount > 1 ? 's' : ''} aujourd'hui. Vois l'impact sur tes stats.`}
             actionLabel="Voir mes stats"
             actionHref="/statistics"
           />
+          </div>
         )}
       </div>
     </AppLayout>
