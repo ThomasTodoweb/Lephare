@@ -12,7 +12,7 @@ export function AppLayout({ children, showBottomNav = true }: AppLayoutProps) {
       {/* PWA safe area top spacer */}
       <div className="h-[env(safe-area-inset-top,0px)]" />
 
-      <main className={showBottomNav ? 'pb-24' : ''}>
+      <main className={showBottomNav ? 'pb-28' : ''}>
         <div className="max-w-[430px] mx-auto px-5 pt-4 pb-4">
           {children}
         </div>
