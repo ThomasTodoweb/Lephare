@@ -10,17 +10,15 @@ const NAV_ITEMS = [
   { label: 'Profil', href: '/profile', icon: User },
 ] as const
 
-// Note: Not memoized because usePage() hook returns new object on every render
-// The child NavItem components ARE memoized for optimal performance
 export function BottomNav() {
   const { url } = usePage()
 
   return (
     <nav
-      className="fixed bottom-4 left-[8%] right-[8%] bg-white/95 backdrop-blur-md rounded-[32px] shadow-[0_4px_24px_rgba(0,0,0,0.12)] border border-white/50 z-50"
+      className="fixed bottom-0 left-0 right-0 bg-surface/95 backdrop-blur-lg border-t border-neutral-100 z-50 safe-area-inset-bottom"
       aria-label="Navigation principale"
     >
-      <div className="flex justify-around items-center h-[56px] px-2">
+      <div className="max-w-[428px] mx-auto flex justify-around items-center h-[56px] px-1">
         {NAV_ITEMS.map((item) => {
           const isActive = url === item.href || url.startsWith(`${item.href}/`)
 
@@ -31,7 +29,6 @@ export function BottomNav() {
               label={item.label}
               href={item.href}
               isActive={isActive}
-              showLabel={isActive}
             />
           )
         })}

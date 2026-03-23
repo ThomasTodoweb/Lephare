@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
-import { X, CheckCircle, AlertCircle, Info } from 'lucide-react'
+import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from 'lucide-react'
 
 export interface ToastProps {
   message: string
-  type?: 'success' | 'error' | 'info'
+  type?: 'success' | 'error' | 'info' | 'warning'
   duration?: number
   onClose?: () => void
 }
@@ -18,7 +18,7 @@ export function Toast({ message, type = 'success', duration = 4000, onClose }: T
       setTimeout(() => {
         setIsVisible(false)
         onClose?.()
-      }, 300)
+      }, 250)
     }, duration)
 
     return () => clearTimeout(timer)
@@ -29,61 +29,61 @@ export function Toast({ message, type = 'success', duration = 4000, onClose }: T
     setTimeout(() => {
       setIsVisible(false)
       onClose?.()
-    }, 300)
+    }, 250)
   }
 
   if (!isVisible) return null
 
-  const icons = {
-    success: <CheckCircle className="w-5 h-5 text-green-500" />,
-    error: <AlertCircle className="w-5 h-5 text-red-500" />,
-    info: <Info className="w-5 h-5 text-blue-500" />,
+  const config = {
+    success: {
+      icon: <CheckCircle className="w-5 h-5 text-success" />,
+      bg: 'bg-success-light border-success/20',
+      text: 'text-green-800',
+    },
+    error: {
+      icon: <AlertCircle className="w-5 h-5 text-error" />,
+      bg: 'bg-error-light border-error/20',
+      text: 'text-red-800',
+    },
+    warning: {
+      icon: <AlertTriangle className="w-5 h-5 text-warning" />,
+      bg: 'bg-warning-light border-warning/20',
+      text: 'text-orange-800',
+    },
+    info: {
+      icon: <Info className="w-5 h-5 text-info" />,
+      bg: 'bg-info-light border-info/20',
+      text: 'text-blue-800',
+    },
   }
 
-  const bgColors = {
-    success: 'bg-green-50 border-green-200',
-    error: 'bg-red-50 border-red-200',
-    info: 'bg-blue-50 border-blue-200',
-  }
-
-  const textColors = {
-    success: 'text-green-800',
-    error: 'text-red-800',
-    info: 'text-blue-800',
-  }
+  const { icon, bg, text } = config[type]
 
   return (
     <div
       className={`
         fixed top-4 left-1/2 -translate-x-1/2 z-[100]
         max-w-sm w-[calc(100%-2rem)] mx-auto
-        ${bgColors[type]} border rounded-xl shadow-lg
+        ${bg} border rounded-[var(--radius-md)] shadow-md
         flex items-center gap-3 px-4 py-3
-        transition-all duration-300 ease-out
-        ${isLeaving ? 'opacity-0 -translate-y-2' : 'opacity-100 translate-y-0'}
-        animate-slide-down
+        transition-all duration-[var(--duration-normal)]
+        ${isLeaving ? 'opacity-0 -translate-y-2 scale-95' : 'opacity-100 translate-y-0 scale-100'}
+        animate-fade-up
       `}
       style={{
         paddingTop: 'max(0.75rem, env(safe-area-inset-top, 0.75rem))'
       }}
+      role="alert"
     >
-      {icons[type]}
-      <p className={`flex-1 text-sm font-medium ${textColors[type]}`}>{message}</p>
+      {icon}
+      <p className={`flex-1 text-sm font-medium ${text}`}>{message}</p>
       <button
         onClick={handleClose}
         className="p-1 hover:bg-black/5 rounded-full transition-colors"
+        aria-label="Fermer"
       >
         <X className="w-4 h-4 text-neutral-400" />
       </button>
-    </div>
-  )
-}
-
-// Container for multiple toasts
-export function ToastContainer({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="fixed top-0 left-0 right-0 z-[100] pointer-events-none">
-      <div className="pointer-events-auto">{children}</div>
     </div>
   )
 }

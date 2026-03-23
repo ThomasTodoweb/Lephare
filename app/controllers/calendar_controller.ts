@@ -86,6 +86,48 @@ export default class CalendarController {
   }
 
   /**
+   * Get month stats (AJAX) - returns missionsByDay for a given month
+   */
+  async month({ auth, params, response }: HttpContext) {
+    const user = auth.getUserOrFail()
+    const year = Number(params.year)
+    const month = Number(params.month)
+
+    if (!year || !month || month < 1 || month > 12) {
+      return response.badRequest({ error: 'Mois invalide' })
+    }
+
+    const startOfMonth = DateTime.utc(year, month, 1)
+    const endOfMonth = startOfMonth.endOf('month')
+
+    const monthMissions = await Mission.query()
+      .where('user_id', user.id)
+      .where('assigned_at', '>=', startOfMonth.toSQL()!)
+      .where('assigned_at', '<=', endOfMonth.toSQL()!)
+      .preload('missionTemplate')
+      .orderBy('assigned_at', 'asc')
+
+    const missionsByDay: Record<string, { completed: number; skipped: number; pending: number }> = {}
+
+    for (const mission of monthMissions) {
+      const dayKey = mission.assignedAt.toFormat('yyyy-MM-dd')
+      if (!missionsByDay[dayKey]) {
+        missionsByDay[dayKey] = { completed: 0, skipped: 0, pending: 0 }
+      }
+
+      if (mission.status === 'completed') {
+        missionsByDay[dayKey].completed++
+      } else if (mission.status === 'skipped') {
+        missionsByDay[dayKey].skipped++
+      } else {
+        missionsByDay[dayKey].pending++
+      }
+    }
+
+    return response.json({ year, month, missionsByDay })
+  }
+
+  /**
    * Get missions for a specific day (AJAX)
    */
   async day({ auth, params, response }: HttpContext) {

@@ -1,7 +1,7 @@
 import { type HTMLAttributes } from 'react'
 
 interface CardProps extends HTMLAttributes<HTMLDivElement> {
-  variant?: 'default' | 'bordered'
+  variant?: 'default' | 'bordered' | 'elevated' | 'ghost'
 }
 
 export function Card({
@@ -10,11 +10,13 @@ export function Card({
   children,
   ...props
 }: CardProps) {
-  const baseClasses = 'bg-white rounded-2xl p-6'
+  const baseClasses = 'rounded-[var(--radius-lg)] p-5'
 
   const variantClasses = {
-    default: '',
-    bordered: 'border-4 border-primary',
+    default: 'bg-surface shadow-xs',
+    bordered: 'bg-surface border-2 border-primary shadow-xs',
+    elevated: 'bg-surface-elevated shadow-md',
+    ghost: 'bg-transparent',
   }
 
   return (

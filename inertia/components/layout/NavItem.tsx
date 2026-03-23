@@ -7,7 +7,6 @@ interface NavItemProps {
   label: string
   href: string
   isActive: boolean
-  showLabel?: boolean
 }
 
 export const NavItem = memo(function NavItem({
@@ -15,34 +14,29 @@ export const NavItem = memo(function NavItem({
   label,
   href,
   isActive,
-  showLabel = false,
 }: NavItemProps) {
   return (
     <Link
       href={href}
       className={`
-        flex items-center justify-center gap-1.5 px-3 h-11 rounded-xl
-        transition-all duration-200 ease-out
-        active:scale-[0.92] active:opacity-80
-        ${
-          isActive
-            ? 'text-primary bg-primary/5 shadow-[0_2px_8px_rgba(221,44,12,0.15)]'
-            : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
-        }
+        flex flex-col items-center justify-center gap-0.5 px-3 py-1.5 min-w-[56px]
+        transition-all duration-[var(--duration-fast)]
+        active:scale-[0.92]
+        ${isActive ? 'text-primary' : 'text-text-muted hover:text-text-secondary'}
       `}
       aria-label={label}
       aria-current={isActive ? 'page' : undefined}
     >
-      <Icon size={20} strokeWidth={isActive ? 2.5 : 1.8} className="transition-transform duration-150" />
-      {showLabel && (
-        <span
-          key={href}
-          aria-hidden="true"
-          className="animate-fadeSlideIn bg-primary text-white rounded-full px-2.5 py-1 text-[11px] font-semibold whitespace-nowrap shadow-md"
-        >
-          {label}
-        </span>
-      )}
+      <Icon
+        size={22}
+        strokeWidth={isActive ? 2.5 : 1.8}
+        className="transition-all duration-[var(--duration-fast)]"
+      />
+      <span
+        className={`text-[10px] font-medium transition-colors ${isActive ? 'text-primary' : 'text-text-muted'}`}
+      >
+        {label}
+      </span>
     </Link>
   )
 })

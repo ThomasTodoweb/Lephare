@@ -111,19 +111,25 @@ function getMonthGrid(year: number, month: number): (Date | null)[][] {
 
 // ---- Component ----
 
-export default function CalendarPage({ year, month, missionsByDay, today, selectedDate: initialSelectedDate, selectedDayMissions, level }: Props) {
+export default function CalendarPage({ year, month, missionsByDay: initialMissionsByDay, today, selectedDate: initialSelectedDate, selectedDayMissions, level }: Props) {
   const [currentDate, setCurrentDate] = useState(initialSelectedDate)
   const [missions, setMissions] = useState<DayMission[]>(selectedDayMissions)
   const [loading, setLoading] = useState(false)
   const [showMonth, setShowMonth] = useState(false)
   const [monthViewYear, setMonthViewYear] = useState(year)
   const [monthViewMonth, setMonthViewMonth] = useState(month)
+  const [dayStats, setDayStats] = useState<Record<string, DayStats>>(initialMissionsByDay)
 
-  const abortRef = useRef<AbortController | null>(null)
-  const touchStartRef = useRef<{ x: number; y: number; t: number } | null>(null)
+  const abortDayRef = useRef<AbortController | null>(null)
+  const abortMonthRef = useRef<AbortController | null>(null)
+  const weekTouchRef = useRef<{ x: number; y: number; t: number } | null>(null)
+  const missionTouchRef = useRef<{ x: number; y: number; t: number } | null>(null)
 
   useEffect(() => {
-    return () => { abortRef.current?.abort() }
+    return () => {
+      abortDayRef.current?.abort()
+      abortMonthRef.current?.abort()
+    }
   }, [])
 
   // Sync props when Inertia re-renders with new data
@@ -132,13 +138,14 @@ export default function CalendarPage({ year, month, missionsByDay, today, select
     setMissions(selectedDayMissions)
     setMonthViewYear(year)
     setMonthViewMonth(month)
-  }, [initialSelectedDate, selectedDayMissions, year, month])
+    setDayStats(initialMissionsByDay)
+  }, [initialSelectedDate, selectedDayMissions, year, month, initialMissionsByDay])
 
   // Fetch missions for a given date via AJAX
   const fetchDay = useCallback(async (dateStr: string) => {
-    abortRef.current?.abort()
-    abortRef.current = new AbortController()
-    const signal = abortRef.current.signal
+    abortDayRef.current?.abort()
+    abortDayRef.current = new AbortController()
+    const signal = abortDayRef.current.signal
 
     setLoading(true)
     try {
@@ -154,18 +161,47 @@ export default function CalendarPage({ year, month, missionsByDay, today, select
     }
   }, [])
 
+  // Fetch month stats via AJAX (no full page reload)
+  const fetchMonth = useCallback(async (newYear: number, newMonth: number) => {
+    abortMonthRef.current?.abort()
+    abortMonthRef.current = new AbortController()
+    const signal = abortMonthRef.current.signal
+
+    try {
+      const res = await fetch(`/calendar/month/${newYear}/${newMonth}`, { signal })
+      if (res.ok && !signal.aborted) {
+        const data = await res.json()
+        setDayStats(data.missionsByDay || {})
+        setMonthViewYear(newYear)
+        setMonthViewMonth(newMonth)
+      }
+    } catch (e) {
+      if (e instanceof Error && e.name === 'AbortError') return
+    }
+  }, [])
+
   const selectDate = useCallback((dateStr: string) => {
     setCurrentDate(dateStr)
-    // If the date is in a different month, do a full Inertia visit to get new month stats
     const d = parseDate(dateStr)
     const newMonth = d.getMonth() + 1
     const newYear = d.getFullYear()
+    // If the date is in a different month, fetch new month stats via AJAX
     if (newMonth !== monthViewMonth || newYear !== monthViewYear) {
-      router.get('/calendar', { date: dateStr }, { preserveState: false })
-      return
+      fetchMonth(newYear, newMonth)
     }
     fetchDay(dateStr)
-  }, [fetchDay, monthViewMonth, monthViewYear])
+  }, [fetchDay, fetchMonth, monthViewMonth, monthViewYear])
+
+  // Navigate to previous/next week (moves by 7 days)
+  const goToPrevWeek = useCallback(() => {
+    const prev = addDays(parseDate(currentDate), -7)
+    selectDate(toDateStr(prev))
+  }, [currentDate, selectDate])
+
+  const goToNextWeek = useCallback(() => {
+    const next = addDays(parseDate(currentDate), 7)
+    selectDate(toDateStr(next))
+  }, [currentDate, selectDate])
 
   const goToPrevDay = useCallback(() => {
     const prev = addDays(parseDate(currentDate), -1)
@@ -177,19 +213,44 @@ export default function CalendarPage({ year, month, missionsByDay, today, select
     selectDate(toDateStr(next))
   }, [currentDate, selectDate])
 
-  // ---- Swipe handling ----
-  const onTouchStart = useCallback((e: React.TouchEvent) => {
+  // ---- Swipe on week selector (navigate weeks) ----
+  const onWeekTouchStart = useCallback((e: React.TouchEvent) => {
     const touch = e.touches[0]
-    touchStartRef.current = { x: touch.clientX, y: touch.clientY, t: Date.now() }
+    weekTouchRef.current = { x: touch.clientX, y: touch.clientY, t: Date.now() }
   }, [])
 
-  const onTouchEnd = useCallback((e: React.TouchEvent) => {
-    if (!touchStartRef.current) return
+  const onWeekTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (!weekTouchRef.current) return
     const touch = e.changedTouches[0]
-    const dx = touch.clientX - touchStartRef.current.x
-    const dy = touch.clientY - touchStartRef.current.y
-    const dt = Date.now() - touchStartRef.current.t
-    touchStartRef.current = null
+    const dx = touch.clientX - weekTouchRef.current.x
+    const dy = touch.clientY - weekTouchRef.current.y
+    const dt = Date.now() - weekTouchRef.current.t
+    weekTouchRef.current = null
+
+    if (dt > 400) return
+    if (Math.abs(dx) < 40) return
+    if (Math.abs(dy) > Math.abs(dx)) return
+
+    if (dx < 0) {
+      goToNextWeek()
+    } else {
+      goToPrevWeek()
+    }
+  }, [goToNextWeek, goToPrevWeek])
+
+  // ---- Swipe on missions list (navigate days) ----
+  const onMissionTouchStart = useCallback((e: React.TouchEvent) => {
+    const touch = e.touches[0]
+    missionTouchRef.current = { x: touch.clientX, y: touch.clientY, t: Date.now() }
+  }, [])
+
+  const onMissionTouchEnd = useCallback((e: React.TouchEvent) => {
+    if (!missionTouchRef.current) return
+    const touch = e.changedTouches[0]
+    const dx = touch.clientX - missionTouchRef.current.x
+    const dy = touch.clientY - missionTouchRef.current.y
+    const dt = Date.now() - missionTouchRef.current.t
+    missionTouchRef.current = null
 
     if (dt > 300) return
     if (Math.abs(dx) < 50) return
@@ -217,13 +278,12 @@ export default function CalendarPage({ year, month, missionsByDay, today, select
     let newYear = monthViewYear
     if (newMonth < 1) { newMonth = 12; newYear-- }
     else if (newMonth > 12) { newMonth = 1; newYear++ }
-    const firstOfMonth = `${newYear}-${String(newMonth).padStart(2, '0')}-01`
-    router.get('/calendar', { date: firstOfMonth }, { preserveState: false })
+    fetchMonth(newYear, newMonth)
   }
 
   // Day status dot color
   const getDotColor = (dateStr: string): string | null => {
-    const stats = missionsByDay[dateStr]
+    const stats = dayStats[dateStr]
     if (!stats) return null
     if (stats.completed > 0) return 'bg-green-500'
     if (stats.pending > 0) return 'bg-blue-400'
@@ -256,9 +316,13 @@ export default function CalendarPage({ year, month, missionsByDay, today, select
         </div>
       </div>
 
-      {/* Week selector (hidden when month view is open) */}
+      {/* Week selector (hidden when month view is open) - swipe to change week */}
       {!showMonth && (
-        <div className="grid grid-cols-7 gap-1 mb-2">
+        <div
+          className="grid grid-cols-7 gap-1 mb-2"
+          onTouchStart={onWeekTouchStart}
+          onTouchEnd={onWeekTouchEnd}
+        >
           {weekDays.map((d, i) => {
             const dateStr = toDateStr(d)
             const isSelected = dateStr === currentDate
@@ -382,10 +446,10 @@ export default function CalendarPage({ year, month, missionsByDay, today, select
         </h2>
       </div>
 
-      {/* Missions list (swipeable) */}
+      {/* Missions list (swipeable - navigate days) */}
       <div
-        onTouchStart={onTouchStart}
-        onTouchEnd={onTouchEnd}
+        onTouchStart={onMissionTouchStart}
+        onTouchEnd={onMissionTouchEnd}
         className="min-h-[200px]"
       >
         {loading ? (

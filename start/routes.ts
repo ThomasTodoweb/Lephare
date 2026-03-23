@@ -269,6 +269,7 @@ router.group(() => {
 
   // Calendar - premium feature
   router.get('/calendar', [CalendarController, 'index']).as('calendar.index')
+  router.get('/calendar/month/:year/:month', [CalendarController, 'month']).as('calendar.month')
   router.get('/calendar/day/:date', [CalendarController, 'day']).as('calendar.day')
 }).middleware([middleware.auth(), middleware.subscription()])
 
