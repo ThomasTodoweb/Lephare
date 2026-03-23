@@ -185,14 +185,12 @@ export default function CalendarPage({ year, month, missionsByDay: initialMissio
     const d = parseDate(dateStr)
     const newMonth = d.getMonth() + 1
     const newYear = d.getFullYear()
-    // If the date is in a different month, fetch new month stats via AJAX
     if (newMonth !== monthViewMonth || newYear !== monthViewYear) {
       fetchMonth(newYear, newMonth)
     }
     fetchDay(dateStr)
   }, [fetchDay, fetchMonth, monthViewMonth, monthViewYear])
 
-  // Navigate to previous/next week (moves by 7 days)
   const goToPrevWeek = useCallback(() => {
     const prev = addDays(parseDate(currentDate), -7)
     selectDate(toDateStr(prev))
@@ -285,9 +283,9 @@ export default function CalendarPage({ year, month, missionsByDay: initialMissio
   const getDotColor = (dateStr: string): string | null => {
     const stats = dayStats[dateStr]
     if (!stats) return null
-    if (stats.completed > 0) return 'bg-green-500'
+    if (stats.completed > 0) return 'bg-emerald-500'
     if (stats.pending > 0) return 'bg-blue-400'
-    if (stats.skipped > 0) return 'bg-neutral-400'
+    if (stats.skipped > 0) return 'bg-text-muted'
     return null
   }
 
@@ -298,19 +296,19 @@ export default function CalendarPage({ year, month, missionsByDay: initialMissio
       {/* Compact level bar */}
       <div className="flex items-center justify-between py-3 px-1">
         <div className="flex items-center gap-2">
-          <span className="text-base">{level.levelIcon}</span>
-          <span className="text-sm font-medium text-neutral-700">
+          <span className="text-[14px]">{level.levelIcon}</span>
+          <span className="text-[13px] font-medium text-text-secondary">
             Niveau {level.currentLevel}
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-20 h-1.5 bg-neutral-200 rounded-full overflow-hidden">
+          <div className="w-20 h-1.5 bg-bg-subtle rounded-full overflow-hidden">
             <div
-              className="h-full bg-primary rounded-full transition-all duration-500"
+              className="h-full bg-text rounded-full transition-all duration-500"
               style={{ width: `${level.progressPercent}%` }}
             />
           </div>
-          <span className="text-xs text-neutral-500">
+          <span className="text-[11px] text-text-muted">
             {level.isMaxLevel ? 'MAX' : `${level.xpProgressInLevel} / ${level.xpProgressInLevel + level.xpForNextLevel} XP`}
           </span>
         </div>
@@ -335,14 +333,14 @@ export default function CalendarPage({ year, month, missionsByDay: initialMissio
                 onClick={() => selectDate(dateStr)}
                 className={`
                   flex flex-col items-center py-2 rounded-xl transition-all
-                  ${isSelected ? 'bg-primary text-white' : 'text-neutral-700'}
-                  ${isToday && !isSelected ? 'ring-1 ring-primary' : ''}
+                  ${isSelected ? 'bg-text text-white' : 'text-text'}
+                  ${isToday && !isSelected ? 'ring-1 ring-text' : ''}
                 `}
               >
-                <span className={`text-[10px] font-medium mb-0.5 ${isSelected ? 'text-white/70' : 'text-neutral-400'}`}>
+                <span className={`text-[10px] font-medium mb-0.5 ${isSelected ? 'text-white/60' : 'text-text-muted'}`}>
                   {WEEKDAY_LABELS[i]}
                 </span>
-                <span className={`text-sm font-bold ${isSelected ? 'text-white' : ''}`}>
+                <span className={`text-[13px] font-semibold ${isSelected ? 'text-white' : ''}`}>
                   {d.getDate()}
                 </span>
                 {dot && (
@@ -357,7 +355,7 @@ export default function CalendarPage({ year, month, missionsByDay: initialMissio
       {/* Month view toggle */}
       <button
         onClick={() => setShowMonth(!showMonth)}
-        className="w-full flex items-center justify-center gap-1 py-2 text-xs text-neutral-500 hover:text-neutral-700 transition-colors"
+        className="w-full flex items-center justify-center gap-1 py-2 text-[11px] text-text-muted hover:text-text-secondary transition-colors"
       >
         {showMonth ? (
           <>
@@ -379,23 +377,23 @@ export default function CalendarPage({ year, month, missionsByDay: initialMissio
           <div className="flex items-center justify-between mb-3">
             <button
               onClick={() => navigateMonth(-1)}
-              className="p-1.5 rounded-full hover:bg-neutral-100 transition-colors"
+              className="p-1.5 rounded-lg hover:bg-bg-subtle transition-colors"
             >
-              <ChevronLeft className="w-5 h-5 text-neutral-600" />
+              <ChevronLeft className="w-5 h-5 text-text-secondary" />
             </button>
-            <span className="text-sm font-bold text-neutral-900 capitalize">{monthLabel}</span>
+            <span className="text-[14px] font-semibold text-text capitalize">{monthLabel}</span>
             <button
               onClick={() => navigateMonth(1)}
-              className="p-1.5 rounded-full hover:bg-neutral-100 transition-colors"
+              className="p-1.5 rounded-lg hover:bg-bg-subtle transition-colors"
             >
-              <ChevronRight className="w-5 h-5 text-neutral-600" />
+              <ChevronRight className="w-5 h-5 text-text-secondary" />
             </button>
           </div>
 
           {/* Weekday headers */}
           <div className="grid grid-cols-7 gap-1 mb-1">
             {WEEKDAY_LABELS.map((label, i) => (
-              <div key={i} className="text-center text-[10px] font-medium text-neutral-400 py-1">
+              <div key={i} className="text-center text-[10px] font-medium text-text-muted py-1">
                 {label}
               </div>
             ))}
@@ -421,11 +419,11 @@ export default function CalendarPage({ year, month, missionsByDay: initialMissio
                     }}
                     className={`
                       aspect-square rounded-lg flex flex-col items-center justify-center transition-all
-                      ${isSelected ? 'bg-primary text-white' : ''}
-                      ${isToday && !isSelected ? 'ring-1 ring-primary' : ''}
+                      ${isSelected ? 'bg-text text-white' : ''}
+                      ${isToday && !isSelected ? 'ring-1 ring-text' : ''}
                     `}
                   >
-                    <span className={`text-xs font-medium ${isSelected ? 'text-white' : 'text-neutral-700'}`}>
+                    <span className={`text-[12px] font-medium ${isSelected ? 'text-white' : 'text-text'}`}>
                       {d.getDate()}
                     </span>
                     {dot && (
@@ -441,7 +439,7 @@ export default function CalendarPage({ year, month, missionsByDay: initialMissio
 
       {/* Selected day title */}
       <div className="py-3">
-        <h2 className="text-base font-bold text-neutral-900 capitalize">
+        <h2 className="text-[15px] font-semibold text-text capitalize">
           {formatDayTitle(currentDate)}
         </h2>
       </div>
@@ -454,11 +452,11 @@ export default function CalendarPage({ year, month, missionsByDay: initialMissio
       >
         {loading ? (
           <div className="flex justify-center py-12">
-            <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            <div className="w-5 h-5 border-2 border-text border-t-transparent rounded-full animate-spin" />
           </div>
         ) : missions.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-neutral-400 text-sm">Aucune mission ce jour</p>
+            <p className="text-[13px] text-text-muted">Aucune mission ce jour</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -473,16 +471,16 @@ export default function CalendarPage({ year, month, missionsByDay: initialMissio
                   key={mission.id}
                   className={`
                     flex items-center gap-3 p-3 rounded-xl border transition-all
-                    ${isCompleted ? 'bg-green-50/50 border-green-100' : ''}
-                    ${isSkipped ? 'bg-neutral-50 border-neutral-100' : ''}
-                    ${isPending ? 'bg-white border-neutral-100' : ''}
+                    ${isCompleted ? 'bg-emerald-50/50 border-emerald-100' : ''}
+                    ${isSkipped ? 'bg-bg-subtle border-border' : ''}
+                    ${isPending ? 'bg-bg-card border-border' : ''}
                   `}
                 >
                   {/* Type icon */}
                   <div className={`
                     w-10 h-10 rounded-xl flex items-center justify-center shrink-0
-                    ${isCompleted ? 'bg-green-100 text-green-600' : ''}
-                    ${isSkipped ? 'bg-neutral-100 text-neutral-400' : ''}
+                    ${isCompleted ? 'bg-emerald-100 text-emerald-600' : ''}
+                    ${isSkipped ? 'bg-bg-subtle text-text-muted' : ''}
                     ${isPending ? 'bg-blue-50 text-blue-600' : ''}
                   `}>
                     {config.icon}
@@ -490,25 +488,25 @@ export default function CalendarPage({ year, month, missionsByDay: initialMissio
 
                   {/* Title */}
                   <div className="flex-1 min-w-0">
-                    <p className={`text-sm font-medium truncate ${isSkipped ? 'text-neutral-400' : 'text-neutral-900'}`}>
+                    <p className={`text-[13px] font-medium truncate ${isSkipped ? 'text-text-muted' : 'text-text'}`}>
                       {mission.template.title}
                     </p>
-                    <p className="text-[11px] text-neutral-400">{config.label}</p>
+                    <p className="text-[11px] text-text-muted">{config.label}</p>
                   </div>
 
                   {/* Status / action */}
                   {isCompleted && (
-                    <div className="flex items-center gap-1 text-green-600">
+                    <div className="flex items-center text-emerald-600">
                       <Check className="w-4 h-4" />
                     </div>
                   )}
                   {isSkipped && (
-                    <span className="text-xs text-neutral-400">Passé</span>
+                    <span className="text-[11px] text-text-muted">Passé</span>
                   )}
                   {isPending && (
                     <button
                       onClick={() => router.visit(`/missions/${mission.id}`)}
-                      className="px-3 py-1.5 bg-primary text-white text-xs font-bold rounded-lg shrink-0"
+                      className="px-3 py-1.5 bg-text text-white text-[12px] font-semibold rounded-lg shrink-0"
                     >
                       Faire
                     </button>
@@ -522,7 +520,7 @@ export default function CalendarPage({ year, month, missionsByDay: initialMissio
 
       {/* Swipe hint */}
       {missions.length > 0 && (
-        <p className="text-center text-[10px] text-neutral-300 mt-4 mb-2">
+        <p className="text-center text-[10px] text-text-muted mt-4 mb-2">
           Glissez pour changer de jour
         </p>
       )}

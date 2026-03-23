@@ -1,6 +1,7 @@
 import { Head, useForm, Link, usePage, router } from '@inertiajs/react'
 import { useRef, useState, useCallback, useEffect } from 'react'
 import { Button } from '~/components/ui/Button'
+import { Card } from '~/components/ui/Card'
 import { Toast } from '~/components/ui/Toast'
 import { Upload, X, Plus, Image, Film, Smartphone, Grid, Lightbulb, ChevronDown, ChevronUp, Check, Play, Volume2, VolumeX } from 'lucide-react'
 import axios from 'axios'
@@ -336,13 +337,13 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
   const getContentTypeIcon = () => {
     switch (contentType) {
       case 'carousel':
-        return <Grid className="w-5 h-5 text-neutral-400" />
+        return <Grid className="w-5 h-5 text-text-muted" />
       case 'reel':
-        return <Film className="w-5 h-5 text-neutral-400" />
+        return <Film className="w-5 h-5 text-text-muted" />
       case 'story':
-        return <Smartphone className="w-5 h-5 text-neutral-400" />
+        return <Smartphone className="w-5 h-5 text-text-muted" />
       default:
-        return <Image className="w-5 h-5 text-neutral-400" />
+        return <Image className="w-5 h-5 text-text-muted" />
     }
   }
 
@@ -372,26 +373,28 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
   return (
     <>
       <Head title={`${getContentTypeLabel()} - Le Phare`} />
-      <div className="min-h-screen bg-white flex flex-col">
+      <div className="min-h-screen bg-bg flex flex-col">
         {/* Header */}
-        <div className="px-6 pt-8 pb-4 border-b border-neutral-100">
-          <Link href="/missions" className="text-neutral-500 text-sm mb-4 inline-flex items-center gap-1 hover:text-neutral-700">
-            <span>←</span> Retour
+        <div className="px-5 pt-8 pb-4 border-b border-border">
+          <Link href="/missions" className="text-[13px] text-text-muted mb-4 inline-flex items-center gap-1 hover:text-text-secondary transition-colors">
+            <span>&larr;</span> Retour
           </Link>
-          <h1 className="text-xl font-semibold text-neutral-900 mb-1">
+          <h1 className="text-[20px] font-bold text-text tracking-tight mb-1">
             Ajouter votre {getContentTypeLabel().toLowerCase()}
           </h1>
-          <p className="text-sm text-neutral-500">{mission.template.title}</p>
+          <p className="text-[13px] text-text-secondary">{mission.template.title}</p>
         </div>
 
         {/* Content */}
-        <div className="flex-1 px-6 py-6 pb-32">
+        <div className="flex-1 px-5 py-5 pb-36">
           {/* Error messages as toasts */}
           {flash?.error && <Toast message={flash.error} type="error" />}
           {(videoError || uploadError) && (
-            <p className="text-red-600 text-sm mb-4">
-              {videoError || uploadError}
-            </p>
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl">
+              <p className="text-red-700 text-[13px]">
+                {videoError || uploadError}
+              </p>
+            </div>
           )}
 
           {/* Media preview */}
@@ -409,7 +412,7 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
                     >
                       {media.type === 'video' ? (
                         <div
-                          className={`relative ${aspectClass} bg-black rounded-xl overflow-hidden cursor-pointer`}
+                          className={`relative ${aspectClass} bg-black rounded-2xl overflow-hidden cursor-pointer`}
                           onClick={() => {
                             if (previewVideoRef.current) {
                               previewVideoRef.current.muted = !previewVideoRef.current.muted
@@ -438,7 +441,7 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
                           </div>
                         </div>
                       ) : (
-                        <div className={`relative ${aspectClass} bg-neutral-100 rounded-xl overflow-hidden`}>
+                        <div className={`relative ${aspectClass} bg-bg-subtle rounded-2xl overflow-hidden`}>
                           <img
                             src={media.preview}
                             alt={`Apercu ${index + 1}`}
@@ -452,12 +455,12 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
                           e.stopPropagation()
                           removeMedia(index)
                         }}
-                        className="absolute top-2 right-2 bg-white/90 rounded-full p-1.5 shadow-sm border border-neutral-200 hover:bg-neutral-50"
+                        className="absolute top-2.5 right-2.5 bg-bg-card/90 backdrop-blur-sm rounded-full p-1.5 shadow-card border border-border hover:bg-bg-subtle transition-colors"
                       >
-                        <X className="w-4 h-4 text-neutral-600" />
+                        <X className="w-4 h-4 text-text-secondary" />
                       </button>
                       {isCarousel && (
-                        <span className="absolute bottom-2 left-2 bg-black/60 text-white px-2 py-0.5 rounded text-xs">
+                        <span className="absolute bottom-2 left-2 bg-black/60 text-white px-2 py-0.5 rounded-lg text-[11px] font-medium">
                           {index + 1}/{mediaFiles.length}
                         </span>
                       )}
@@ -468,22 +471,24 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
                   <button
                     type="button"
                     onClick={() => galleryInputRef.current?.click()}
-                    className="aspect-[4/5] bg-neutral-50 rounded-lg border-2 border-dashed border-neutral-200 flex flex-col items-center justify-center cursor-pointer hover:border-neutral-300 transition-colors"
+                    className="aspect-[4/5] bg-bg-subtle rounded-2xl border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-text-muted transition-colors"
                   >
-                    <Plus className="w-6 h-6 text-neutral-400 mb-1" />
-                    <span className="text-xs text-neutral-500">Ajouter</span>
+                    <Plus className="w-6 h-6 text-text-muted mb-1" />
+                    <span className="text-[12px] text-text-muted">Ajouter</span>
                   </button>
                 )}
               </div>
             ) : (
               <div
                 onClick={isStory ? undefined : handleChooseFromGallery}
-                className={`w-full max-w-xs mx-auto bg-neutral-50 rounded-xl border-2 border-dashed border-neutral-200 flex flex-col items-center justify-center ${isStory ? '' : 'cursor-pointer hover:border-neutral-300'} transition-colors ${(isReel || isStory) ? 'aspect-[9/16]' : 'aspect-[4/5]'}`}
+                className={`w-full max-w-xs mx-auto bg-bg-subtle rounded-2xl border-2 border-dashed border-border flex flex-col items-center justify-center ${isStory ? '' : 'cursor-pointer hover:border-text-muted'} transition-colors ${(isReel || isStory) ? 'aspect-[9/16]' : 'aspect-[4/5]'}`}
               >
-                <Upload className="w-8 h-8 text-neutral-400 mb-3" />
-                <p className="text-sm text-neutral-600 font-medium">{getPlaceholderText()}</p>
+                <div className="w-12 h-12 rounded-xl bg-bg-card shadow-card flex items-center justify-center mb-3">
+                  <Upload className="w-5 h-5 text-text-muted" />
+                </div>
+                <p className="text-[14px] text-text-secondary font-medium">{getPlaceholderText()}</p>
                 {getContentHint() && (
-                  <p className="text-xs text-neutral-400 mt-1">{getContentHint()}</p>
+                  <p className="text-[12px] text-text-muted mt-1">{getContentHint()}</p>
                 )}
               </div>
             )}
@@ -495,16 +500,16 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
               <button
                 type="button"
                 onClick={() => setShowIdeas(!showIdeas)}
-                className="w-full flex items-center justify-between p-3 bg-amber-50 rounded-lg text-amber-700 hover:bg-amber-100 transition-colors"
+                className="w-full flex items-center justify-between p-3 bg-bg-subtle rounded-xl text-text-secondary hover:bg-bg-card transition-colors"
               >
                 <div className="flex items-center gap-2">
-                  <Lightbulb className="w-5 h-5" />
-                  <span className="text-sm font-medium">Besoin d'inspiration ?</span>
+                  <Lightbulb className="w-4 h-4" />
+                  <span className="text-[13px] font-medium">Besoin d'inspiration ?</span>
                 </div>
                 {showIdeas ? (
-                  <ChevronUp className="w-5 h-5" />
+                  <ChevronUp className="w-4 h-4" />
                 ) : (
-                  <ChevronDown className="w-5 h-5" />
+                  <ChevronDown className="w-4 h-4" />
                 )}
               </button>
 
@@ -522,14 +527,14 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
                           }
                           setSelectedIdeaId(selectedIdeaId === idea.id ? null : idea.id)
                         }}
-                        className={`w-full overflow-hidden rounded-lg border-2 transition-all ${
+                        className={`w-full overflow-hidden rounded-xl border-2 transition-all ${
                           selectedIdeaId === idea.id
-                            ? 'border-primary ring-2 ring-primary/20'
-                            : 'border-neutral-200 hover:border-neutral-300'
+                            ? 'border-text ring-2 ring-text/10'
+                            : 'border-border hover:border-text-muted'
                         }`}
                       >
                         {idea.exampleMediaType === 'video' ? (
-                          <div className="relative aspect-square bg-neutral-100">
+                          <div className="relative aspect-square bg-bg-subtle">
                             <video
                               src={`/${idea.exampleMediaPath}`}
                               className="w-full h-full object-cover"
@@ -539,7 +544,7 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
                             />
                             <div className="absolute inset-0 flex items-center justify-center bg-black/20">
                               <div className="w-10 h-10 bg-white/90 rounded-full flex items-center justify-center">
-                                <Play className="w-5 h-5 text-neutral-700 ml-0.5" />
+                                <Play className="w-5 h-5 text-text ml-0.5" />
                               </div>
                             </div>
                           </div>
@@ -551,7 +556,7 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
                           />
                         )}
                         {selectedIdeaId === idea.id && (
-                          <div className="absolute top-2 right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center">
+                          <div className="absolute top-2 right-2 w-6 h-6 bg-text rounded-full flex items-center justify-center">
                             <Check className="w-4 h-4 text-white" />
                           </div>
                         )}
@@ -559,14 +564,14 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
 
                       {/* Expanded view with details */}
                       {expandedIdeaId === idea.id && (
-                        <div className="mt-2 p-3 bg-neutral-50 rounded-lg">
-                          <p className="text-sm text-neutral-800">{idea.suggestionText}</p>
+                        <Card variant="flat" padding="sm" className="mt-2">
+                          <p className="text-[13px] text-text">{idea.suggestionText}</p>
                           {idea.photoTips && (
-                            <p className="text-xs text-neutral-500 mt-1">
+                            <p className="text-[12px] text-text-muted mt-1">
                               Conseil : {idea.photoTips}
                             </p>
                           )}
-                        </div>
+                        </Card>
                       )}
                     </div>
                   ))}
@@ -581,16 +586,16 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
               <button
                 type="button"
                 onClick={() => setShowIdeas(!showIdeas)}
-                className="w-full flex items-center justify-between p-3 bg-amber-50 rounded-lg text-amber-700 hover:bg-amber-100 transition-colors"
+                className="w-full flex items-center justify-between p-3 bg-bg-subtle rounded-xl text-text-secondary hover:bg-bg-card transition-colors"
               >
                 <div className="flex items-center gap-2">
-                  <Lightbulb className="w-5 h-5" />
-                  <span className="text-sm font-medium">Besoin d'inspiration ?</span>
+                  <Lightbulb className="w-4 h-4" />
+                  <span className="text-[13px] font-medium">Besoin d'inspiration ?</span>
                 </div>
                 {showIdeas ? (
-                  <ChevronUp className="w-5 h-5" />
+                  <ChevronUp className="w-4 h-4" />
                 ) : (
-                  <ChevronDown className="w-5 h-5" />
+                  <ChevronDown className="w-4 h-4" />
                 )}
               </button>
 
@@ -601,26 +606,26 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
                       key={idea.id}
                       type="button"
                       onClick={() => setSelectedIdeaId(selectedIdeaId === idea.id ? null : idea.id)}
-                      className={`w-full text-left p-3 rounded-lg border transition-colors ${
+                      className={`w-full text-left p-3 rounded-xl border transition-colors ${
                         selectedIdeaId === idea.id
-                          ? 'border-primary bg-primary/5'
-                          : 'border-neutral-200 bg-white hover:border-neutral-300'
+                          ? 'border-text bg-bg-subtle'
+                          : 'border-border bg-bg-card hover:border-text-muted'
                       }`}
                     >
                       <div className="flex items-start gap-2">
                         <div className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
                           selectedIdeaId === idea.id
-                            ? 'border-primary bg-primary'
-                            : 'border-neutral-300'
+                            ? 'border-text bg-text'
+                            : 'border-border'
                         }`}>
                           {selectedIdeaId === idea.id && (
                             <Check className="w-3 h-3 text-white" />
                           )}
                         </div>
                         <div className="flex-1">
-                          <p className="text-sm text-neutral-800">{idea.suggestionText}</p>
+                          <p className="text-[13px] text-text">{idea.suggestionText}</p>
                           {idea.photoTips && (
-                            <p className="text-xs text-neutral-500 mt-1">
+                            <p className="text-[12px] text-text-muted mt-1">
                               Conseil : {idea.photoTips}
                             </p>
                           )}
@@ -635,21 +640,21 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
 
           {/* Conseil - texte discret (only show if no ideas available) */}
           {mediaFiles.length === 0 && ideas.length === 0 && mission.template.contentIdea && (
-            <p className="text-sm text-neutral-500 text-center mb-6">
+            <p className="text-[13px] text-text-muted text-center mb-6">
               {mission.template.contentIdea}
             </p>
           )}
 
           {/* Video loading indicator */}
           {videoLoading && (
-            <p className="text-sm text-neutral-500 text-center mb-4">
+            <p className="text-[13px] text-text-muted text-center mb-4">
               Chargement de la video...
             </p>
           )}
 
           {/* File size indicator for videos */}
           {mediaFiles[0]?.type === 'video' && currentFileSize > 0 && !isUploading && (
-            <p className="text-sm text-neutral-500 text-center mb-4">
+            <p className="text-[13px] text-text-muted text-center mb-4">
               Taille : {formatFileSize(currentFileSize)}
               {currentFileSize > 50 * 1024 * 1024 && (
                 <span className="text-amber-600 ml-1">(fichier volumineux)</span>
@@ -662,7 +667,7 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
             <div className="space-y-4 mb-6">
               {/* Cover image */}
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">
+                <label className="block text-[13px] font-medium text-text-secondary mb-2">
                   Image de couverture (optionnel)
                 </label>
                 {coverImage ? (
@@ -670,7 +675,7 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
                     <img
                       src={coverImage.preview}
                       alt="Couverture"
-                      className="w-20 h-20 object-cover rounded-lg border border-neutral-200"
+                      className="w-20 h-20 object-cover rounded-xl border border-border"
                     />
                     <button
                       type="button"
@@ -678,19 +683,19 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
                         setCoverImage(null)
                         form.setData('cover', null)
                       }}
-                      className="absolute -top-1.5 -right-1.5 bg-white rounded-full p-0.5 shadow-sm border border-neutral-200"
+                      className="absolute -top-1.5 -right-1.5 bg-bg-card rounded-full p-0.5 shadow-card border border-border"
                     >
-                      <X className="w-3 h-3 text-neutral-500" />
+                      <X className="w-3 h-3 text-text-muted" />
                     </button>
                   </div>
                 ) : (
                   <button
                     type="button"
                     onClick={() => coverInputRef.current?.click()}
-                    className="w-20 h-20 bg-neutral-50 rounded-lg border-2 border-dashed border-neutral-200 flex flex-col items-center justify-center text-neutral-400 hover:border-neutral-300 transition-colors"
+                    className="w-20 h-20 bg-bg-subtle rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center text-text-muted hover:border-text-muted transition-colors"
                   >
                     <Image className="w-5 h-5" />
-                    <span className="text-xs mt-1">Ajouter</span>
+                    <span className="text-[11px] mt-1">Ajouter</span>
                   </button>
                 )}
               </div>
@@ -700,7 +705,7 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
                 <div
                   onClick={() => setShareToFeed(!shareToFeed)}
                   className={`w-11 h-6 rounded-full transition-colors ${
-                    shareToFeed ? 'bg-primary' : 'bg-neutral-200'
+                    shareToFeed ? 'bg-text' : 'bg-border'
                   }`}
                 >
                   <div
@@ -709,7 +714,7 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
                     }`}
                   />
                 </div>
-                <span className="text-sm text-neutral-700">Partager aussi dans le feed</span>
+                <span className="text-[14px] text-text">Partager aussi dans le feed</span>
               </label>
             </div>
           )}
@@ -756,66 +761,64 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
         </div>
 
         {/* Fixed bottom buttons */}
-        <div className="fixed bottom-0 left-0 right-0 p-6 bg-white border-t border-neutral-100 space-y-3">
+        <div className="fixed bottom-0 left-0 right-0 p-5 bg-bg/80 backdrop-blur-lg border-t border-border space-y-3">
           {isCompressing ? (
-            <p className="text-center text-sm text-neutral-500 py-3">
+            <p className="text-center text-[13px] text-text-muted py-3">
               Optimisation des images...
             </p>
           ) : isUploading ? (
             <div className="space-y-3">
               <div className="text-center">
-                <p className="text-sm text-neutral-700 mb-2">
+                <p className="text-[14px] text-text mb-2">
                   Envoi en cours... {uploadProgress}%
                 </p>
-                <div className="w-full bg-neutral-100 rounded-full h-2 overflow-hidden">
+                <div className="w-full bg-bg-subtle rounded-full h-1.5 overflow-hidden">
                   <div
-                    className="bg-primary h-full rounded-full transition-all duration-300 ease-out"
+                    className="bg-text h-full rounded-full transition-all duration-300 ease-out"
                     style={{ width: `${uploadProgress}%` }}
                   />
                 </div>
-                <p className="text-xs text-neutral-400 mt-2">
+                <p className="text-[12px] text-text-muted mt-2">
                   {uploadProgress < 100 ? 'Ne fermez pas cette page' : 'Traitement en cours...'}
                 </p>
               </div>
             </div>
           ) : mediaFiles.length > 0 ? (
-            <Button onClick={handleSubmit} disabled={form.processing || isUploading} className="w-full">
+            <Button onClick={handleSubmit} disabled={form.processing || isUploading} fullWidth>
               Continuer
             </Button>
           ) : isStory ? (
             /* Story: offer image gallery, video gallery, and direct video capture */
             <>
               <div className="grid grid-cols-2 gap-3">
-                <Button onClick={handleChooseImageFromGallery} className="w-full">
-                  <Image className="w-4 h-4 mr-2" />
+                <Button onClick={handleChooseImageFromGallery} icon={Image} fullWidth>
                   Photo
                 </Button>
-                <Button onClick={() => videoInputRef.current?.click()} className="w-full">
-                  <Film className="w-4 h-4 mr-2" />
-                  Vidéo
+                <Button onClick={() => videoInputRef.current?.click()} icon={Film} fullWidth>
+                  Video
                 </Button>
               </div>
-              <Button variant="outlined" onClick={handleRecordVideo} className="w-full">
-                Filmer une vidéo
+              <Button variant="secondary" onClick={handleRecordVideo} fullWidth>
+                Filmer une video
               </Button>
             </>
           ) : acceptVideo ? (
             /* Reel: offer video gallery and direct video capture */
             <>
-              <Button onClick={handleChooseFromGallery} className="w-full">
-                Choisir une vidéo
+              <Button onClick={handleChooseFromGallery} fullWidth>
+                Choisir une video
               </Button>
-              <Button variant="outlined" onClick={handleRecordVideo} className="w-full">
-                Filmer une vidéo
+              <Button variant="secondary" onClick={handleRecordVideo} fullWidth>
+                Filmer une video
               </Button>
             </>
           ) : (
             /* Post/Carousel: offer image gallery and camera */
             <>
-              <Button onClick={handleChooseFromGallery} className="w-full">
+              <Button onClick={handleChooseFromGallery} fullWidth>
                 Choisir depuis la galerie
               </Button>
-              <Button variant="outlined" onClick={handleTakePhoto} className="w-full">
+              <Button variant="secondary" onClick={handleTakePhoto} fullWidth>
                 Prendre une photo
               </Button>
             </>

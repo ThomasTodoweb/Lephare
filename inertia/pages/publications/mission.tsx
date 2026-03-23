@@ -1,6 +1,7 @@
 import { Head, router, usePage } from '@inertiajs/react'
 import { useRef, useState, useCallback, useEffect } from 'react'
 import { Button } from '~/components/ui/Button'
+import { Card } from '~/components/ui/Card'
 import { Toast } from '~/components/ui/Toast'
 import { LazyVideo } from '~/components/ui/LazyVideo'
 import { MediaContextInput } from '~/components/MediaContextInput'
@@ -49,11 +50,11 @@ interface MediaFile {
   type: 'image' | 'video'
 }
 
-const CONTENT_TYPE_CONFIG: Record<string, { label: string; emoji: string; description: string }> = {
-  post: { label: 'POST', emoji: '📸', description: 'Photo pour ton feed Instagram' },
-  carousel: { label: 'CARROUSEL', emoji: '🖼️', description: 'Plusieurs photos en carrousel' },
-  reel: { label: 'REEL', emoji: '🎬', description: 'Vidéo courte et dynamique' },
-  story: { label: 'STORY', emoji: '📱', description: 'Contenu éphémère 24h' },
+const CONTENT_TYPE_CONFIG: Record<string, { label: string; description: string }> = {
+  post: { label: 'POST', description: 'Photo pour ton feed Instagram' },
+  carousel: { label: 'CARROUSEL', description: 'Plusieurs photos en carrousel' },
+  reel: { label: 'REEL', description: 'Video courte et dynamique' },
+  story: { label: 'STORY', description: 'Contenu ephemere 24h' },
 }
 
 export default function MissionPage({ mission, contentType, maxImages, acceptVideo, totalSteps = 3, currentStep = 1 }: Props) {
@@ -119,8 +120,6 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
   const isStory = contentType === 'story'
 
   // iOS PWA detection and video capture workaround
-  // The "Take Video" option in iOS PWA causes the app to loop/reload (WebKit bug since iOS 12.2)
-  // We detect this by saving state before opening file picker and checking on mount
   const isIOSPWA = typeof window !== 'undefined' &&
     ('standalone' in window.navigator && (window.navigator as { standalone?: boolean }).standalone === true) &&
     /iPhone|iPad|iPod/.test(navigator.userAgent)
@@ -134,12 +133,9 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
 
     const pendingVideoCapture = sessionStorage.getItem('pendingVideoCapture')
     if (pendingVideoCapture && isIOSPWA) {
-      // We were trying to capture a video but the app reloaded (iOS bug)
       const data = JSON.parse(pendingVideoCapture)
       if (data.missionId === mission.id) {
-        // Show recovery message
         setShowIOSRecoveryMessage(true)
-        // Clear the flag
         sessionStorage.removeItem('pendingVideoCapture')
       }
     }
@@ -148,7 +144,6 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
   // Handle video button click - save state before opening picker on iOS PWA
   const handleVideoClick = () => {
     if (isIOSPWA) {
-      // Save state so we can detect if the app reloads due to iOS bug
       sessionStorage.setItem('pendingVideoCapture', JSON.stringify({
         missionId: mission.id,
         timestamp: Date.now()
@@ -263,7 +258,6 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
     })
 
     // Check if it's a video - be more permissive for iOS
-    // iOS may provide 'video/quicktime', 'video/mp4', or even empty type for .MOV files
     const videoExtensions = ['.mp4', '.mov', '.m4v', '.webm', '.avi']
     const hasVideoExtension = videoExtensions.some(ext =>
       file.name.toLowerCase().endsWith(ext)
@@ -271,7 +265,7 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
     const hasVideoMimeType = file.type.startsWith('video/') || file.type === ''
 
     if (!hasVideoMimeType && !hasVideoExtension) {
-      setVideoError('Ce fichier n\'est pas une vidéo valide')
+      setVideoError('Ce fichier n\'est pas une video valide')
       setVideoLoading(false)
       e.target.value = ''
       return
@@ -279,7 +273,7 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
 
     // Check file size (max 100MB) - only if size is available
     if (file.size > 0 && file.size > 100 * 1024 * 1024) {
-      setVideoError('La vidéo est trop volumineuse (max 100 Mo)')
+      setVideoError('La video est trop volumineuse (max 100 Mo)')
       setVideoLoading(false)
       e.target.value = ''
       return
@@ -293,7 +287,7 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
       clearPendingVideoFlag()
     } catch (err) {
       console.error('Error creating video preview:', err)
-      setVideoError('Erreur lors du chargement de la vidéo')
+      setVideoError('Erreur lors du chargement de la video')
       setVideoLoading(false)
     }
 
@@ -346,7 +340,7 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
 
       // Check file size (max 100MB)
       if (file.size > 0 && file.size > 100 * 1024 * 1024) {
-        setVideoError('La vidéo est trop volumineuse (max 100 Mo)')
+        setVideoError('La video est trop volumineuse (max 100 Mo)')
         setVideoLoading(false)
         e.target.value = ''
         return
@@ -359,7 +353,7 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
         clearPendingVideoFlag()
       } catch (err) {
         console.error('Error creating video preview:', err)
-        setVideoError('Erreur lors du chargement de la vidéo')
+        setVideoError('Erreur lors du chargement de la video')
         setVideoLoading(false)
       }
     } else {
@@ -418,15 +412,12 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
         if (facing === 'user') {
           return label.includes('front') || label.includes('facetime') || label.includes('selfie')
         } else {
-          // Back cameras: exclude front-facing ones
           return !label.includes('front') && !label.includes('facetime') && !label.includes('selfie')
         }
       })
 
-      // If no devices match the filter, return all (fallback)
       const relevantDevices = facingDevices.length > 0 ? facingDevices : videoDevices
 
-      // Categorize lenses based on label
       return relevantDevices.map(d => {
         const label = d.label.toLowerCase()
         let type: CameraLens['type'] = 'unknown'
@@ -438,7 +429,6 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
         } else if (label.includes('wide') || label.includes('back') || label.includes('rear') || label.includes('1x')) {
           type = 'wide'
         } else {
-          // Default to wide for main camera
           type = 'wide'
         }
 
@@ -458,26 +448,21 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
     try {
       setVideoError(null)
 
-      // Stop existing stream if any
       if (recordingStream) {
         recordingStream.getTracks().forEach((track) => track.stop())
       }
 
-      // Detect available lenses for this facing mode
       const lenses = await detectAvailableLenses(requestedFacingMode)
       setAvailableLenses(lenses)
 
-      // Build video constraints
       const videoConstraints: MediaTrackConstraints = {
         width: { ideal: 1080 },
         height: { ideal: 1920 }
       }
 
-      // Use specific device ID if provided, otherwise use facing mode
       if (deviceId) {
         videoConstraints.deviceId = { exact: deviceId }
       } else if (lenses.length > 0) {
-        // Use the first available lens (usually the main wide camera)
         const mainLens = lenses.find(l => l.type === 'wide') || lenses[0]
         videoConstraints.deviceId = { exact: mainLens.deviceId }
         setCurrentLensIndex(lenses.indexOf(mainLens))
@@ -485,13 +470,11 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
         videoConstraints.facingMode = requestedFacingMode
       }
 
-      // Request camera access
       const stream = await navigator.mediaDevices.getUserMedia({
         video: videoConstraints,
         audio: true,
       })
 
-      // Check flash/torch support
       const videoTrack = stream.getVideoTracks()[0]
       if (videoTrack) {
         const capabilities = videoTrack.getCapabilities?.() as MediaTrackCapabilities & { torch?: boolean }
@@ -508,20 +491,18 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
 
     } catch (err) {
       console.error('Failed to open camera:', err)
-      setVideoError('Impossible d\'accéder à la caméra. Vérifiez les permissions.')
+      setVideoError('Impossible d\'acceder a la camera. Verifiez les permissions.')
       setCameraOpen(false)
     }
   }
 
-  // Switch between front and back camera
   const switchCamera = async () => {
-    if (isRecording) return // Don't switch while recording
+    if (isRecording) return
     const newFacingMode = facingMode === 'environment' ? 'user' : 'environment'
-    setCurrentLensIndex(0) // Reset to first lens when switching
+    setCurrentLensIndex(0)
     await openCamera(newFacingMode)
   }
 
-  // Switch to a specific lens (physical camera)
   const switchLens = async (lensIndex: number) => {
     if (isRecording || lensIndex < 0 || lensIndex >= availableLenses.length) return
 
@@ -530,7 +511,6 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
     await openCamera(facingMode, lens.deviceId)
   }
 
-  // Toggle flash/torch
   const toggleFlash = async () => {
     if (!recordingStream || !hasFlash) return
 
@@ -540,7 +520,6 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
     const newFlashMode = flashMode === 'off' ? 'on' : 'off'
 
     try {
-      // Apply torch constraint
       await videoTrack.applyConstraints({
         advanced: [{ torch: newFlashMode === 'on' } as MediaTrackConstraintSet]
       })
@@ -550,7 +529,6 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
     }
   }
 
-  // Get display label for lens type
   const getLensLabel = (type: CameraLens['type']): string => {
     switch (type) {
       case 'ultrawide': return '0.5x'
@@ -560,13 +538,11 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
     }
   }
 
-  // Start recording (step 2 - after camera is open)
   const startRecording = () => {
     if (!recordingStream) return
 
     setIsRecording(true)
 
-    // Create MediaRecorder - don't specify mimeType for iOS compatibility
     const mediaRecorder = new MediaRecorder(recordingStream)
     mediaRecorderRef.current = mediaRecorder
 
@@ -577,7 +553,6 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
     }
 
     mediaRecorder.onstop = () => {
-      // Create video file from recorded chunks
       const blob = new Blob(recordedChunksRef.current, { type: 'video/mp4' })
       const file = new File([blob], `video_${Date.now()}.mp4`, { type: 'video/mp4' })
       const preview = URL.createObjectURL(blob)
@@ -586,25 +561,21 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
       setIsRecording(false)
       setCameraOpen(false)
 
-      // Clean up stream
       if (recordingStream) {
         recordingStream.getTracks().forEach((track) => track.stop())
       }
       setRecordingStream(null)
     }
 
-    // Start recording with 1 second timeslices
     mediaRecorder.start(1000)
   }
 
-  // Stop video recording
   const stopVideoRecording = () => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       mediaRecorderRef.current.stop()
     }
   }
 
-  // Cancel and close camera
   const closeCamera = () => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
       mediaRecorderRef.current.stop()
@@ -616,7 +587,6 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
     setIsRecording(false)
     setCameraOpen(false)
     recordedChunksRef.current = []
-    // Reset camera controls
     setFlashMode('off')
     setCurrentLensIndex(0)
   }
@@ -671,7 +641,7 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
       console.error('Upload error:', error)
       if (axios.isAxiosError(error)) {
         if (error.code === 'ECONNABORTED') {
-          setUploadError('La connexion a expiré. Vérifiez votre connexion internet.')
+          setUploadError('La connexion a expire. Verifiez votre connexion internet.')
         } else if (error.response?.status === 413) {
           setUploadError('Le fichier est trop volumineux.')
         } else {
@@ -703,79 +673,74 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
   return (
     <>
       <Head title={`Mission - Le Phare`} />
-      <div className="min-h-screen bg-background flex flex-col">
+      <div className="min-h-screen bg-bg flex flex-col">
         {/* Header */}
-        <div className="px-6 pt-6 pb-4 pwa-safe-area-top">
-          <div className="flex items-center justify-between mb-4">
+        <div className="px-5 pt-6 pb-4 pwa-safe-area-top">
+          <div className="flex items-center justify-between mb-5">
             <button
               onClick={() => router.visit('/dashboard')}
-              className="p-2 -ml-2 text-neutral-500 hover:text-neutral-700"
+              className="p-2 -ml-2 text-text-muted hover:text-text transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-black text-neutral-900 uppercase tracking-tight font-display">
-              Mission du jour
-            </h1>
-            <span className="text-lg font-bold text-neutral-500">
+            <span className="text-[13px] font-medium text-text-muted">
               {currentStep}/{totalSteps}
             </span>
           </div>
+
+          <h1 className="text-[20px] font-bold text-text tracking-tight">
+            Mission du jour
+          </h1>
         </div>
 
         {/* Content Type Badge + Title + Actions */}
-        <div className="px-6 pb-4">
-          {/* Type badge with emoji */}
-          <div className="flex items-center gap-3 mb-3">
-            <div className="bg-neutral-900 text-white px-4 py-2 rounded-xl flex items-center gap-2">
-              <span className="text-xl">{typeConfig.emoji}</span>
-              <span className="text-sm font-bold font-display tracking-wide">
-                {typeConfig.label}
-              </span>
-            </div>
+        <div className="px-5 pb-4">
+          {/* Type badge */}
+          <div className="flex items-center gap-2.5 mb-3">
+            <span className="bg-text text-white px-3 py-1.5 rounded-xl text-[12px] font-semibold tracking-wide">
+              {typeConfig.label}
+            </span>
           </div>
 
           {/* Mission title */}
-          <h2 className="text-lg font-bold text-neutral-900 mb-1">
+          <h2 className="text-[17px] font-bold text-text mb-1">
             {mission.template.title}
           </h2>
-          <p className="text-sm text-neutral-500">
+          <p className="text-[13px] text-text-secondary">
             {typeConfig.description}
           </p>
 
-          {/* Linked tutorial - "Besoin d'aide?" section */}
+          {/* Linked tutorial */}
           {mission.template.linkedTutorial && (
             <button
               onClick={() => router.visit(`/tutorials/${mission.template.linkedTutorial!.id}`)}
-              className="mt-4 w-full flex items-center gap-3 p-3 bg-amber-50 border border-amber-200 rounded-xl hover:bg-amber-100 transition-colors"
+              className="mt-4 w-full flex items-center gap-3 p-3.5 bg-bg-subtle border border-border rounded-xl hover:bg-bg-card transition-colors"
             >
-              <div className="w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center flex-shrink-0">
-                <BookOpen className="w-5 h-5 text-white" />
+              <div className="w-9 h-9 bg-text rounded-xl flex items-center justify-center flex-shrink-0">
+                <BookOpen className="w-4 h-4 text-white" />
               </div>
               <div className="flex-1 text-left">
-                <p className="text-sm font-medium text-amber-900">Besoin d'aide ?</p>
-                <p className="text-xs text-amber-700 line-clamp-1">{mission.template.linkedTutorial.title}</p>
+                <p className="text-[13px] font-medium text-text">Besoin d'aide ?</p>
+                <p className="text-[12px] text-text-muted line-clamp-1">{mission.template.linkedTutorial.title}</p>
               </div>
-              <ChevronRight className="w-5 h-5 text-amber-500 flex-shrink-0" />
+              <ChevronRight className="w-4 h-4 text-text-muted flex-shrink-0" />
             </button>
           )}
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 px-6 pb-40">
+        <div className="flex-1 px-5 pb-44">
           {/* Instagram-style Ideas Grid - inspiration only (no selection) */}
           {ideasWithMedia.length > 0 && (
             <div className="mb-6">
-              <p className="text-sm font-medium text-neutral-700 mb-3">Inspiration :</p>
+              <p className="text-[13px] font-medium text-text-secondary mb-3">Inspiration</p>
               <div className={`grid ${getGridCols()} gap-1`}>
                 {ideasWithMedia.map((idea) => (
                   <button
                     key={idea.id}
                     type="button"
                     onClick={() => setExpandedIdeaId(idea.id)}
-                    className="relative aspect-[9/16] overflow-hidden rounded-lg bg-neutral-100"
+                    className="relative aspect-[9/16] overflow-hidden rounded-xl bg-bg-subtle"
                   >
                     {idea.exampleMediaType === 'video' ? (
                       <LazyVideo
@@ -792,7 +757,6 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
                         className="w-full h-full object-cover"
                         loading="lazy"
                         onError={(e) => {
-                          // Hide broken images
                           const target = e.target as HTMLImageElement
                           target.style.display = 'none'
                         }}
@@ -805,7 +769,7 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
               {/* Expanded idea modal */}
               {expandedIdeaId && (
                 <div
-                  className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+                  className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
                   onClick={() => setExpandedIdeaId(null)}
                 >
                   <div className="relative max-w-sm w-full" onClick={(e) => e.stopPropagation()}>
@@ -817,28 +781,27 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
                           {idea.exampleMediaType === 'video' ? (
                             <video
                               src={getIdeaMediaUrl(idea)}
-                              className="w-full aspect-[9/16] object-cover rounded-xl"
+                              className="w-full aspect-[9/16] object-cover rounded-2xl"
                               autoPlay
                               loop
                               playsInline
-                              // Sound enabled when expanded
                             />
                           ) : (
                             <img
                               src={getIdeaMediaUrl(idea)}
                               alt=""
-                              className="w-full aspect-[9/16] object-cover rounded-xl"
+                              className="w-full aspect-[9/16] object-cover rounded-2xl"
                             />
                           )}
-                          <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent rounded-b-xl">
-                            <p className="text-white text-sm">{idea.suggestionText}</p>
+                          <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent rounded-b-2xl">
+                            <p className="text-white text-[14px]">{idea.suggestionText}</p>
                             {idea.photoTips && (
-                              <p className="text-white/70 text-xs mt-1">💡 {idea.photoTips}</p>
+                              <p className="text-white/70 text-[12px] mt-1">{idea.photoTips}</p>
                             )}
                           </div>
                           <button
                             onClick={() => setExpandedIdeaId(null)}
-                            className="absolute top-2 right-2 bg-black/50 rounded-full p-2"
+                            className="absolute top-3 right-3 bg-black/50 backdrop-blur-sm rounded-full p-2"
                           >
                             <X className="w-5 h-5 text-white" />
                           </button>
@@ -854,18 +817,15 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
           {/* Text-only ideas (just display, no selection) */}
           {ideasWithMedia.length === 0 && ideas.length > 0 && (
             <div className="mb-6">
-              <p className="text-sm font-medium text-neutral-700 mb-3">Inspiration :</p>
+              <p className="text-[13px] font-medium text-text-secondary mb-3">Inspiration</p>
               <div className="space-y-2">
                 {ideas.map((idea) => (
-                  <div
-                    key={idea.id}
-                    className="w-full text-left p-3 rounded-lg border border-neutral-200 bg-white"
-                  >
-                    <p className="text-sm text-neutral-800">{idea.suggestionText}</p>
+                  <Card key={idea.id} variant="bordered" padding="sm">
+                    <p className="text-[13px] text-text">{idea.suggestionText}</p>
                     {idea.photoTips && (
-                      <p className="text-xs text-neutral-500 mt-1">💡 {idea.photoTips}</p>
+                      <p className="text-[12px] text-text-muted mt-1">{idea.photoTips}</p>
                     )}
-                  </div>
+                  </Card>
                 ))}
               </div>
             </div>
@@ -873,9 +833,9 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
 
           {/* Fallback to template idea if no ideas */}
           {ideas.length === 0 && mission.template.contentIdea && (
-            <div className="mb-6 p-4 bg-amber-50 rounded-xl">
-              <p className="text-sm text-neutral-800">{mission.template.contentIdea}</p>
-            </div>
+            <Card variant="flat" padding="md" className="mb-6">
+              <p className="text-[13px] text-text">{mission.template.contentIdea}</p>
+            </Card>
           )}
 
           {/* Media Preview Area */}
@@ -886,7 +846,7 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
                   <div key={index} className="relative">
                     {media.type === 'video' ? (
                       <div
-                        className={`relative ${getAspectClass()} bg-black rounded-xl overflow-hidden cursor-pointer`}
+                        className={`relative ${getAspectClass()} bg-black rounded-2xl overflow-hidden cursor-pointer`}
                         onClick={() => {
                           if (previewVideoRef.current) {
                             previewVideoRef.current.muted = !previewVideoRef.current.muted
@@ -902,9 +862,9 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
                           loop
                           muted={isMuted}
                           playsInline
-                          onError={() => setVideoError('Impossible de lire cette vidéo.')}
+                          onError={() => setVideoError('Impossible de lire cette video.')}
                         />
-                        <div className="absolute bottom-3 right-3 bg-black/60 rounded-full p-2">
+                        <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-sm rounded-full p-2">
                           {isMuted ? (
                             <VolumeX className="w-4 h-4 text-white" />
                           ) : (
@@ -913,10 +873,10 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
                         </div>
                       </div>
                     ) : (
-                      <div className={`relative ${getAspectClass()} bg-neutral-100 rounded-xl overflow-hidden`}>
+                      <div className={`relative ${getAspectClass()} bg-bg-subtle rounded-2xl overflow-hidden`}>
                         <img
                           src={media.preview}
-                          alt={`Aperçu ${index + 1}`}
+                          alt={`Apercu ${index + 1}`}
                           className="w-full h-full object-cover"
                         />
                       </div>
@@ -927,12 +887,12 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
                         e.stopPropagation()
                         removeMedia(index)
                       }}
-                      className="absolute top-2 right-2 bg-white/90 rounded-full p-1.5 shadow-sm border border-neutral-200 hover:bg-neutral-50"
+                      className="absolute top-2.5 right-2.5 bg-bg-card/90 backdrop-blur-sm rounded-full p-1.5 shadow-card border border-border hover:bg-bg-subtle transition-colors"
                     >
-                      <X className="w-4 h-4 text-neutral-600" />
+                      <X className="w-4 h-4 text-text-secondary" />
                     </button>
                     {isCarousel && (
-                      <span className="absolute bottom-2 left-2 bg-black/60 text-white px-2 py-0.5 rounded text-xs">
+                      <span className="absolute bottom-2 left-2 bg-black/60 text-white px-2 py-0.5 rounded-lg text-[11px] font-medium">
                         {index + 1}/{mediaFiles.length}
                       </span>
                     )}
@@ -942,10 +902,10 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
                   <button
                     type="button"
                     onClick={() => galleryInputRef.current?.click()}
-                    className="aspect-[4/5] bg-neutral-50 rounded-xl border-2 border-dashed border-neutral-200 flex flex-col items-center justify-center cursor-pointer hover:border-neutral-300 transition-colors"
+                    className="aspect-[4/5] bg-bg-subtle rounded-2xl border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-text-muted transition-colors"
                   >
-                    <Plus className="w-6 h-6 text-neutral-400 mb-1" />
-                    <span className="text-xs text-neutral-500">Ajouter</span>
+                    <Plus className="w-6 h-6 text-text-muted mb-1" />
+                    <span className="text-[12px] text-text-muted">Ajouter</span>
                   </button>
                 )}
               </div>
@@ -957,7 +917,7 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
             <div className="mt-6 space-y-4">
               {/* Cover image */}
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-2">
+                <label className="block text-[13px] font-medium text-text-secondary mb-2">
                   Image de couverture (optionnel)
                 </label>
                 {coverImage ? (
@@ -965,24 +925,24 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
                     <img
                       src={coverImage.preview}
                       alt="Couverture"
-                      className="w-20 h-20 object-cover rounded-lg border border-neutral-200"
+                      className="w-20 h-20 object-cover rounded-xl border border-border"
                     />
                     <button
                       type="button"
                       onClick={() => setCoverImage(null)}
-                      className="absolute -top-1.5 -right-1.5 bg-white rounded-full p-0.5 shadow-sm border border-neutral-200"
+                      className="absolute -top-1.5 -right-1.5 bg-bg-card rounded-full p-0.5 shadow-card border border-border"
                     >
-                      <X className="w-3 h-3 text-neutral-500" />
+                      <X className="w-3 h-3 text-text-muted" />
                     </button>
                   </div>
                 ) : (
                   <button
                     type="button"
                     onClick={() => coverInputRef.current?.click()}
-                    className="w-20 h-20 bg-neutral-50 rounded-lg border-2 border-dashed border-neutral-200 flex flex-col items-center justify-center text-neutral-400 hover:border-neutral-300 transition-colors"
+                    className="w-20 h-20 bg-bg-subtle rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center text-text-muted hover:border-text-muted transition-colors"
                   >
                     <Image className="w-5 h-5" />
-                    <span className="text-xs mt-1">Ajouter</span>
+                    <span className="text-[11px] mt-1">Ajouter</span>
                   </button>
                 )}
               </div>
@@ -992,7 +952,7 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
                 <div
                   onClick={() => setShareToFeed(!shareToFeed)}
                   className={`w-11 h-6 rounded-full transition-colors ${
-                    shareToFeed ? 'bg-primary' : 'bg-neutral-200'
+                    shareToFeed ? 'bg-text' : 'bg-border'
                   }`}
                 >
                   <div
@@ -1001,44 +961,46 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
                     }`}
                   />
                 </div>
-                <span className="text-sm text-neutral-700">Partager aussi dans le feed</span>
+                <span className="text-[14px] text-text">Partager aussi dans le feed</span>
               </label>
             </div>
           )}
 
-          {/* iOS PWA Recovery Message - shown if app reloaded due to video capture bug */}
+          {/* iOS PWA Recovery Message */}
           {showIOSRecoveryMessage && (
-            <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-xl">
-              <p className="text-sm text-amber-800 text-center">
-                <strong>Astuce :</strong> Pour éviter les problèmes, filme ta vidéo d'abord avec l'app Caméra, puis sélectionne-la ici depuis "Photothèque".
+            <Card variant="bordered" padding="md" className="mb-4 border-amber-200 bg-amber-50">
+              <p className="text-[13px] text-amber-800 text-center">
+                <strong>Astuce :</strong> Pour eviter les problemes, filme ta video d'abord avec l'app Camera, puis selectionne-la ici.
               </p>
               <button
                 onClick={() => setShowIOSRecoveryMessage(false)}
-                className="mt-2 w-full text-xs text-amber-600 underline"
+                className="mt-2 w-full text-[12px] text-amber-600 hover:text-amber-800 transition-colors"
               >
                 Compris
               </button>
-            </div>
+            </Card>
           )}
 
           {/* Error messages as toasts */}
           {flash?.error && <Toast message={flash.error} type="error" />}
           {(videoError || uploadError) && (
-            <p className="text-red-600 text-sm mt-4 text-center">
-              {videoError || uploadError}
-            </p>
+            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-xl">
+              <p className="text-red-700 text-[13px] text-center">
+                {videoError || uploadError}
+              </p>
+            </div>
           )}
 
           {/* Video loading indicator */}
           {videoLoading && (
-            <p className="text-sm text-neutral-500 text-center mt-4">
-              Chargement de la vidéo...
+            <p className="text-[13px] text-text-muted text-center mt-4">
+              Chargement de la video...
             </p>
           )}
 
           {/* File size indicator for videos */}
           {mediaFiles[0]?.type === 'video' && currentFileSize > 0 && !isUploading && (
-            <p className="text-sm text-neutral-500 text-center mt-4">
+            <p className="text-[13px] text-text-muted text-center mt-4">
               Taille : {formatFileSize(currentFileSize)}
               {currentFileSize > 50 * 1024 * 1024 && (
                 <span className="text-amber-600 ml-1">(fichier volumineux)</span>
@@ -1046,7 +1008,7 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
             </p>
           )}
 
-          {/* Context input - ask user for additional info based on mission type */}
+          {/* Context input */}
           {mediaFiles.length > 0 && !isUploading && (
             <div className="mt-6">
               <MediaContextInput
@@ -1074,16 +1036,6 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
             onChange={handleImageChange}
             className="hidden"
           />
-          {/*
-            Video input WITHOUT capture attribute
-            On iOS, this shows a native menu with options:
-            - "Photo Library" (select existing video)
-            - "Take Video" (record new video with native camera)
-
-            This works better than capture="environment" which breaks
-            the PWA lifecycle on iOS (WebKit bug since iOS 12.2)
-            See: https://github.com/PWA-POLICE/pwa-bugs/issues/12
-          */}
           <input
             ref={videoInputRef}
             type="file"
@@ -1111,7 +1063,7 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
         {/* Camera Overlay (MediaRecorder API) */}
         {cameraOpen && (
           <div className="fixed inset-0 z-50 bg-black flex flex-col">
-            {/* Live video preview - use ref callback to set srcObject */}
+            {/* Live video preview */}
             <video
               ref={(el) => {
                 liveVideoRef.current = el
@@ -1125,24 +1077,22 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
               muted
             />
 
-            {/* Top controls bar - with safe area padding for notch/dynamic island */}
+            {/* Top controls bar */}
             <div className="absolute top-0 left-0 right-0 pt-[env(safe-area-inset-top,12px)] px-4 pb-4 bg-gradient-to-b from-black/60 to-transparent">
               <div className="flex items-center justify-between mt-3">
-                {/* Close button */}
                 <button
                   onClick={closeCamera}
-                  className="w-10 h-10 rounded-full bg-black/40 flex items-center justify-center"
+                  className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center"
                 >
                   <X className="w-5 h-5 text-white" />
                 </button>
 
-                {/* Flash toggle (only show if device has flash and using back camera) */}
                 {hasFlash && facingMode === 'environment' && (
                   <button
                     onClick={toggleFlash}
                     disabled={isRecording}
                     className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                      flashMode === 'on' ? 'bg-yellow-500' : 'bg-black/40'
+                      flashMode === 'on' ? 'bg-yellow-500' : 'bg-black/40 backdrop-blur-sm'
                     } ${isRecording ? 'opacity-50' : ''}`}
                   >
                     {flashMode === 'on' ? (
@@ -1153,14 +1103,12 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
                   </button>
                 )}
 
-                {/* Spacer if no flash */}
                 {(!hasFlash || facingMode === 'user') && <div className="w-10" />}
 
-                {/* Switch camera button (front/back) */}
                 <button
                   onClick={switchCamera}
                   disabled={isRecording}
-                  className={`w-10 h-10 rounded-full bg-black/40 flex items-center justify-center ${
+                  className={`w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center ${
                     isRecording ? 'opacity-50' : ''
                   }`}
                 >
@@ -1171,25 +1119,25 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
 
             {/* Recording indicator */}
             {isRecording && (
-              <div className="absolute top-[calc(env(safe-area-inset-top,12px)+60px)] left-1/2 -translate-x-1/2 flex items-center gap-2 bg-red-500/80 px-4 py-2 rounded-full">
+              <div className="absolute top-[calc(env(safe-area-inset-top,12px)+60px)] left-1/2 -translate-x-1/2 flex items-center gap-2 bg-red-500/80 backdrop-blur-sm px-4 py-2 rounded-full">
                 <div className="w-3 h-3 bg-white rounded-full animate-pulse" />
-                <span className="text-white text-sm font-medium">Enregistrement...</span>
+                <span className="text-white text-[13px] font-medium">Enregistrement...</span>
               </div>
             )}
 
-            {/* Bottom controls - with safe area padding */}
+            {/* Bottom controls */}
             <div className="absolute bottom-0 left-0 right-0 pb-[env(safe-area-inset-bottom,24px)] px-6 pt-6 bg-gradient-to-t from-black/80 to-transparent">
-              {/* Lens selector (physical cameras) - only show if multiple lenses available and back camera */}
+              {/* Lens selector */}
               {availableLenses.length > 1 && facingMode === 'environment' && !isRecording && (
                 <div className="flex justify-center gap-2 mb-4">
                   {availableLenses.map((lens, index) => (
                     <button
                       key={lens.deviceId}
                       onClick={() => switchLens(index)}
-                      className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                      className={`px-3 py-1.5 rounded-full text-[13px] font-medium transition-all ${
                         currentLensIndex === index
                           ? 'bg-white text-black'
-                          : 'bg-black/40 text-white'
+                          : 'bg-black/40 backdrop-blur-sm text-white'
                       }`}
                     >
                       {getLensLabel(lens.type)}
@@ -1200,16 +1148,14 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
 
               {/* Camera mode indicator */}
               <div className="flex justify-center mb-4">
-                <span className="text-white/70 text-xs">
-                  {facingMode === 'user' ? 'Caméra avant' : 'Caméra arrière'}
+                <span className="text-white/70 text-[12px]">
+                  {facingMode === 'user' ? 'Camera avant' : 'Camera arriere'}
                 </span>
               </div>
 
               <div className="flex items-center justify-center gap-6">
-                {/* Placeholder for symmetry */}
                 <div className="w-12 h-12" />
 
-                {/* Record/Stop button */}
                 {isRecording ? (
                   <button
                     onClick={stopVideoRecording}
@@ -1226,63 +1172,60 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
                   </button>
                 )}
 
-                {/* Placeholder for symmetry */}
                 <div className="w-12 h-12" />
               </div>
 
-              <p className="text-white text-center mt-4 text-sm">
-                {isRecording ? 'Appuyez sur le carré pour arrêter' : 'Appuyez pour commencer à filmer'}
+              <p className="text-white text-center mt-4 text-[13px]">
+                {isRecording ? 'Appuyez sur le carre pour arreter' : 'Appuyez pour commencer a filmer'}
               </p>
             </div>
           </div>
         )}
 
         {/* Fixed bottom buttons */}
-        <div className="fixed bottom-0 left-0 right-0 p-6 bg-background border-t border-neutral-100 space-y-3">
+        <div className="fixed bottom-0 left-0 right-0 p-5 bg-bg/80 backdrop-blur-lg border-t border-border space-y-3">
           {isCompressing ? (
-            <p className="text-center text-sm text-neutral-500 py-3">
+            <p className="text-center text-[13px] text-text-muted py-3">
               Optimisation des images...
             </p>
           ) : isUploading ? (
             <div className="space-y-3">
               <div className="text-center">
-                <p className="text-sm text-neutral-700 mb-2">
+                <p className="text-[14px] text-text mb-2">
                   Envoi en cours... {uploadProgress}%
                 </p>
-                <div className="w-full bg-neutral-100 rounded-full h-2 overflow-hidden">
+                <div className="w-full bg-bg-subtle rounded-full h-1.5 overflow-hidden">
                   <div
-                    className="bg-primary h-full rounded-full transition-all duration-300 ease-out"
+                    className="bg-text h-full rounded-full transition-all duration-300 ease-out"
                     style={{ width: `${uploadProgress}%` }}
                   />
                 </div>
-                <p className="text-xs text-neutral-400 mt-2">
+                <p className="text-[12px] text-text-muted mt-2">
                   {uploadProgress < 100 ? 'Ne fermez pas cette page' : 'Traitement en cours...'}
                 </p>
               </div>
             </div>
           ) : mediaFiles.length > 0 ? (
-            <Button onClick={handleSubmit} className="w-full py-4 text-base font-bold">
-              Continuer →
+            <Button onClick={handleSubmit} fullWidth size="lg">
+              Continuer
             </Button>
           ) : (
             /* Single upload zone for all content types */
             <div className="space-y-3">
-              {/* Tip message */}
-              <p className="text-xs text-neutral-500 text-center px-2">
-                💡 Pour de meilleurs résultats, filmez depuis l'app Caméra de votre téléphone puis téléversez ici
+              <p className="text-[12px] text-text-muted text-center px-2">
+                Pour de meilleurs resultats, filmez depuis l'app Camera de votre telephone puis televersez ici
               </p>
 
-              {/* Unified upload zone */}
               <button
                 onClick={() => mediaInputRef.current?.click()}
-                className="w-full border-2 border-dashed border-neutral-300 rounded-xl p-6 flex flex-col items-center justify-center gap-2 hover:border-primary hover:bg-primary/5 transition-colors"
+                className="w-full border-2 border-dashed border-border rounded-xl p-5 flex flex-col items-center justify-center gap-2 hover:border-text-muted hover:bg-bg-subtle transition-colors"
               >
-                <Upload className="w-8 h-8 text-neutral-400" />
-                <span className="text-sm text-neutral-600 font-medium">
-                  {acceptVideo || isStory || isReel ? 'Ajouter une photo ou vidéo' : 'Ajouter une photo'}
+                <Upload className="w-7 h-7 text-text-muted" />
+                <span className="text-[14px] text-text-secondary font-medium">
+                  {acceptVideo || isStory || isReel ? 'Ajouter une photo ou video' : 'Ajouter une photo'}
                 </span>
-                <span className="text-xs text-neutral-400">
-                  Appuyez pour sélectionner
+                <span className="text-[12px] text-text-muted">
+                  Appuyez pour selectionner
                 </span>
               </button>
             </div>

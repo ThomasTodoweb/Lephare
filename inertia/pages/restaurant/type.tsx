@@ -1,5 +1,6 @@
 import { Head, useForm } from '@inertiajs/react'
 import { Button, Card, Input } from '~/components/ui'
+import { Check } from 'lucide-react'
 
 interface RestaurantType {
   value: string
@@ -26,41 +27,48 @@ export default function RestaurantType({ restaurantTypes }: Props) {
   return (
     <>
       <Head title="Type de restaurant" />
-      <div className="min-h-screen bg-background p-4">
-        <div className="max-w-md mx-auto">
+      <div className="min-h-screen bg-bg flex flex-col">
+        <div className="flex-1 px-5 pt-12 pb-32 max-w-lg mx-auto w-full">
           <img
             src="/logo-rectangle.png"
             alt="LE PHARE"
-            className="h-10 mx-auto mb-6"
+            className="h-8 mx-auto mb-8"
           />
 
-          <h1 className="text-2xl font-bold text-center uppercase mb-2">
+          <h1 className="text-[22px] font-bold text-text text-center tracking-tight">
             Votre restaurant
           </h1>
-          <p className="text-center text-gray-600 mb-6">
+          <p className="text-[15px] text-text-secondary text-center mt-2">
             Quel type de restaurant avez-vous ?
           </p>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-2 gap-3">
-              {restaurantTypes.map((type) => (
-                <button
-                  key={type.value}
-                  type="button"
-                  onClick={() => setData('type', type.value)}
-                  className={`p-4 rounded-xl border-2 transition-all bg-white ${
-                    data.type === type.value
-                      ? 'border-primary bg-primary/10'
-                      : 'border-gray-200 hover:border-primary/50'
-                  }`}
-                >
-                  <span className="text-3xl block mb-2">{type.icon}</span>
-                  <span className="font-medium">{type.label}</span>
-                </button>
-              ))}
+          <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+            <div className="grid grid-cols-2 gap-2.5">
+              {restaurantTypes.map((type) => {
+                const isSelected = data.type === type.value
+                return (
+                  <Card
+                    key={type.value}
+                    variant="interactive"
+                    padding="sm"
+                    className={`text-center transition-all ${
+                      isSelected ? 'border-2 border-text' : 'border-2 border-transparent'
+                    }`}
+                    onClick={() => setData('type', type.value)}
+                  >
+                    <span className="text-[24px] block mb-1.5">{type.icon}</span>
+                    <span className="text-[13px] font-medium text-text">{type.label}</span>
+                    {isSelected && (
+                      <div className="w-5 h-5 bg-text rounded-full flex items-center justify-center mx-auto mt-1.5">
+                        <Check className="w-3 h-3 text-white" strokeWidth={3} />
+                      </div>
+                    )}
+                  </Card>
+                )
+              })}
             </div>
             {errors.type && (
-              <p className="text-sm text-red-600">{errors.type}</p>
+              <p className="text-[12px] text-error font-medium">{errors.type}</p>
             )}
 
             <Input
@@ -78,15 +86,22 @@ export default function RestaurantType({ restaurantTypes }: Props) {
               error={errors.city}
               placeholder="Ex: Lyon, Paris, Bordeaux..."
             />
+          </form>
+        </div>
 
+        {/* Fixed bottom button */}
+        <div className="fixed bottom-0 left-0 right-0 p-5 bg-bg/80 backdrop-blur-lg">
+          <div className="max-w-lg mx-auto">
             <Button
-              type="submit"
-              disabled={processing || !data.type || !data.name || !data.city}
-              className="w-full"
+              variant="primary"
+              fullWidth
+              loading={processing}
+              disabled={!data.type || !data.name || !data.city}
+              onClick={handleSubmit}
             >
               Continuer
             </Button>
-          </form>
+          </div>
         </div>
       </div>
     </>

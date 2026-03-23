@@ -1,4 +1,5 @@
 import { Head, Link } from '@inertiajs/react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { AppLayout } from '~/components/layout'
 import { Card } from '~/components/ui'
 
@@ -32,54 +33,50 @@ export default function ReportsIndex({ reports, hasUnread }: Props) {
     <AppLayout>
       <Head title="Bilans Hebdo - Le Phare" />
 
-      <div className="py-4">
+      <div className="pt-4 pb-8">
         {/* Header */}
         <div className="mb-6">
-          <Link href="/profile" className="text-primary text-sm mb-2 inline-block">
-            ← Retour au profil
+          <Link href="/profile" className="inline-flex items-center gap-1 text-[13px] text-text-secondary mb-3">
+            <ChevronLeft className="w-4 h-4" />
+            Profil
           </Link>
-          <h1 className="text-2xl font-extrabold text-neutral-900 uppercase tracking-tight">
-            Bilans Hebdo
-          </h1>
-          <p className="text-neutral-600 mt-1">
+          <h1 className="text-[22px] font-bold text-text">Bilans hebdo</h1>
+          <p className="text-[14px] text-text-secondary mt-1">
             Vos feedbacks personnalisés chaque semaine
           </p>
         </div>
 
         {hasUnread && (
-          <Card className="mb-4 bg-primary/5 border-primary">
+          <Card variant="bordered" className="mb-4">
             <div className="flex items-center gap-2">
-              <span className="text-xl">📬</span>
-              <p className="text-primary font-medium">Vous avez un nouveau bilan à lire !</p>
+              <div className="w-2 h-2 bg-text rounded-full shrink-0" />
+              <p className="text-[13px] font-medium text-text">Vous avez un nouveau bilan à lire</p>
             </div>
           </Card>
         )}
 
         {/* Reports list */}
-        <div className="space-y-3">
+        <div className="flex flex-col gap-2">
           {reports.map((report) => (
             <Link key={report.id} href={`/reports/${report.id}`}>
-              <Card className={`${!report.isRead ? 'bg-primary/5 border-primary' : ''}`}>
+              <Card variant={!report.isRead ? 'bordered' : 'default'}>
                 <div className="flex items-center justify-between">
-                  <div>
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-xl">📊</span>
-                      <p className="font-bold text-neutral-900">
-                        Semaine du {formatWeekDate(report.weekStartDate)}
+                      <p className="text-[14px] font-semibold text-text">
+                        {formatWeekDate(report.weekStartDate)}
                       </p>
                       {!report.isRead && (
-                        <span className="bg-primary text-white text-xs px-2 py-0.5 rounded-full">
-                          Nouveau
-                        </span>
+                        <span className="w-2 h-2 bg-text rounded-full shrink-0" />
                       )}
                     </div>
-                    <div className="flex gap-4 mt-2 text-sm text-neutral-600">
-                      <span>✓ {report.missionsCompleted} missions</span>
-                      <span>📚 {report.tutorialsViewed} tutos</span>
-                      <span>🔥 {report.streakAtEnd} streak</span>
+                    <div className="flex gap-4 mt-1.5 text-[12px] text-text-muted">
+                      <span>{report.missionsCompleted} missions</span>
+                      <span>{report.tutorialsViewed} tutos</span>
+                      <span>{report.streakAtEnd}j streak</span>
                     </div>
                   </div>
-                  <span className="text-neutral-400">→</span>
+                  <ChevronRight className="w-4 h-4 text-text-muted shrink-0" />
                 </div>
               </Card>
             </Link>
@@ -87,15 +84,13 @@ export default function ReportsIndex({ reports, hasUnread }: Props) {
         </div>
 
         {reports.length === 0 && (
-          <div className="text-center py-12">
-            <span className="text-5xl mb-4 block">📊</span>
-            <p className="text-neutral-600 mb-2">Aucun bilan disponible pour le moment</p>
-            <p className="text-sm text-neutral-400">
-              Votre premier bilan arrivera dimanche prochain !
+          <div className="text-center py-16">
+            <p className="text-[14px] text-text-secondary mb-1">Aucun bilan disponible</p>
+            <p className="text-[13px] text-text-muted">
+              Votre premier bilan arrivera dimanche prochain
             </p>
           </div>
         )}
-
       </div>
     </AppLayout>
   )
