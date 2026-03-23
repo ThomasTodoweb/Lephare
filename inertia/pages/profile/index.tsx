@@ -13,7 +13,6 @@ import {
   Clock,
   Utensils,
   Bell,
-  Mail,
   Download,
   CheckCircle,
 } from 'lucide-react'
