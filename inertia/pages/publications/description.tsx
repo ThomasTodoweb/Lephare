@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Button } from '~/components/ui/Button'
 import { ArrowLeft, Pencil, Sparkles } from 'lucide-react'
 import InstagramPreview from '~/components/features/publications/InstagramPreview'
+import { CaptionAnalyzer } from '~/components/features/celebrations/CaptionAnalyzer'
 
 interface MediaItem {
   type: 'image' | 'video'
@@ -137,6 +138,7 @@ export default function Description({ publication, mission, instagramAccount, to
                 placeholder="Ecrivez votre legende..."
                 autoFocus
               />
+              <CaptionAnalyzer caption={caption} />
               <div className="flex gap-2 mt-3">
                 <Button
                   onClick={handleSave}

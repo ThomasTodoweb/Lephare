@@ -197,6 +197,40 @@ html, body {
   animation: shimmer 1.5s infinite;
 }
 
+/* Confetti falling */
+@keyframes confetti-fall {
+  0% { transform: translateY(-10vh) rotate(0deg) scale(1); opacity: 1; }
+  70% { opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg) scale(0.5); opacity: 0; }
+}
+.animate-confetti-fall {
+  animation: confetti-fall 2s ease-in forwards;
+}
+
+/* Wiggle for streak fire */
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  20% { transform: rotate(-8deg); }
+  40% { transform: rotate(8deg); }
+  60% { transform: rotate(-4deg); }
+  80% { transform: rotate(4deg); }
+}
+.animate-wiggle { animation: wiggle 0.5s ease-in-out; }
+
+/* Pulse subtle for streak danger */
+@keyframes pulse-border {
+  0%, 100% { border-color: rgba(239, 68, 68, 0.3); }
+  50% { border-color: rgba(239, 68, 68, 0.8); }
+}
+.animate-pulse-border { animation: pulse-border 2s ease-in-out infinite; }
+
+/* Counter tick up */
+@keyframes tick-up {
+  0% { transform: translateY(8px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+.animate-tick-up { animation: tick-up 0.4s var(--ease-out) forwards; }
+
 /* ─── SCROLLBAR ─── */
 
 .scrollbar-hide {
