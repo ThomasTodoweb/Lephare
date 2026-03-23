@@ -93,7 +93,7 @@ export default function Description({ publication, mission, instagramAccount, to
           </div>
 
           <h1 className="text-[20px] font-bold text-text tracking-tight">
-            Legende
+            Légende
           </h1>
         </div>
 
@@ -104,7 +104,7 @@ export default function Description({ publication, mission, instagramAccount, to
               {CONTENT_TYPE_LABELS[publication.contentType] || 'POST'}
             </span>
             <span className="text-[14px] text-text-secondary">
-              {mission?.template.title || 'Legende'}
+              {mission?.template.title || 'Légende'}
             </span>
           </div>
         </div>
@@ -129,13 +129,13 @@ export default function Description({ publication, mission, instagramAccount, to
           {isEditing && (
             <div className="mb-4">
               <label className="block text-[13px] font-medium text-text-secondary mb-2">
-                Modifier la legende
+                Modifier la légende
               </label>
               <textarea
                 value={caption}
                 onChange={(e) => setCaption(e.target.value)}
                 className="w-full h-48 px-4 py-3 bg-bg-card border border-border rounded-xl focus:outline-none focus:border-text focus:ring-1 focus:ring-text/20 resize-none text-[14px] text-text placeholder:text-text-muted"
-                placeholder="Ecrivez votre legende..."
+                placeholder="Écrivez votre légende..."
                 autoFocus
               />
               <CaptionAnalyzer caption={caption} />
@@ -166,7 +166,7 @@ export default function Description({ publication, mission, instagramAccount, to
                   className="flex items-center gap-1.5 text-[13px] text-text-muted hover:text-text-secondary mt-3 transition-colors"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
-                  Revenir a la description IA
+                  Revenir à la description IA
                 </button>
               )}
             </div>
@@ -179,7 +179,7 @@ export default function Description({ publication, mission, instagramAccount, to
                 {publication.aiGeneratedCaption && (
                   <span className="flex items-center gap-1 text-text-muted">
                     <Sparkles className="w-3.5 h-3.5" />
-                    Genere par IA
+                    Généré par IA
                   </span>
                 )}
               </div>
@@ -189,7 +189,7 @@ export default function Description({ publication, mission, instagramAccount, to
                 className="flex items-center gap-1.5 text-[13px] text-text font-medium hover:text-text-secondary transition-colors"
               >
                 <Pencil className="w-3.5 h-3.5" />
-                Modifier la legende
+                Modifier la légende
               </button>
             </div>
           )}

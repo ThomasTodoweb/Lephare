@@ -49,7 +49,7 @@ export default function Bravo({ publication, streak, xpEarned, isFirstPost }: Pr
       <Head title="Bravo ! - Le Phare" />
       <Confetti type="mission" count={35} />
 
-      <div className="min-h-screen bg-bg flex flex-col items-center justify-center px-6 relative">
+      <div className="min-h-screen bg-bg flex flex-col items-center justify-center px-5 relative">
         {/* Main content */}
         <div className="text-center">
           {/* Photo with success badge */}

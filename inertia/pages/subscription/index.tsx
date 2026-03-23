@@ -211,7 +211,7 @@ export default function SubscriptionIndex({ subscription, trialInfo, pricing, is
             <ArrowLeft size={15} />
             <span>Retour au profil</span>
           </Link>
-          <h1 className="text-[22px] font-semibold text-text">Mon abonnement</h1>
+          <h1 className="text-[22px] font-bold text-text">Mon abonnement</h1>
         </div>
 
         {/* Trial Banner */}

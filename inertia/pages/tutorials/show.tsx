@@ -155,7 +155,7 @@ export default function TutorialShow({ tutorial, isCompleted, feedback }: Props)
       </div>
 
       {/* Fixed bottom button */}
-      <div className="fixed bottom-20 left-0 right-0 p-5 bg-bg border-t border-border">
+      <div className="fixed bottom-20 left-0 right-0 p-5 bg-bg/80 backdrop-blur-lg border-t border-border">
         <div className="max-w-[430px] mx-auto">
           {isCompleted ? (
             <Link href="/tutorials" className="block">

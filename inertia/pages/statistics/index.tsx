@@ -251,7 +251,7 @@ export default function StatisticsIndex({ keyMetrics, summary, comparison, insta
     <AppLayout>
       <Head title="Mes Statistiques - Le Phare" />
 
-      <div className="pt-6 pb-8 space-y-4">
+      <div className="pt-4 pb-8 space-y-4">
 
         {/* ─── Zone 1 — Le Verdict (hero) ─────────────────────────────── */}
         <div className="bg-bg-card rounded-3xl shadow-md p-5">

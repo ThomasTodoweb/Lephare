@@ -46,7 +46,7 @@ const SCORE_CONFIG = {
     dot: 'bg-emerald-500',
     icon: CheckCircle,
     label: 'Parfait',
-    description: 'Votre media est pret pour la publication.',
+    description: 'Votre média est prêt pour la publication.',
   },
   yellow: {
     bg: 'bg-amber-50',
@@ -55,7 +55,7 @@ const SCORE_CONFIG = {
     dot: 'bg-amber-500',
     icon: AlertTriangle,
     label: 'Attention',
-    description: 'Quelques points a ameliorer, mais vous pouvez continuer.',
+    description: 'Quelques points à améliorer, mais vous pouvez continuer.',
   },
   red: {
     bg: 'bg-red-50',
@@ -63,8 +63,8 @@ const SCORE_CONFIG = {
     text: 'text-red-700',
     dot: 'bg-red-500',
     icon: XCircle,
-    label: 'A refaire',
-    description: 'Ce media ne respecte pas les standards de qualite.',
+    label: 'À refaire',
+    description: 'Ce média ne respecte pas les standards de qualité.',
   },
 }
 
@@ -129,7 +129,7 @@ export default function MediaAnalysis({ publication, mission, totalSteps = 3, cu
       }
       console.error('Analysis error:', err)
       if (!signal.aborted) {
-        setError('Impossible d\'analyser le media. Veuillez reessayer.')
+        setError('Impossible d\'analyser le média. Veuillez réessayer.')
         // Default to green to not block the user
         setScore('green')
         setFeedback('Analyse non disponible, vous pouvez continuer.')
@@ -183,7 +183,7 @@ export default function MediaAnalysis({ publication, mission, totalSteps = 3, cu
 
   return (
     <>
-      <Head title="Analyse du media - Le Phare" />
+      <Head title="Analyse du média - Le Phare" />
       <div className="min-h-screen bg-bg flex flex-col">
         {/* Header */}
         <div className="px-5 pt-6 pb-4 pwa-safe-area-top">
@@ -200,7 +200,7 @@ export default function MediaAnalysis({ publication, mission, totalSteps = 3, cu
           </div>
 
           <h1 className="text-[20px] font-bold text-text tracking-tight">
-            Analyse qualite
+            Analyse qualité
           </h1>
         </div>
 
@@ -211,7 +211,7 @@ export default function MediaAnalysis({ publication, mission, totalSteps = 3, cu
               {CONTENT_TYPE_LABELS[publication.contentType] || 'POST'}
             </span>
             <span className="text-[14px] text-text-secondary">
-              {mission?.template.title || 'Analyse qualite'}
+              {mission?.template.title || 'Analyse qualité'}
             </span>
           </div>
         </div>
@@ -232,7 +232,7 @@ export default function MediaAnalysis({ publication, mission, totalSteps = 3, cu
               ) : (
                 <img
                   src={getPreviewUrl()}
-                  alt="Apercu"
+                  alt="Aperçu"
                   className="w-full aspect-[4/5] object-cover rounded-2xl border border-border"
                 />
               )}
@@ -251,7 +251,7 @@ export default function MediaAnalysis({ publication, mission, totalSteps = 3, cu
                   <div className="w-14 h-14 rounded-2xl bg-bg-card shadow-card flex items-center justify-center animate-bounce-subtle mb-3">
                     <img src="/images/popote.png" alt="Popote" className="w-full h-full object-contain p-1.5" />
                   </div>
-                  <p className="text-[14px] font-medium text-text">Popote analyse ton media...</p>
+                  <p className="text-[14px] font-medium text-text">Popote analyse ton média...</p>
                   <p className="text-[12px] text-text-muted mt-1">Cela prend quelques secondes</p>
                 </div>
               )}
@@ -278,12 +278,12 @@ export default function MediaAnalysis({ publication, mission, totalSteps = 3, cu
           {score === 'red' && !isAnalyzing && (
             <div className="bg-bg-subtle rounded-xl p-4 mb-5">
               <p className="text-[13px] text-text-secondary leading-relaxed">
-                Pour obtenir les meilleurs resultats sur Instagram, votre media doit etre de bonne qualite :
-                luminosite correcte, image nette, bon cadrage.
+                Pour obtenir les meilleurs résultats sur Instagram, votre média doit être de bonne qualité :
+                luminosité correcte, image nette, bon cadrage.
               </p>
               {mission?.template.tutorialId && (
                 <p className="text-[13px] text-text-secondary mt-2">
-                  Besoin d'aide ? Consultez le tutoriel associe a cette mission.
+                  Besoin d'aide ? Consultez le tutoriel associé à cette mission.
                 </p>
               )}
             </div>
@@ -321,7 +321,7 @@ export default function MediaAnalysis({ publication, mission, totalSteps = 3, cu
           {/* Option to continue anyway for yellow */}
           {score === 'yellow' && !isAnalyzing && (
             <p className="text-center text-[12px] text-text-muted">
-              Vous pouvez continuer malgre l'avertissement
+              Vous pouvez continuer malgré l'avertissement
             </p>
           )}
         </div>

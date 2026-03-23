@@ -42,7 +42,7 @@ export default function InstagramSettings({ isConfigured, account }: Props) {
             <ArrowLeft size={15} />
             <span>Retour</span>
           </Link>
-          <h1 className="text-[22px] font-semibold text-text">Instagram</h1>
+          <h1 className="text-[22px] font-bold text-text">Instagram</h1>
           <p className="text-[14px] text-text-secondary mt-1">
             Connectez votre compte Instagram pour publier directement depuis Le Phare
           </p>

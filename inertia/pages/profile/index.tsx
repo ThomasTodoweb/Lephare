@@ -244,7 +244,7 @@ export default function Profile({
       {flash?.success && <Toast message={flash.success} type="success" />}
       {flash?.error && <Toast message={flash.error} type="error" />}
 
-      <div className="pb-8 pt-6">
+      <div className="pb-8 pt-4">
         {/* ===== ZONE 1: Carte de joueur ===== */}
         <div className="bg-gradient-to-br from-primary-50 to-[#fdf8f3] rounded-3xl p-5">
           {/* Profile header */}

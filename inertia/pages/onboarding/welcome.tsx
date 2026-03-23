@@ -20,7 +20,7 @@ export default function Welcome({ step, totalSteps }: Props) {
     <>
       <Head title="Bienvenue - Le Phare" />
       <div className="min-h-screen bg-bg flex flex-col">
-        <div className="flex-1 px-6 pt-12 pb-32 max-w-lg mx-auto w-full">
+        <div className="flex-1 px-5 pt-12 pb-32 max-w-lg mx-auto w-full">
           <OnboardingProgress currentStep={step} totalSteps={totalSteps} />
 
           {/* Popote welcome */}

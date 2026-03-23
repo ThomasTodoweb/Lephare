@@ -172,7 +172,7 @@ export default function TodayMission({ mission, todayMissions = [] }: Props) {
       )}
 
       {mission && mission.status === 'completed' && (
-        <div className="fixed bottom-20 left-0 right-0 p-5">
+        <div className="fixed bottom-20 left-0 right-0 p-5 bg-bg/80 backdrop-blur-lg">
           <div className="bg-green-50 text-green-700 rounded-xl p-3.5 text-center text-[14px] font-medium">
             Mission accomplie ✓
           </div>
@@ -180,7 +180,7 @@ export default function TodayMission({ mission, todayMissions = [] }: Props) {
       )}
 
       {mission && mission.status === 'skipped' && (
-        <div className="fixed bottom-20 left-0 right-0 p-5">
+        <div className="fixed bottom-20 left-0 right-0 p-5 bg-bg/80 backdrop-blur-lg">
           <div className="bg-bg-subtle text-text-muted rounded-xl p-3.5 text-center text-[14px] font-medium">
             Mission passée
           </div>

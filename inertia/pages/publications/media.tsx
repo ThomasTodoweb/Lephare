@@ -375,7 +375,7 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
       <Head title={`${getContentTypeLabel()} - Le Phare`} />
       <div className="min-h-screen bg-bg flex flex-col">
         {/* Header */}
-        <div className="px-5 pt-8 pb-4 border-b border-border">
+        <div className="px-5 pt-8 pb-4 border-b border-border pwa-safe-area-top">
           <Link href="/missions" className="text-[13px] text-text-muted mb-4 inline-flex items-center gap-1 hover:text-text-secondary transition-colors">
             <span>&larr;</span> Retour
           </Link>

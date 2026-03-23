@@ -114,7 +114,7 @@ export default function PhotoCapture({ mission }: Props) {
       <Head title="Prendre une photo - Le Phare" />
       <div className="min-h-screen bg-bg flex flex-col">
         {/* Header */}
-        <div className="px-5 pt-8 pb-2">
+        <div className="px-5 pt-8 pb-2 pwa-safe-area-top">
           <Link href="/missions" className="text-[13px] font-medium text-text-muted mb-4 inline-block hover:text-text-secondary transition-colors">
             &larr; Retour a la mission
           </Link>

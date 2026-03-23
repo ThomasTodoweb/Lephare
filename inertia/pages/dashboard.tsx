@@ -113,7 +113,7 @@ export default function Dashboard({ restaurant, todayMissions, streak, calendarM
 
       <div className="space-y-5">
         {/* Header: Greeting + Name + Streak */}
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between animate-fade-up" style={{ animationDelay: '0ms' }}>
           <div>
             <TimeGreeting className="mb-0.5" />
             <h1 className="text-[20px] font-bold text-text leading-tight truncate max-w-[240px]">
@@ -129,7 +129,9 @@ export default function Dashboard({ restaurant, todayMissions, streak, calendarM
         </div>
 
         {/* Week tracker */}
-        <WeekTracker days={days} todayIndex={todayIndex} />
+        <div className="animate-fade-up" style={{ animationDelay: '50ms' }}>
+          <WeekTracker days={days} todayIndex={todayIndex} />
+        </div>
 
         {/* Popote Coach — contextual, dismissable */}
         {popoteMessage && (

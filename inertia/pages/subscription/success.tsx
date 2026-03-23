@@ -18,7 +18,7 @@ export default function SubscriptionSuccess() {
             </div>
           </div>
 
-          <h1 className="text-[22px] font-semibold text-text mb-2">
+          <h1 className="text-[22px] font-bold text-text mb-2">
             Bienvenue !
           </h1>
 
