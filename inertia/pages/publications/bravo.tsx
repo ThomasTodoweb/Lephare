@@ -54,14 +54,14 @@ export default function Bravo({ publication, streak, xpEarned, isFirstPost }: Pr
         <div className="text-center">
           {/* Photo with success badge */}
           <div className="relative inline-block mb-6 animate-scale-in">
-            <div className="w-28 h-28 rounded-3xl overflow-hidden shadow-xl ring-4 ring-success/20">
+            <div className="w-28 h-28 rounded-3xl overflow-hidden border-2 border-border ring-4 ring-success/20">
               <img
                 src={`/${publication.imagePath}`}
                 alt="Ta publication"
                 className="w-full h-full object-cover"
               />
             </div>
-            <div className="absolute -bottom-2 -right-2 w-11 h-11 bg-success rounded-2xl flex items-center justify-center shadow-lg">
+            <div className="absolute -bottom-2 -right-2 w-11 h-11 bg-success rounded-2xl flex items-center justify-center border border-success/30">
               <Check className="w-6 h-6 text-white" />
             </div>
           </div>

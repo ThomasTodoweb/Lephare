@@ -33,7 +33,7 @@ export default function ReportsIndex({ reports, hasUnread }: Props) {
     <AppLayout>
       <Head title="Bilans Hebdo - Le Phare" />
 
-      <div className="pt-4 pb-8">
+      <div className="pt-4 pb-8 animate-fade-up">
         {/* Header */}
         <div className="mb-6">
           <Link href="/profile" className="inline-flex items-center gap-1 text-[13px] text-text-secondary min-h-[44px] -ml-1 pl-1 pr-2">
@@ -63,7 +63,7 @@ export default function ReportsIndex({ reports, hasUnread }: Props) {
               href={`/reports/${report.id}`}
               className="block active:scale-[0.98] transition-transform"
             >
-              <Card variant="default" className="shadow-xs">
+              <Card variant="default" className="border border-border">
                 <div className="flex items-center justify-between">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">

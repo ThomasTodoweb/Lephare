@@ -12,13 +12,13 @@ export function Card({
   children,
   ...props
 }: CardProps) {
-  const base = 'rounded-2xl'
+  const base = 'rounded-2xl transition-all duration-[var(--duration-normal)]'
 
   const variants = {
-    default: 'bg-bg-card shadow-card',
+    default: 'bg-bg-card border border-border shadow-card',
     bordered: 'bg-bg-card border border-border',
-    flat: 'bg-bg-subtle',
-    interactive: 'bg-bg-card shadow-card hover:shadow-card-hover transition-all cursor-pointer active:scale-[0.98]',
+    flat: 'bg-bg-subtle border border-border-light',
+    interactive: 'bg-bg-card border border-border shadow-card hover:shadow-card-hover hover:border-border active:scale-[0.98] cursor-pointer',
   }
 
   const paddings = {

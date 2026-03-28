@@ -887,7 +887,7 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
                         e.stopPropagation()
                         removeMedia(index)
                       }}
-                      className="absolute top-2.5 right-2.5 bg-bg-card/90 backdrop-blur-sm rounded-full p-1.5 shadow-card border border-border hover:bg-bg-subtle transition-colors"
+                      className="absolute top-2.5 right-2.5 bg-bg-card/90 backdrop-blur-sm rounded-full p-1.5 border border-border border border-border hover:bg-bg-subtle transition-colors"
                     >
                       <X className="w-4 h-4 text-text-secondary" />
                     </button>
@@ -930,7 +930,7 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
                     <button
                       type="button"
                       onClick={() => setCoverImage(null)}
-                      className="absolute -top-1.5 -right-1.5 bg-bg-card rounded-full p-0.5 shadow-card border border-border"
+                      className="absolute -top-1.5 -right-1.5 bg-bg-card rounded-full p-0.5 border border-border border border-border"
                     >
                       <X className="w-3 h-3 text-text-muted" />
                     </button>
@@ -1119,7 +1119,7 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
 
             {/* Recording indicator */}
             {isRecording && (
-              <div className="absolute top-[calc(env(safe-area-inset-top,12px)+60px)] left-1/2 -translate-x-1/2 flex items-center gap-2 bg-red-500/80 backdrop-blur-sm px-4 py-2 rounded-full">
+              <div className="absolute top-[calc(env(safe-area-inset-top,12px)+60px)] left-1/2 -translate-x-1/2 flex items-center gap-2 bg-error/80 backdrop-blur-sm px-4 py-2 rounded-full">
                 <div className="w-3 h-3 bg-white rounded-full animate-pulse" />
                 <span className="text-white text-[13px] font-medium">Enregistrement...</span>
               </div>
@@ -1159,16 +1159,16 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
                 {isRecording ? (
                   <button
                     onClick={stopVideoRecording}
-                    className="w-20 h-20 rounded-full bg-red-500 flex items-center justify-center border-4 border-white"
+                    className="w-20 h-20 rounded-full bg-error flex items-center justify-center border-4 border-white"
                   >
                     <div className="w-8 h-8 bg-white rounded-sm" />
                   </button>
                 ) : (
                   <button
                     onClick={startRecording}
-                    className="w-20 h-20 rounded-full bg-red-500 flex items-center justify-center border-4 border-white"
+                    className="w-20 h-20 rounded-full bg-error flex items-center justify-center border-4 border-white"
                   >
-                    <div className="w-14 h-14 bg-red-500 rounded-full" />
+                    <div className="w-14 h-14 bg-error rounded-full" />
                   </button>
                 )}
 
@@ -1183,7 +1183,7 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
         )}
 
         {/* Fixed bottom buttons */}
-        <div className="fixed bottom-0 left-0 right-0 p-5 bg-bg/80 backdrop-blur-lg border-t border-border space-y-3">
+        <div className="fixed bottom-0 left-0 right-0 p-5 bg-bg/80 backdrop-blur-xl border-t border-border space-y-3">
           {isCompressing ? (
             <p className="text-center text-[13px] text-text-muted py-3">
               Optimisation des images...

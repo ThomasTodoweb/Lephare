@@ -94,13 +94,13 @@ export default function Notifications({ notifications, unreadCount }: Props) {
     <AppLayout>
       <Head title="Notifications" />
 
-      <div className="py-4">
+      <div className="py-4 animate-fade-up">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <Link
               href="/dashboard"
-              className="w-11 h-11 flex items-center justify-center rounded-xl bg-bg-card shadow-xs active:scale-[0.97] transition-transform"
+              className="w-11 h-11 flex items-center justify-center rounded-xl bg-bg-card border border-border active:scale-[0.97] transition-transform"
             >
               <ArrowLeft className="w-4.5 h-4.5 text-text" />
             </Link>

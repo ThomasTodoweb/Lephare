@@ -97,7 +97,7 @@ export default function TutorialShow({ tutorial, isCompleted, feedback }: Props)
       </div>
 
       {/* Content */}
-      <div className="pb-40">
+      <div className="pb-40 animate-fade-up">
         {/* Video */}
         {tutorial.videoUrl && (
           <div className="mb-6 rounded-2xl overflow-hidden border border-border">
@@ -154,7 +154,7 @@ export default function TutorialShow({ tutorial, isCompleted, feedback }: Props)
       </div>
 
       {/* Fixed bottom button */}
-      <div className="fixed bottom-20 left-0 right-0 p-5 bg-bg/80 backdrop-blur-lg border-t border-border">
+      <div className="fixed bottom-20 left-0 right-0 p-5 bg-bg/80 backdrop-blur-xl border-t border-border">
         <div className="max-w-[428px] mx-auto">
           {isCompleted ? (
             <Link href="/tutorials" className="block">
@@ -178,8 +178,8 @@ export default function TutorialShow({ tutorial, isCompleted, feedback }: Props)
       {showFeedbackModal && (
         <div className="fixed inset-0 z-50">
           <div className="absolute inset-0 bg-black/40" onClick={() => setShowFeedbackModal(false)} />
-          <div className="absolute bottom-0 left-0 right-0 bg-bg-card rounded-t-3xl animate-fade-up">
-            <div className="w-10 h-1 bg-bg-inset rounded-full mx-auto mt-3 mb-4" />
+          <div className="absolute bottom-0 left-0 right-0 bg-bg-card border-t border-border rounded-t-3xl animate-fade-up">
+            <div className="w-10 h-1 bg-border rounded-full mx-auto mt-3 mb-4" />
             <div className="px-5 pb-8">
               <h3 className="text-[17px] font-bold text-text mb-5 text-center tracking-tight">
                 Ce tutoriel t'a ete utile ?

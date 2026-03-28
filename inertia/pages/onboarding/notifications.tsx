@@ -54,10 +54,10 @@ export default function Notifications({ step, totalSteps, notificationsConfigure
 
           <div className="mt-6">
             {isSubscribed ? (
-              <Card className="border border-green-200 bg-green-50/50">
+              <Card className="border border-green-500/30 bg-green-500/10">
                 <div className="flex items-center gap-3.5">
-                  <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center flex-shrink-0">
-                    <Bell className="w-5 h-5 text-green-600" />
+                  <div className="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                    <Bell className="w-5 h-5 text-green-400" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-[15px] font-semibold text-text">Notifications activees</p>
@@ -70,19 +70,19 @@ export default function Notifications({ step, totalSteps, notificationsConfigure
               </Card>
             ) : (
               <>
-                <Card variant="flat">
+                <Card variant="flat" className="bg-white/5 border border-border">
                   <h3 className="text-[14px] font-semibold text-text mb-2">Pourquoi activer les notifications ?</h3>
                   <ul className="text-[13px] text-text-secondary space-y-1.5">
                     <li className="flex items-start gap-2">
-                      <span className="text-text-muted mt-0.5">--</span>
+                      <span className="text-primary mt-0.5">--</span>
                       <span>Rappel quotidien pour ta mission</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-text-muted mt-0.5">--</span>
+                      <span className="text-primary mt-0.5">--</span>
                       <span>Alertes quand tes stats evoluent</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-text-muted mt-0.5">--</span>
+                      <span className="text-primary mt-0.5">--</span>
                       <span>Conseils personnalises au bon moment</span>
                     </li>
                   </ul>
@@ -90,17 +90,17 @@ export default function Notifications({ step, totalSteps, notificationsConfigure
 
                 <div className="mt-4">
                   {!notificationsConfigured ? (
-                    <Card variant="flat" className="bg-amber-50">
+                    <Card variant="flat" className="bg-amber-500/10 border border-amber-500/20">
                       <p className="text-[13px] text-text-secondary leading-relaxed">
                         Les notifications ne sont pas encore configurees sur cette application. Tu pourras les activer plus tard depuis ton profil.
                       </p>
                     </Card>
                   ) : !isSupported ? (
                     isInstalled ? (
-                      <Card variant="flat" className="bg-blue-50">
+                      <Card variant="flat" className="bg-blue-500/10 border border-blue-500/20">
                         <div className="flex items-start gap-3">
-                          <div className="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
-                            <svg className="w-4.5 h-4.5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <div className="w-9 h-9 rounded-xl bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                            <svg className="w-4.5 h-4.5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
                             </svg>
                           </div>
@@ -113,10 +113,10 @@ export default function Notifications({ step, totalSteps, notificationsConfigure
                         </div>
                       </Card>
                     ) : (
-                      <Card variant="flat" className="bg-amber-50">
+                      <Card variant="flat" className="bg-amber-500/10 border border-amber-500/20">
                         <div className="flex items-start gap-3">
-                          <div className="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
-                            <svg className="w-4.5 h-4.5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <div className="w-9 h-9 rounded-xl bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+                            <svg className="w-4.5 h-4.5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                             </svg>
                           </div>
@@ -154,8 +154,8 @@ export default function Notifications({ step, totalSteps, notificationsConfigure
 
             {/* Notification preview */}
             <div className="flex justify-center mt-10">
-              <Card className="flex items-center gap-3 w-64">
-                <div className="w-9 h-9 bg-text rounded-lg flex items-center justify-center flex-shrink-0">
+              <Card className="flex items-center gap-3 w-64 border border-border bg-bg-card">
+                <div className="w-9 h-9 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
                   <span className="text-white font-bold text-[11px]">LP</span>
                 </div>
                 <div className="flex-1 min-w-0">
@@ -168,7 +168,7 @@ export default function Notifications({ step, totalSteps, notificationsConfigure
         </div>
 
         {/* Fixed bottom button */}
-        <div className="fixed bottom-0 left-0 right-0 p-5 bg-bg/80 backdrop-blur-lg">
+        <div className="fixed bottom-0 left-0 right-0 p-5 bg-bg/80 backdrop-blur-lg border-t border-border/50">
           <div className="max-w-lg mx-auto">
             <Button
               variant="primary"

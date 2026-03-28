@@ -54,8 +54,8 @@ export default function Strategy({ strategies, currentStrategyId, step, totalSte
                 <Card
                   key={strategy.id}
                   variant="interactive"
-                  className={`transition-all ${
-                    isSelected ? 'border-2 border-text' : 'border-2 border-transparent'
+                  className={`transition-all border-2 ${
+                    isSelected ? 'border-primary bg-primary/5' : 'border-border'
                   }`}
                   onClick={() => handleSelect(strategy.id)}
                 >
@@ -66,7 +66,7 @@ export default function Strategy({ strategies, currentStrategyId, step, totalSte
                       <p className="text-[13px] text-text-muted mt-0.5 leading-relaxed">{strategy.description}</p>
                     </div>
                     {isSelected && (
-                      <div className="w-6 h-6 bg-text rounded-full flex items-center justify-center flex-shrink-0">
+                      <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
                         <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
                       </div>
                     )}
@@ -82,7 +82,7 @@ export default function Strategy({ strategies, currentStrategyId, step, totalSte
         </form>
 
         {/* Fixed bottom button */}
-        <div className="fixed bottom-0 left-0 right-0 p-5 bg-bg/80 backdrop-blur-lg">
+        <div className="fixed bottom-0 left-0 right-0 p-5 bg-bg/80 backdrop-blur-lg border-t border-border/50">
           <div className="max-w-lg mx-auto">
             <Button
               variant="primary"

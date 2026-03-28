@@ -248,7 +248,7 @@ export default function MediaAnalysis({ publication, mission, totalSteps = 3, cu
               {/* Loading overlay */}
               {isAnalyzing && (
                 <div className="absolute inset-0 bg-bg-card/90 backdrop-blur-sm rounded-2xl flex flex-col items-center justify-center">
-                  <div className="w-14 h-14 rounded-2xl bg-bg-card shadow-card flex items-center justify-center animate-bounce-subtle mb-3">
+                  <div className="w-14 h-14 rounded-2xl bg-bg-card border border-border flex items-center justify-center animate-bounce-subtle mb-3">
                     <img src="/images/popote.png" alt="Popote" className="w-full h-full object-contain p-1.5" />
                   </div>
                   <p className="text-[14px] font-medium text-text">Popote analyse ton média...</p>
@@ -291,7 +291,7 @@ export default function MediaAnalysis({ publication, mission, totalSteps = 3, cu
         </div>
 
         {/* Fixed bottom buttons */}
-        <div className="fixed bottom-0 left-0 right-0 p-5 bg-bg/80 backdrop-blur-lg border-t border-border space-y-3">
+        <div className="fixed bottom-0 left-0 right-0 p-5 bg-bg/80 backdrop-blur-xl border-t border-border space-y-3">
           {isAnalyzing || isPublishing ? (
             <p className="text-center text-[13px] text-text-muted py-3">
               {isPublishing ? 'Publication en cours...' : 'Patiente un instant...'}

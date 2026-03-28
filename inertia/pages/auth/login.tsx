@@ -23,13 +23,18 @@ export default function Login() {
   return (
     <>
       <Head title="Connexion" />
-      <div className="min-h-screen bg-bg flex flex-col justify-center px-5 py-12">
-        <div className="w-full max-w-sm mx-auto">
+      <div className="min-h-screen bg-bg flex flex-col justify-center px-5 py-12 relative overflow-hidden">
+        {/* Subtle radial gradient behind form */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl" />
+        </div>
+
+        <div className="w-full max-w-sm mx-auto relative z-10">
           {/* Logo */}
           <img
             src="/logo-rectangle.png"
             alt="LE PHARE"
-            className="h-10 mx-auto mb-10"
+            className="h-10 mx-auto mb-10 brightness-0 invert"
           />
 
           <h1 className="text-[22px] font-bold text-text text-center mb-2 tracking-tight">
@@ -46,7 +51,7 @@ export default function Login() {
           {/* Social Login */}
           <a
             href="/auth/google"
-            className="flex items-center justify-center gap-3 w-full h-11 bg-bg-card border border-border rounded-xl text-[14px] font-semibold text-text active:scale-[0.97] transition-all mb-6"
+            className="flex items-center justify-center gap-3 w-full h-11 bg-white text-neutral-900 border border-white/20 rounded-xl text-[14px] font-semibold active:scale-[0.97] transition-all mb-6"
           >
             <svg className="w-4.5 h-4.5" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />

@@ -59,13 +59,13 @@ export default function Rhythm({ rhythms, currentRhythm, step, totalSteps }: Pro
                 <Card
                   key={rhythm.value}
                   variant="interactive"
-                  className={`transition-all ${
-                    isSelected ? 'border-2 border-text' : 'border-2 border-transparent'
+                  className={`transition-all border-2 ${
+                    isSelected ? 'border-primary bg-primary/5' : 'border-border'
                   }`}
                   onClick={() => handleSelect(rhythm.value)}
                 >
                   <div className="flex items-center gap-3.5">
-                    <div className="w-10 h-10 rounded-xl bg-bg-subtle flex items-center justify-center flex-shrink-0">
+                    <div className="w-10 h-10 rounded-xl bg-white/5 border border-border flex items-center justify-center flex-shrink-0">
                       <span className="text-[13px] font-bold text-text">{RHYTHM_ICONS[rhythm.value] || '?'}</span>
                     </div>
                     <div className="flex-1 min-w-0">
@@ -73,7 +73,7 @@ export default function Rhythm({ rhythms, currentRhythm, step, totalSteps }: Pro
                       <p className="text-[13px] text-text-muted mt-0.5">{rhythm.description}</p>
                     </div>
                     {isSelected && (
-                      <div className="w-6 h-6 bg-text rounded-full flex items-center justify-center flex-shrink-0">
+                      <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
                         <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
                       </div>
                     )}
@@ -89,7 +89,7 @@ export default function Rhythm({ rhythms, currentRhythm, step, totalSteps }: Pro
         </form>
 
         {/* Fixed bottom button */}
-        <div className="fixed bottom-0 left-0 right-0 p-5 bg-bg/80 backdrop-blur-lg">
+        <div className="fixed bottom-0 left-0 right-0 p-5 bg-bg/80 backdrop-blur-lg border-t border-border/50">
           <div className="max-w-lg mx-auto">
             <Button
               variant="primary"

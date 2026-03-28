@@ -50,8 +50,8 @@ export default function TutorialsSearch({ query: initialQuery, tutorials }: Prop
       </div>
 
       {/* Search input */}
-      <div className="mb-6">
-        <div className="flex items-center gap-3 bg-bg-subtle rounded-2xl p-4">
+      <div className="mb-6 animate-fade-up">
+        <div className="flex items-center gap-3 bg-bg-card border border-border rounded-2xl p-4">
           <Search className="w-4 h-4 text-text-muted shrink-0" />
           <input
             type="text"

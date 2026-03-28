@@ -32,7 +32,7 @@ export default function RestaurantType({ restaurantTypes }: Props) {
           <img
             src="/logo-rectangle.png"
             alt="LE PHARE"
-            className="h-8 mx-auto mb-8"
+            className="h-8 mx-auto mb-8 brightness-0 invert"
           />
 
           <h1 className="text-[22px] font-bold text-text text-center tracking-tight">
@@ -51,15 +51,15 @@ export default function RestaurantType({ restaurantTypes }: Props) {
                     key={type.value}
                     variant="interactive"
                     padding="sm"
-                    className={`text-center transition-all ${
-                      isSelected ? 'border-2 border-text' : 'border-2 border-transparent'
+                    className={`text-center transition-all border-2 ${
+                      isSelected ? 'border-primary bg-primary/5' : 'border-border'
                     }`}
                     onClick={() => setData('type', type.value)}
                   >
                     <span className="text-[24px] block mb-1.5">{type.icon}</span>
                     <span className="text-[13px] font-medium text-text">{type.label}</span>
                     {isSelected && (
-                      <div className="w-5 h-5 bg-text rounded-full flex items-center justify-center mx-auto mt-1.5">
+                      <div className="w-5 h-5 bg-primary rounded-full flex items-center justify-center mx-auto mt-1.5">
                         <Check className="w-3 h-3 text-white" strokeWidth={3} />
                       </div>
                     )}
@@ -90,7 +90,7 @@ export default function RestaurantType({ restaurantTypes }: Props) {
         </div>
 
         {/* Fixed bottom button */}
-        <div className="fixed bottom-0 left-0 right-0 p-5 bg-bg/80 backdrop-blur-lg">
+        <div className="fixed bottom-0 left-0 right-0 p-5 bg-bg/80 backdrop-blur-lg border-t border-border/50">
           <div className="max-w-lg mx-auto">
             <Button
               variant="primary"

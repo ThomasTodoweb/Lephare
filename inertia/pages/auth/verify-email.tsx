@@ -67,13 +67,18 @@ export default function VerifyEmail({ email }: Props) {
   return (
     <>
       <Head title="Vérifie ton email - Le Phare" />
-      <div className="min-h-screen bg-bg flex flex-col items-center justify-center px-5 py-12">
+      <div className="min-h-screen bg-bg flex flex-col items-center justify-center px-5 py-12 relative overflow-hidden">
+        {/* Subtle radial gradient */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl" />
+        </div>
+
         {flash?.error && <Toast message={flash.error} type="error" />}
         {flash?.success && <Toast message={flash.success} type="success" />}
 
-        <div className="w-full max-w-sm mx-auto">
+        <div className="w-full max-w-sm mx-auto relative z-10">
           <div className="text-center mb-8">
-            <div className="w-12 h-12 bg-bg-subtle rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <div className="w-12 h-12 bg-white/10 border border-border rounded-2xl flex items-center justify-center mx-auto mb-4">
               <svg className="w-5 h-5 text-text" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
@@ -99,7 +104,7 @@ export default function VerifyEmail({ email }: Props) {
                 value={digit}
                 onChange={(e) => handleInputChange(index, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(index, e)}
-                className="w-11 h-12 text-center text-[20px] font-bold bg-bg-card border border-border rounded-xl text-text transition-colors focus:outline-none focus:border-text focus:ring-1 focus:ring-text/10 disabled:opacity-50"
+                className="w-11 h-12 text-center text-[20px] font-bold bg-bg-card border border-border rounded-xl text-text transition-colors focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 disabled:opacity-50"
                 disabled={verifyForm.processing}
               />
             ))}
@@ -108,7 +113,7 @@ export default function VerifyEmail({ email }: Props) {
           {/* Loading state */}
           {verifyForm.processing && (
             <div className="flex items-center justify-center gap-2 mb-4">
-              <Loader2 className="w-4 h-4 animate-spin text-text" />
+              <Loader2 className="w-4 h-4 animate-spin text-primary" />
               <span className="text-[13px] text-text-secondary">Vérification en cours...</span>
             </div>
           )}
@@ -129,7 +134,7 @@ export default function VerifyEmail({ email }: Props) {
           </div>
 
           {/* Info */}
-          <div className="mt-6 p-3 bg-bg-subtle rounded-xl">
+          <div className="mt-6 p-3 bg-white/5 border border-border rounded-xl">
             <p className="text-[12px] text-text-muted text-center">
               Le code expire dans 15 minutes. Vérifie aussi tes spams si tu ne trouves pas l'email.
             </p>

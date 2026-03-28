@@ -89,9 +89,9 @@ export default function TodayMission({ mission, todayMissions = [] }: Props) {
         {mission ? (
           <>
             {/* Mission Card */}
-            <Card variant="bordered" padding="lg" className="animate-fade-up">
+            <div className="bg-bg-card border border-border rounded-2xl p-5 animate-fade-up">
               <div className="flex items-start gap-3.5">
-                <div className={`w-12 h-12 ${isRequired ? 'bg-text text-white' : 'bg-bg-subtle text-text-secondary'} rounded-xl flex items-center justify-center`}>
+                <div className={`w-12 h-12 ${isRequired ? 'bg-primary text-white' : 'bg-bg-subtle text-text-secondary'} rounded-xl flex items-center justify-center`}>
                   <MissionTypeIcon type={mission.template.type as MissionType} size={22} />
                 </div>
                 <div className="flex-1">
@@ -108,13 +108,13 @@ export default function TodayMission({ mission, todayMissions = [] }: Props) {
                   </h2>
                 </div>
               </div>
-            </Card>
+            </div>
 
             {/* Content Idea */}
-            <Card variant="flat" padding="md" className="animate-fade-up" style={{ animationDelay: '50ms' }}>
+            <div className="bg-bg-subtle border border-border rounded-2xl p-4 animate-fade-up" style={{ animationDelay: '50ms' }}>
               <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-1.5">L'idée</p>
               <p className="text-[14px] text-text leading-relaxed">{mission.template.contentIdea}</p>
-            </Card>
+            </div>
 
             {/* Other missions */}
             {sortedMissions.length > 1 && (
@@ -130,7 +130,7 @@ export default function TodayMission({ mission, todayMissions = [] }: Props) {
                       className={`
                         flex-shrink-0 px-3 py-2.5 rounded-xl border transition-all active:scale-[0.97]
                         ${m.status === 'completed'
-                          ? 'border-success/20 bg-success-light'
+                          ? 'border-success/30 bg-success/10'
                           : 'border-border bg-bg-card hover:bg-bg-subtle'
                         }
                       `}
@@ -153,7 +153,7 @@ export default function TodayMission({ mission, todayMissions = [] }: Props) {
           </>
         ) : (
           <div className="flex flex-col items-center justify-center py-16 animate-fade-up">
-            <div className="w-12 h-12 bg-bg-subtle rounded-2xl flex items-center justify-center mb-3">
+            <div className="w-12 h-12 bg-bg-subtle border border-border rounded-2xl flex items-center justify-center mb-3">
               <Sparkles className="w-6 h-6 text-text-muted" />
             </div>
             <h2 className="text-[17px] font-bold text-text mb-1">Pas de mission aujourd'hui</h2>
@@ -166,7 +166,7 @@ export default function TodayMission({ mission, todayMissions = [] }: Props) {
 
       {/* Fixed bottom buttons */}
       {mission && mission.status === 'pending' && (
-        <div className="fixed bottom-20 left-0 right-0 p-5 bg-bg/80 backdrop-blur-lg">
+        <div className="fixed bottom-20 left-0 right-0 p-5 bg-bg/80 backdrop-blur-xl border-t border-border">
           <div className="flex items-center gap-2">
             <Button onClick={handleAccept} disabled={acceptForm.processing} variant="primary" fullWidth size="lg">
               {acceptForm.processing ? 'Chargement...' : "C'est parti !"}
@@ -177,16 +177,16 @@ export default function TodayMission({ mission, todayMissions = [] }: Props) {
       )}
 
       {mission && mission.status === 'completed' && (
-        <div className="fixed bottom-20 left-0 right-0 p-5 bg-bg/80 backdrop-blur-lg">
-          <div className="bg-success-light text-success rounded-xl p-3.5 text-center text-[14px] font-medium flex items-center justify-center gap-1.5">
+        <div className="fixed bottom-20 left-0 right-0 p-5 bg-bg/80 backdrop-blur-xl border-t border-border">
+          <div className="bg-success/10 border border-success/20 text-success rounded-2xl p-3.5 text-center text-[14px] font-medium flex items-center justify-center gap-1.5">
             Mission accomplie <Check className="w-4 h-4" />
           </div>
         </div>
       )}
 
       {mission && mission.status === 'skipped' && (
-        <div className="fixed bottom-20 left-0 right-0 p-5 bg-bg/80 backdrop-blur-lg">
-          <div className="bg-bg-subtle text-text-muted rounded-xl p-3.5 text-center text-[14px] font-medium">
+        <div className="fixed bottom-20 left-0 right-0 p-5 bg-bg/80 backdrop-blur-xl border-t border-border">
+          <div className="bg-bg-subtle border border-border text-text-muted rounded-2xl p-3.5 text-center text-[14px] font-medium">
             Mission passée
           </div>
         </div>

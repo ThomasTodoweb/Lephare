@@ -8,7 +8,7 @@ interface AppLayoutProps {
 
 export function AppLayout({ children, showBottomNav = true }: AppLayoutProps) {
   return (
-    <div className="min-h-screen bg-bg">
+    <div className="min-h-screen bg-bg text-text">
       {/* PWA safe area top spacer */}
       <div className="h-[env(safe-area-inset-top,0px)]" />
 

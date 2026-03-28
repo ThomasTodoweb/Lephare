@@ -246,16 +246,16 @@ export default function StatisticsIndex({ keyMetrics, summary, comparison, insta
   }, [selectedPeriod])
 
   const SentimentIcon = interpretation?.sentiment === 'positive' ? TrendingUp : interpretation?.sentiment === 'negative' ? TrendingDown : ThumbsUp
-  const sentimentColor = interpretation?.sentiment === 'positive' ? 'text-emerald-600' : interpretation?.sentiment === 'negative' ? 'text-red-500' : 'text-text-secondary'
+  const sentimentColor = interpretation?.sentiment === 'positive' ? 'text-success' : interpretation?.sentiment === 'negative' ? 'text-error' : 'text-text-secondary'
 
   return (
     <AppLayout>
       <Head title="Mes Statistiques - Le Phare" />
 
-      <div className="pt-4 pb-8 space-y-4">
+      <div className="pt-4 pb-8 space-y-4 animate-fade-up">
 
         {/* ─── Zone 1 — Le Verdict (hero) ─────────────────────────────── */}
-        <div className="bg-bg-card rounded-3xl shadow-card p-5 animate-fade-up">
+        <div className="bg-bg-card border border-border rounded-2xl p-5 animate-fade-up">
           {isLoadingInterpretation ? (
             <div className="flex flex-col items-center gap-3 py-4">
               <div className="w-8 h-8 rounded-full overflow-hidden border border-border">
@@ -288,13 +288,13 @@ export default function StatisticsIndex({ keyMetrics, summary, comparison, insta
         {/* ─── Zone 2 — 3 chiffres clés ───────────────────────────────── */}
         <div className="grid grid-cols-3 gap-2.5">
           {/* Abonnés */}
-          <div className="bg-bg-card rounded-2xl p-3 text-center shadow-xs">
+          <div className="bg-bg-card border border-border rounded-2xl p-3 text-center">
             <p className="text-[22px] font-black text-text">
               {instagram ? (instagram.followers?.current ?? 0).toLocaleString('fr-FR') : '—'}
             </p>
             <p className="text-[11px] text-text-muted mt-0.5">Abonnés</p>
             {instagramComparison && (instagramComparison.changes?.followersPercent ?? 0) !== 0 && (
-              <div className={`flex items-center justify-center gap-0.5 mt-1 ${(instagramComparison.changes?.followersPercent ?? 0) >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+              <div className={`flex items-center justify-center gap-0.5 mt-1 ${(instagramComparison.changes?.followersPercent ?? 0) >= 0 ? 'text-success' : 'text-error'}`}>
                 {(instagramComparison.changes?.followersPercent ?? 0) >= 0
                   ? <ArrowUpRight size={12} />
                   : <ArrowDownRight size={12} />}
@@ -306,13 +306,13 @@ export default function StatisticsIndex({ keyMetrics, summary, comparison, insta
           </div>
 
           {/* Portée */}
-          <div className="bg-bg-card rounded-2xl p-3 text-center shadow-xs">
+          <div className="bg-bg-card border border-border rounded-2xl p-3 text-center">
             <p className="text-[22px] font-black text-text">
               {instagram ? (instagram.engagement?.reach ?? 0).toLocaleString('fr-FR') : '—'}
             </p>
             <p className="text-[11px] text-text-muted mt-0.5">Personnes touchées</p>
             {instagramComparison && (instagramComparison.changes?.reachPercent ?? 0) !== 0 && (
-              <div className={`flex items-center justify-center gap-0.5 mt-1 ${(instagramComparison.changes?.reachPercent ?? 0) >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+              <div className={`flex items-center justify-center gap-0.5 mt-1 ${(instagramComparison.changes?.reachPercent ?? 0) >= 0 ? 'text-success' : 'text-error'}`}>
                 {(instagramComparison.changes?.reachPercent ?? 0) >= 0
                   ? <ArrowUpRight size={12} />
                   : <ArrowDownRight size={12} />}
@@ -324,13 +324,13 @@ export default function StatisticsIndex({ keyMetrics, summary, comparison, insta
           </div>
 
           {/* Engagement % */}
-          <div className="bg-bg-card rounded-2xl p-3 text-center shadow-xs">
+          <div className="bg-bg-card border border-border rounded-2xl p-3 text-center">
             <p className="text-[22px] font-black text-text">
               {instagram ? `${Number(instagram.engagement?.averageRate ?? 0).toFixed(1)}%` : '—'}
             </p>
             <p className="text-[11px] text-text-muted mt-0.5">Interactions</p>
             {instagramComparison && (instagramComparison.changes?.engagementRate ?? 0) !== 0 && (
-              <div className={`flex items-center justify-center gap-0.5 mt-1 ${(instagramComparison.changes?.engagementRate ?? 0) >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+              <div className={`flex items-center justify-center gap-0.5 mt-1 ${(instagramComparison.changes?.engagementRate ?? 0) >= 0 ? 'text-success' : 'text-error'}`}>
                 {(instagramComparison.changes?.engagementRate ?? 0) >= 0
                   ? <ArrowUpRight size={12} />
                   : <ArrowDownRight size={12} />}
@@ -343,9 +343,9 @@ export default function StatisticsIndex({ keyMetrics, summary, comparison, insta
         </div>
 
         {/* ─── Zone 3 — Conseil Popote ─────────────────────────────────── */}
-        <div className="bg-primary-50 border border-primary-100 rounded-2xl p-4">
+        <div className="bg-primary/5 border border-primary/10 rounded-2xl p-4">
           <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-full overflow-hidden border border-primary-100 shrink-0">
+            <div className="w-8 h-8 rounded-full overflow-hidden border border-primary/20 shrink-0">
               <img src="/images/popote.png" alt="Popote" className="w-full h-full object-contain" />
             </div>
             <div className="flex-1 min-w-0">
@@ -369,7 +369,7 @@ export default function StatisticsIndex({ keyMetrics, summary, comparison, insta
 
         {/* ─── Zone 4 — Détail Instagram (accordéon) ───────────────────── */}
         {instagram && (
-          <div className="bg-bg-card rounded-2xl shadow-xs overflow-hidden">
+          <div className="bg-bg-card border border-border rounded-2xl overflow-hidden">
             <button
               onClick={() => setDetailOpen((prev) => !prev)}
               className="w-full flex items-center justify-between p-4 active:bg-bg-subtle transition-colors"
@@ -419,7 +419,7 @@ export default function StatisticsIndex({ keyMetrics, summary, comparison, insta
                     </p>
                     <p className="text-[11px] text-text-muted">Vues</p>
                     {instagramComparison && (
-                      <p className={`text-[11px] font-medium ${(instagramComparison.changes?.impressionsPercent ?? 0) >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+                      <p className={`text-[11px] font-medium ${(instagramComparison.changes?.impressionsPercent ?? 0) >= 0 ? 'text-success' : 'text-error'}`}>
                         {(instagramComparison.changes?.impressionsPercent ?? 0) >= 0 ? '+' : ''}{instagramComparison.changes?.impressionsPercent ?? 0}%
                       </p>
                     )}
@@ -430,7 +430,7 @@ export default function StatisticsIndex({ keyMetrics, summary, comparison, insta
                     </p>
                     <p className="text-[11px] text-text-muted">Personnes touchées</p>
                     {instagramComparison && (
-                      <p className={`text-[11px] font-medium ${(instagramComparison.changes?.reachPercent ?? 0) >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+                      <p className={`text-[11px] font-medium ${(instagramComparison.changes?.reachPercent ?? 0) >= 0 ? 'text-success' : 'text-error'}`}>
                         {(instagramComparison.changes?.reachPercent ?? 0) >= 0 ? '+' : ''}{instagramComparison.changes?.reachPercent ?? 0}%
                       </p>
                     )}
@@ -485,7 +485,7 @@ export default function StatisticsIndex({ keyMetrics, summary, comparison, insta
         )}
 
         {/* ─── Zone 5 — Sparkline simple (SVG) ─────────────────────────── */}
-        <div className="bg-bg-card rounded-2xl shadow-xs p-4">
+        <div className="bg-bg-card border border-border rounded-2xl p-4">
           <div className="flex items-center justify-between mb-3">
             <div className="flex gap-2">
               {(['7', '30', '90'] as const).map((period) => (
@@ -504,7 +504,7 @@ export default function StatisticsIndex({ keyMetrics, summary, comparison, insta
             </div>
             {!isLoadingEvolution && chartData.length >= 2 && (
               <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
-                trendIsUp ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-500'
+                trendIsUp ? 'bg-success/10 text-success' : 'bg-error/10 text-error'
               }`}>
                 {trendIsUp ? 'En progression' : 'Ralentissement'}
               </span>

@@ -49,19 +49,19 @@ export default function Home({ isAuthenticated }: Props) {
     <>
       <Head title="Le Phare - Instagram facile pour restaurateurs" />
 
-      <div className="min-h-screen bg-background font-sans">
+      <div className="min-h-screen bg-bg font-sans text-text">
         {/* Navbar */}
-        <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm">
+        <nav className="fixed top-0 left-0 right-0 z-50 bg-bg/90 backdrop-blur-md border-b border-border/50">
           <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
             <Link href="/" className="flex items-center">
-              <img src="/logo-rectangle.png" alt="Le Phare" className="h-8" />
+              <img src="/logo-rectangle.png" alt="Le Phare" className="h-8 brightness-0 invert" />
             </Link>
 
             <div className="flex items-center gap-4">
               {isAuthenticated ? (
                 <Link
                   href="/dashboard"
-                  className="px-6 py-2 bg-primary text-white font-bold uppercase tracking-wide rounded-full hover:bg-primary-dark transition-colors text-sm"
+                  className="px-6 py-2 bg-primary text-white font-bold uppercase tracking-wide rounded-full hover:brightness-110 transition-all active:scale-[0.97] text-sm"
                 >
                   Accès app
                 </Link>
@@ -69,13 +69,13 @@ export default function Home({ isAuthenticated }: Props) {
                 <>
                   <Link
                     href="/login"
-                    className="text-text hover:text-primary transition-colors font-medium text-sm"
+                    className="text-text-secondary hover:text-text transition-colors font-medium text-sm"
                   >
                     Connexion
                   </Link>
                   <Link
                     href="/register"
-                    className="px-6 py-2 bg-primary text-white font-bold uppercase tracking-wide rounded-full hover:bg-primary-dark transition-colors text-sm"
+                    className="px-6 py-2 bg-primary text-white font-bold uppercase tracking-wide rounded-full hover:brightness-110 transition-all active:scale-[0.97] text-sm"
                   >
                     Essai gratuit
                   </Link>
@@ -86,8 +86,11 @@ export default function Home({ isAuthenticated }: Props) {
         </nav>
 
         {/* Hero Section */}
-        <section className="pt-28 pb-16 px-6">
-          <div className="max-w-5xl mx-auto">
+        <section className="pt-28 pb-16 px-6 relative overflow-hidden">
+          {/* Background glow */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-primary/5 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="max-w-5xl mx-auto relative z-10">
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <div>
                 <p className="text-primary font-bold uppercase tracking-wide text-sm mb-4">
@@ -98,7 +101,7 @@ export default function Home({ isAuthenticated }: Props) {
                   <br />
                   <span className="text-primary">En 5 min par jour.</span>
                 </h1>
-                <p className="text-lg text-neutral-600 mb-8">
+                <p className="text-lg text-text-secondary mb-8">
                   Le Phare vous dit quoi poster. Chaque jour. Sans prise de tête.
                   Comme un community manager dans votre poche.
                 </p>
@@ -106,49 +109,49 @@ export default function Home({ isAuthenticated }: Props) {
                 <div className="flex flex-col sm:flex-row gap-4 mb-6">
                   <Link
                     href="/register"
-                    className="px-8 py-4 bg-primary text-white font-bold uppercase tracking-wide rounded-full hover:bg-primary-dark transition-all text-center"
+                    className="px-8 py-4 bg-primary text-white font-bold uppercase tracking-wide rounded-full hover:brightness-110 transition-all active:scale-[0.97] text-center"
                   >
                     Essayer 14 jours gratuit
                   </Link>
                 </div>
-                <p className="text-sm text-neutral-500">
-                  Sans carte bancaire • Annulable à tout moment
+                <p className="text-sm text-text-muted">
+                  Sans carte bancaire -- Annulable à tout moment
                 </p>
               </div>
 
               <div className="flex justify-center">
                 <div className="relative">
                   {/* Phone mockup */}
-                  <div className="w-64 h-[500px] bg-white rounded-[2.5rem] shadow-2xl border-4 border-neutral-200 overflow-hidden relative">
+                  <div className="w-64 h-[500px] bg-bg-card rounded-[2.5rem] border-2 border-border overflow-hidden relative shadow-2xl shadow-black/20">
                     {/* Notch */}
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-6 bg-neutral-200 rounded-b-2xl"></div>
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-6 bg-bg rounded-b-2xl"></div>
 
                     {/* Screen content */}
-                    <div className="pt-10 px-4 pb-4 h-full bg-background">
+                    <div className="pt-10 px-4 pb-4 h-full bg-bg">
                       {/* Mini header */}
                       <div className="flex items-center justify-center mb-4">
-                        <img src="/logo-rectangle.png" alt="Le Phare" className="h-5" />
+                        <img src="/logo-rectangle.png" alt="Le Phare" className="h-5 brightness-0 invert" />
                       </div>
 
                       {/* Streak */}
-                      <div className="bg-white rounded-2xl p-3 mb-4 shadow-sm">
+                      <div className="bg-bg-card border border-border rounded-2xl p-3 mb-4">
                         <div className="flex items-center gap-2">
                           <span className="text-2xl">🔥</span>
                           <div>
-                            <p className="font-bold text-sm">12 jours</p>
-                            <p className="text-xs text-neutral-500">Ta série continue !</p>
+                            <p className="font-bold text-sm text-text">12 jours</p>
+                            <p className="text-xs text-text-muted">Ta série continue !</p>
                           </div>
                         </div>
                       </div>
 
                       {/* Mission card */}
-                      <div className="bg-white rounded-2xl p-4 shadow-sm">
+                      <div className="bg-bg-card border border-border rounded-2xl p-4">
                         <div className="flex items-center gap-2 mb-3">
                           <span className="text-xl">📸</span>
                           <span className="text-xs font-bold text-primary uppercase">Post</span>
                         </div>
-                        <h3 className="font-bold text-sm mb-2">Poste ton plat du jour</h3>
-                        <p className="text-xs text-neutral-600 mb-4">
+                        <h3 className="font-bold text-sm mb-2 text-text">Poste ton plat du jour</h3>
+                        <p className="text-xs text-text-secondary mb-4">
                           Montre ce qui sort de tes cuisines aujourd'hui !
                         </p>
                         <button className="w-full py-2.5 bg-primary text-white font-bold uppercase text-xs rounded-full">
@@ -163,7 +166,7 @@ export default function Home({ isAuthenticated }: Props) {
             </div>
 
             {/* Social proof */}
-            <div className="flex flex-wrap justify-center gap-8 mt-12 text-sm text-neutral-600">
+            <div className="flex flex-wrap justify-center gap-8 mt-12 text-sm text-text-secondary">
               <span className="flex items-center gap-2">
                 <span className="text-primary font-bold">✓</span> +100 restaurateurs
               </span>
@@ -178,7 +181,7 @@ export default function Home({ isAuthenticated }: Props) {
         </section>
 
         {/* Pain Points */}
-        <section className="py-16 px-6 bg-white">
+        <section className="py-16 px-6 bg-bg-card border-y border-border/50">
           <div className="max-w-3xl mx-auto">
             <h2 className="text-2xl md:text-3xl font-extrabold text-text text-center mb-12 uppercase">
               Vous aussi, vous avez déjà pensé...
@@ -193,7 +196,7 @@ export default function Home({ isAuthenticated }: Props) {
               ].map((pain, i) => (
                 <div
                   key={i}
-                  className="bg-background rounded-2xl p-5 flex items-center gap-4"
+                  className="bg-white/5 border border-border rounded-2xl p-5 flex items-center gap-4"
                 >
                   <span className="text-3xl">{pain.emoji}</span>
                   <p className="text-lg font-medium text-text">{pain.text}</p>
@@ -201,7 +204,7 @@ export default function Home({ isAuthenticated }: Props) {
               ))}
             </div>
 
-            <p className="text-center text-neutral-500 italic mt-8">
+            <p className="text-center text-text-muted italic mt-8">
               Pendant ce temps, le resto d'à côté cartonne sur Instagram...
             </p>
           </div>
@@ -213,7 +216,7 @@ export default function Home({ isAuthenticated }: Props) {
             <h2 className="text-2xl md:text-3xl font-extrabold text-text text-center mb-4 uppercase">
               La solution ? Le Phare.
             </h2>
-            <p className="text-center text-neutral-600 mb-12 text-lg">
+            <p className="text-center text-text-secondary mb-12 text-lg">
               1 mission par jour. 5 minutes. Zéro prise de tête.
             </p>
 
@@ -235,10 +238,10 @@ export default function Home({ isAuthenticated }: Props) {
                   desc: 'Streaks, badges, stats. Vous voyez que ça marche. Et ça motive.',
                 },
               ].map((pillar, i) => (
-                <div key={i} className="bg-white rounded-2xl p-6 text-center">
+                <div key={i} className="bg-bg-card border border-border rounded-2xl p-6 text-center">
                   <span className="text-4xl mb-4 block">{pillar.emoji}</span>
                   <h3 className="font-bold text-lg text-text mb-2">{pillar.title}</h3>
-                  <p className="text-neutral-600 text-sm">{pillar.desc}</p>
+                  <p className="text-text-secondary text-sm">{pillar.desc}</p>
                 </div>
               ))}
             </div>
@@ -250,7 +253,7 @@ export default function Home({ isAuthenticated }: Props) {
         </section>
 
         {/* Comment ça marche */}
-        <section className="py-16 px-6 bg-white">
+        <section className="py-16 px-6 bg-bg-card border-y border-border/50">
           <div className="max-w-3xl mx-auto">
             <h2 className="text-2xl md:text-3xl font-extrabold text-text text-center mb-12 uppercase">
               Simple comme bonjour
@@ -270,13 +273,13 @@ export default function Home({ isAuthenticated }: Props) {
                   </div>
                   <div>
                     <p className="font-bold text-text">{step.text}</p>
-                    <p className="text-neutral-600 text-sm">{step.sub}</p>
+                    <p className="text-text-secondary text-sm">{step.sub}</p>
                   </div>
                 </div>
               ))}
             </div>
 
-            <p className="text-center text-neutral-500 mt-8">
+            <p className="text-center text-text-muted mt-8">
               ⏱️ Temps total : ~4 minutes
             </p>
           </div>
@@ -298,11 +301,11 @@ export default function Home({ isAuthenticated }: Props) {
                 { emoji: '📚', title: 'Tutos vidéo', desc: 'Formations courtes et pratiques' },
                 { emoji: '📊', title: 'Bilan hebdo', desc: 'Votre progression en un coup d\'œil' },
               ].map((feature, i) => (
-                <div key={i} className="bg-white rounded-2xl p-5 flex items-start gap-3">
+                <div key={i} className="bg-bg-card border border-border rounded-2xl p-5 flex items-start gap-3">
                   <span className="text-2xl">{feature.emoji}</span>
                   <div>
                     <h3 className="font-bold text-text text-sm">{feature.title}</h3>
-                    <p className="text-neutral-600 text-xs">{feature.desc}</p>
+                    <p className="text-text-secondary text-xs">{feature.desc}</p>
                   </div>
                 </div>
               ))}
@@ -311,7 +314,7 @@ export default function Home({ isAuthenticated }: Props) {
         </section>
 
         {/* Testimonials */}
-        <section className="py-16 px-6 bg-white">
+        <section className="py-16 px-6 bg-bg-card border-y border-border/50">
           <div className="max-w-5xl mx-auto">
             <h2 className="text-2xl md:text-3xl font-extrabold text-text text-center mb-12 uppercase">
               Ils adorent
@@ -335,7 +338,7 @@ export default function Home({ isAuthenticated }: Props) {
                   place: 'Restaurant, Melun',
                 },
               ].map((testimonial, i) => (
-                <div key={i} className="bg-background rounded-2xl p-5">
+                <div key={i} className="bg-white/5 border border-border rounded-2xl p-5">
                   <p className="text-text mb-4 italic">"{testimonial.quote}"</p>
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-bold text-sm">
@@ -343,7 +346,7 @@ export default function Home({ isAuthenticated }: Props) {
                     </div>
                     <div>
                       <p className="font-bold text-sm text-text">{testimonial.name}</p>
-                      <p className="text-xs text-neutral-500">{testimonial.place}</p>
+                      <p className="text-xs text-text-muted">{testimonial.place}</p>
                     </div>
                   </div>
                 </div>
@@ -353,15 +356,15 @@ export default function Home({ isAuthenticated }: Props) {
             <div className="flex flex-wrap justify-center gap-8 text-center">
               <div>
                 <p className="text-2xl font-extrabold text-primary">+47%</p>
-                <p className="text-sm text-neutral-600">engagement</p>
+                <p className="text-sm text-text-secondary">engagement</p>
               </div>
               <div>
                 <p className="text-2xl font-extrabold text-primary">12 jours</p>
-                <p className="text-sm text-neutral-600">streak moyen</p>
+                <p className="text-sm text-text-secondary">streak moyen</p>
               </div>
               <div>
                 <p className="text-2xl font-extrabold text-primary">4.8/5</p>
-                <p className="text-sm text-neutral-600">satisfaction</p>
+                <p className="text-sm text-text-secondary">satisfaction</p>
               </div>
             </div>
           </div>
@@ -373,20 +376,20 @@ export default function Home({ isAuthenticated }: Props) {
             <h2 className="text-2xl md:text-3xl font-extrabold text-text text-center mb-4 uppercase">
               Moins cher qu'un plat du jour
             </h2>
-            <p className="text-center text-neutral-600 mb-10">Par jour.</p>
+            <p className="text-center text-text-secondary mb-10">Par jour.</p>
 
             {/* Comparison */}
             <div className="grid sm:grid-cols-2 gap-4 mb-8">
-              <div className="bg-white rounded-2xl p-5 opacity-60">
-                <p className="font-bold text-neutral-500 mb-2">Agence / CM</p>
+              <div className="bg-bg-card border border-border rounded-2xl p-5 opacity-50">
+                <p className="font-bold text-text-muted mb-2">Agence / CM</p>
                 <p className="text-2xl font-extrabold text-text mb-4">500-2000€<span className="text-sm font-normal">/mois</span></p>
-                <ul className="text-sm text-neutral-500 space-y-1">
+                <ul className="text-sm text-text-muted space-y-1">
                   <li>❌ Jamais dispo</li>
                   <li>❌ Résultats flous</li>
                   <li>❌ Vous êtes passif</li>
                 </ul>
               </div>
-              <div className="bg-white rounded-2xl p-5 border-4 border-primary relative">
+              <div className="bg-bg-card rounded-2xl p-5 border-2 border-primary relative">
                 <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-white text-xs font-bold px-3 py-1 rounded-full uppercase">
                   Recommandé
                 </span>
@@ -401,9 +404,9 @@ export default function Home({ isAuthenticated }: Props) {
             </div>
 
             {/* Pricing card */}
-            <div className="bg-white rounded-2xl p-8 text-center max-w-md mx-auto">
-              <p className="text-4xl font-extrabold text-text mb-1">29€<span className="text-lg font-normal text-neutral-500">/mois</span></p>
-              <p className="text-sm text-neutral-500 mb-6">Soit moins d'1€ par jour</p>
+            <div className="bg-bg-card border border-border rounded-2xl p-8 text-center max-w-md mx-auto">
+              <p className="text-4xl font-extrabold text-text mb-1">29€<span className="text-lg font-normal text-text-muted">/mois</span></p>
+              <p className="text-sm text-text-muted mb-6">Soit moins d'1€ par jour</p>
 
               <ul className="text-left text-sm space-y-2 mb-6">
                 {[
@@ -415,7 +418,7 @@ export default function Home({ isAuthenticated }: Props) {
                   'Bilan IA hebdomadaire',
                   'Support prioritaire',
                 ].map((feature, i) => (
-                  <li key={i} className="flex items-center gap-2">
+                  <li key={i} className="flex items-center gap-2 text-text-secondary">
                     <span className="text-primary">✓</span> {feature}
                   </li>
                 ))}
@@ -423,14 +426,14 @@ export default function Home({ isAuthenticated }: Props) {
 
               <Link
                 href="/register"
-                className="block w-full py-4 bg-primary text-white font-bold uppercase tracking-wide rounded-full hover:bg-primary-dark transition-colors"
+                className="block w-full py-4 bg-primary text-white font-bold uppercase tracking-wide rounded-full hover:brightness-110 transition-all active:scale-[0.97]"
               >
                 Essayer 14 jours gratuit
               </Link>
-              <p className="text-xs text-neutral-500 mt-3">Sans engagement • Annulable en 1 clic</p>
+              <p className="text-xs text-text-muted mt-3">Sans engagement -- Annulable en 1 clic</p>
             </div>
 
-            <div className="flex items-center justify-center gap-3 mt-8 text-neutral-600 text-sm">
+            <div className="flex items-center justify-center gap-3 mt-8 text-text-secondary text-sm">
               <span className="text-xl">🛡️</span>
               <p>Garantie 30 jours satisfait ou remboursé</p>
             </div>
@@ -438,7 +441,7 @@ export default function Home({ isAuthenticated }: Props) {
         </section>
 
         {/* FAQ */}
-        <section className="py-16 px-6 bg-white">
+        <section className="py-16 px-6 bg-bg-card border-y border-border/50">
           <div className="max-w-3xl mx-auto">
             <h2 className="text-2xl md:text-3xl font-extrabold text-text text-center mb-12 uppercase">
               Questions fréquentes
@@ -446,10 +449,10 @@ export default function Home({ isAuthenticated }: Props) {
 
             <div className="space-y-3">
               {faqs.map((faq, index) => (
-                <div key={index} className="bg-background rounded-2xl overflow-hidden">
+                <div key={index} className="bg-white/5 border border-border rounded-2xl overflow-hidden">
                   <button
                     onClick={() => toggleFaq(index)}
-                    className="w-full p-5 text-left flex items-center justify-between font-bold text-text"
+                    className="w-full p-5 text-left flex items-center justify-between font-bold text-text min-h-11"
                   >
                     <span>{faq.question}</span>
                     <svg
@@ -462,7 +465,7 @@ export default function Home({ isAuthenticated }: Props) {
                     </svg>
                   </button>
                   {openFaq === index && (
-                    <div className="px-5 pb-5 text-neutral-600 text-sm">{faq.answer}</div>
+                    <div className="px-5 pb-5 text-text-secondary text-sm">{faq.answer}</div>
                   )}
                 </div>
               ))}
@@ -471,36 +474,41 @@ export default function Home({ isAuthenticated }: Props) {
         </section>
 
         {/* Final CTA */}
-        <section className="py-16 px-6">
-          <div className="max-w-3xl mx-auto text-center">
-            <div className="bg-white rounded-3xl p-10">
+        <section className="py-16 px-6 relative overflow-hidden">
+          {/* Background glow */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="w-[600px] h-[400px] bg-primary/5 rounded-full blur-3xl" />
+          </div>
+
+          <div className="max-w-3xl mx-auto text-center relative z-10">
+            <div className="bg-bg-card border border-border rounded-3xl p-10">
               <h2 className="text-2xl md:text-3xl font-extrabold text-text mb-4 uppercase">
                 Prêt à remplir votre salle ?
               </h2>
-              <p className="text-neutral-600 mb-8">
+              <p className="text-text-secondary mb-8">
                 Rejoignez les restaurateurs qui ont repris le contrôle d'Instagram.
               </p>
 
               <Link
                 href="/register"
-                className="inline-block px-10 py-4 bg-primary text-white font-bold uppercase tracking-wide rounded-full hover:bg-primary-dark transition-all"
+                className="inline-block px-10 py-4 bg-primary text-white font-bold uppercase tracking-wide rounded-full hover:brightness-110 transition-all active:scale-[0.97]"
               >
                 Démarrer mon essai gratuit
               </Link>
 
-              <p className="text-xs text-neutral-500 mt-4">
-                14 jours gratuits • Sans carte bancaire • Setup en 2 min
+              <p className="text-xs text-text-muted mt-4">
+                14 jours gratuits -- Sans carte bancaire -- Setup en 2 min
               </p>
             </div>
           </div>
         </section>
 
         {/* Footer */}
-        <footer className="py-10 px-6 bg-white">
+        <footer className="py-10 px-6 bg-bg-card border-t border-border/50">
           <div className="max-w-5xl mx-auto">
             <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
-              <img src="/logo-rectangle.png" alt="Le Phare" className="h-8" />
-              <p className="text-sm text-neutral-500">
+              <img src="/logo-rectangle.png" alt="Le Phare" className="h-8 brightness-0 invert" />
+              <p className="text-sm text-text-muted">
                 La com' Instagram pour les restaurateurs.
               </p>
             </div>
@@ -508,33 +516,33 @@ export default function Home({ isAuthenticated }: Props) {
             <div className="grid sm:grid-cols-3 gap-8 text-sm mb-8">
               <div>
                 <p className="font-bold text-text mb-3">Produit</p>
-                <ul className="space-y-2 text-neutral-600">
-                  <li><a href="#" className="hover:text-primary">Fonctionnalités</a></li>
-                  <li><a href="#" className="hover:text-primary">Tarifs</a></li>
-                  <li><a href="#" className="hover:text-primary">Témoignages</a></li>
+                <ul className="space-y-2 text-text-secondary">
+                  <li><a href="#" className="hover:text-primary transition-colors">Fonctionnalités</a></li>
+                  <li><a href="#" className="hover:text-primary transition-colors">Tarifs</a></li>
+                  <li><a href="#" className="hover:text-primary transition-colors">Témoignages</a></li>
                 </ul>
               </div>
               <div>
                 <p className="font-bold text-text mb-3">Ressources</p>
-                <ul className="space-y-2 text-neutral-600">
-                  <li><a href="#" className="hover:text-primary">Blog</a></li>
-                  <li><a href="#" className="hover:text-primary">Contact</a></li>
+                <ul className="space-y-2 text-text-secondary">
+                  <li><a href="#" className="hover:text-primary transition-colors">Blog</a></li>
+                  <li><a href="#" className="hover:text-primary transition-colors">Contact</a></li>
                 </ul>
               </div>
               <div>
                 <p className="font-bold text-text mb-3">Légal</p>
-                <ul className="space-y-2 text-neutral-600">
-                  <li><a href="#" className="hover:text-primary">Mentions légales</a></li>
-                  <li><a href="#" className="hover:text-primary">Confidentialité</a></li>
-                  <li><a href="#" className="hover:text-primary">CGV</a></li>
+                <ul className="space-y-2 text-text-secondary">
+                  <li><a href="#" className="hover:text-primary transition-colors">Mentions légales</a></li>
+                  <li><a href="#" className="hover:text-primary transition-colors">Confidentialité</a></li>
+                  <li><a href="#" className="hover:text-primary transition-colors">CGV</a></li>
                 </ul>
               </div>
             </div>
 
-            <div className="border-t border-neutral-200 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-neutral-500">
-              <p>© 2026 Le Phare — Fait avec ❤️ en France</p>
+            <div className="border-t border-border pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-text-muted">
+              <p>© 2026 Le Phare -- Fait avec ❤️ en France</p>
               <div className="flex items-center gap-4">
-                <a href="#" className="hover:text-primary">
+                <a href="#" className="hover:text-primary transition-colors">
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
                   </svg>

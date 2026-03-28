@@ -201,7 +201,7 @@ export default function SubscriptionIndex({ subscription, trialInfo, pricing, is
     <AppLayout>
       <Head title="Mon Abonnement - Le Phare" />
 
-      <div className="py-4">
+      <div className="py-4 animate-fade-up">
         {/* Header */}
         <div className="mb-6">
           <Link
@@ -240,7 +240,7 @@ export default function SubscriptionIndex({ subscription, trialInfo, pricing, is
             <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-2 px-1">
               Ton abonnement
             </p>
-            <Card variant="bordered" className="shadow-xs">
+            <Card variant="bordered" className="border border-border">
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-[13px] text-text-secondary">Plan</span>
@@ -298,7 +298,7 @@ export default function SubscriptionIndex({ subscription, trialInfo, pricing, is
             <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-2 px-1">
               Factures
             </p>
-            <Card variant="bordered" className="shadow-xs">
+            <Card variant="bordered" className="border border-border">
               {loadingInvoices ? (
                 <p className="text-[13px] text-text-muted">Chargement...</p>
               ) : invoices.length === 0 ? (
@@ -356,7 +356,7 @@ export default function SubscriptionIndex({ subscription, trialInfo, pricing, is
                 onClick={() => setSelectedPlan('monthly')}
                 className={`w-full p-4 rounded-2xl text-left transition-all active:scale-[0.98] ${
                   selectedPlan === 'monthly'
-                    ? 'border-2 border-text bg-bg-card shadow-card'
+                    ? 'border-2 border-text bg-bg-card border-2 border-primary/20'
                     : 'border border-border bg-bg-card'
                 }`}
               >
@@ -379,7 +379,7 @@ export default function SubscriptionIndex({ subscription, trialInfo, pricing, is
                 onClick={() => setSelectedPlan('yearly')}
                 className={`w-full p-4 rounded-2xl text-left transition-all active:scale-[0.98] relative ${
                   selectedPlan === 'yearly'
-                    ? 'border-2 border-text bg-bg-card shadow-card'
+                    ? 'border-2 border-text bg-bg-card border-2 border-primary/20'
                     : 'border border-border bg-bg-card'
                 }`}
               >
@@ -419,7 +419,7 @@ export default function SubscriptionIndex({ subscription, trialInfo, pricing, is
           <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-2 px-1">
             Inclus dans l'abonnement
           </p>
-          <Card variant="bordered" className="shadow-xs">
+          <Card variant="bordered" className="border border-border">
             <ul className="space-y-3">
               {[
                 'Missions quotidiennes personnalisees',
@@ -443,7 +443,7 @@ export default function SubscriptionIndex({ subscription, trialInfo, pricing, is
           <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-2 px-1">
             Questions frequentes
           </p>
-          <Card variant="bordered" className="shadow-xs">
+          <Card variant="bordered" className="border border-border">
             <div className="space-y-4">
               <div>
                 <p className="text-[14px] font-medium text-text">

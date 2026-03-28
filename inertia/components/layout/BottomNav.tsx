@@ -17,10 +17,10 @@ export function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-t border-black/[0.04]"
+      className="fixed bottom-0 left-0 right-0 z-50 glass-strong"
       aria-label="Navigation principale"
     >
-      <div className="max-w-[430px] mx-auto flex justify-around items-center h-[52px] px-2 relative">
+      <div className="max-w-[430px] mx-auto flex justify-around items-center h-[56px] px-2 relative">
         {/* Left nav items */}
         {NAV_ITEMS_LEFT.map((item) => {
           const isActive = url === item.href || url.startsWith(`${item.href}/`)
@@ -36,10 +36,10 @@ export function BottomNav() {
         })}
 
         {/* Central FAB */}
-        <div className="relative flex items-center justify-center min-w-[52px]">
+        <div className="relative flex items-center justify-center min-w-[56px]">
           <Link
             href="/missions"
-            className="absolute -top-5 flex items-center justify-center w-[52px] h-[52px] rounded-full bg-primary shadow-lg active:scale-95 transition-transform"
+            className="absolute -top-6 flex items-center justify-center w-[56px] h-[56px] rounded-full bg-primary shadow-glow-primary active:scale-95 transition-all duration-[var(--duration-fast)]"
             aria-label="Mission du jour"
           >
             <Camera size={24} className="text-white" strokeWidth={2} />
@@ -61,7 +61,7 @@ export function BottomNav() {
         })}
       </div>
       {/* Safe area bottom spacer for PWA */}
-      <div className="h-[env(safe-area-inset-bottom,0px)] bg-white/90" />
+      <div className="h-[env(safe-area-inset-bottom,0px)]" />
     </nav>
   )
 }

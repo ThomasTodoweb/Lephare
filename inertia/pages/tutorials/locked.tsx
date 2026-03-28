@@ -18,9 +18,9 @@ export default function TutorialLocked({ tutorial, userLevel }: Props) {
     <AppLayout>
       <Head title={`${tutorial.title} - Verrouille`} />
 
-      <div className="flex flex-col items-center justify-center min-h-[70vh] px-4 text-center">
+      <div className="flex flex-col items-center justify-center min-h-[70vh] px-4 text-center animate-fade-up">
         {/* Lock icon */}
-        <div className="w-16 h-16 bg-bg-subtle rounded-2xl flex items-center justify-center mb-6">
+        <div className="w-16 h-16 bg-bg-subtle border border-border rounded-2xl flex items-center justify-center mb-6">
           <Lock className="w-7 h-7 text-text-muted" />
         </div>
 

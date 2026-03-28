@@ -13,9 +13,9 @@ export function OnboardingProgress({ currentStep, totalSteps, showBar = true }: 
         Etape {currentStep} sur {totalSteps}
       </p>
       {showBar && (
-        <div className="h-1 bg-bg-subtle rounded-full overflow-hidden">
+        <div className="h-1 bg-white/10 rounded-full overflow-hidden">
           <div
-            className="h-full bg-text rounded-full transition-all duration-500 ease-out"
+            className="h-full bg-primary rounded-full transition-all duration-500 ease-out"
             style={{ width: `${progress}%` }}
           />
         </div>

@@ -32,7 +32,7 @@ export default function ReportShow({ report }: Props) {
     <AppLayout>
       <Head title="Bilan Hebdo - Le Phare" />
 
-      <div className="pt-4 pb-8">
+      <div className="pt-4 pb-8 animate-fade-up">
         {/* Header */}
         <div className="mb-6">
           <Link href="/reports" className="inline-flex items-center gap-1 text-[13px] text-text-secondary min-h-[44px] -ml-1 pl-1 pr-2">
@@ -47,15 +47,15 @@ export default function ReportShow({ report }: Props) {
 
         {/* Stats summary */}
         <div className="grid grid-cols-3 gap-2.5 mb-6">
-          <Card className="text-center shadow-xs">
+          <Card className="text-center border border-border">
             <p className="text-[22px] font-bold text-text tabular-nums">{report.missionsCompleted}</p>
             <p className="text-[11px] text-text-muted">missions</p>
           </Card>
-          <Card className="text-center shadow-xs">
+          <Card className="text-center border border-border">
             <p className="text-[22px] font-bold text-text tabular-nums">{report.tutorialsViewed}</p>
             <p className="text-[11px] text-text-muted">tutoriels</p>
           </Card>
-          <Card className="text-center shadow-xs">
+          <Card className="text-center border border-border">
             <p className="text-[22px] font-bold text-text tabular-nums">{report.streakAtEnd}</p>
             <p className="text-[11px] text-text-muted">serie</p>
           </Card>

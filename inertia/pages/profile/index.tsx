@@ -244,9 +244,9 @@ export default function Profile({
       {flash?.success && <Toast message={flash.success} type="success" />}
       {flash?.error && <Toast message={flash.error} type="error" />}
 
-      <div className="pb-8 pt-4">
+      <div className="pb-8 pt-4 animate-fade-up">
         {/* ===== ZONE 1: Carte de joueur ===== */}
-        <div className="bg-gradient-to-br from-primary/5 to-bg rounded-3xl p-5 animate-fade-up">
+        <div className="bg-bg-card border border-border rounded-2xl p-5 animate-fade-up">
           {/* Profile header */}
           <div className="flex items-center gap-3.5 mb-4">
             {instagram?.profilePictureUrl ? (
@@ -274,15 +274,15 @@ export default function Profile({
                   <span
                     className={`w-2 h-2 rounded-full ${
                       instagram.status === 'connected'
-                        ? 'bg-emerald-500'
-                        : 'bg-red-500'
+                        ? 'bg-success'
+                        : 'bg-error'
                     }`}
                   />
                   <span className="text-[12px] text-text-muted">@{instagram.username}</span>
                 </div>
               ) : (
                 <div className="flex items-center gap-1.5 mt-0.5">
-                  <span className="w-2 h-2 rounded-full bg-red-500" />
+                  <span className="w-2 h-2 rounded-full bg-error" />
                   <span className="text-[12px] text-text-muted">Instagram non connecté</span>
                 </div>
               )}
@@ -313,15 +313,15 @@ export default function Profile({
 
           {/* Stats grid */}
           <div className="grid grid-cols-3 gap-2.5">
-            <div className="bg-bg-card rounded-xl p-2.5 text-center shadow-xs">
+            <div className="bg-bg-subtle border border-border rounded-xl p-2.5 text-center">
               <p className="text-[16px] font-bold text-text">{streak.longestStreak}</p>
               <p className="text-[11px] text-text-muted mt-0.5">Record</p>
             </div>
-            <div className="bg-bg-card rounded-xl p-2.5 text-center shadow-xs">
+            <div className="bg-bg-subtle border border-border rounded-xl p-2.5 text-center">
               <p className="text-[16px] font-bold text-text">{streak.currentStreak}</p>
               <p className="text-[11px] text-text-muted mt-0.5">Série en cours</p>
             </div>
-            <div className="bg-bg-card rounded-xl p-2.5 text-center shadow-xs">
+            <div className="bg-bg-subtle border border-border rounded-xl p-2.5 text-center">
               <p className="text-[16px] font-bold text-text">{daysOnApp}</p>
               <p className="text-[11px] text-text-muted mt-0.5">Jours sur l'app</p>
             </div>
@@ -414,7 +414,7 @@ export default function Profile({
                       </select>
                     </label>
                     {strategyForm.errors.strategy_id && (
-                      <p className="text-[13px] text-red-500">{strategyForm.errors.strategy_id}</p>
+                      <p className="text-[13px] text-error">{strategyForm.errors.strategy_id}</p>
                     )}
                     <div className="flex gap-2">
                       <Button type="submit" size="sm" disabled={strategyForm.processing || strategyForm.data.strategy_id === 0} loading={strategyForm.processing}>
@@ -445,7 +445,7 @@ export default function Profile({
                       </select>
                     </label>
                     {rhythmForm.errors.publication_rhythm && (
-                      <p className="text-[13px] text-red-500">{rhythmForm.errors.publication_rhythm}</p>
+                      <p className="text-[13px] text-error">{rhythmForm.errors.publication_rhythm}</p>
                     )}
                     <div className="flex gap-2">
                       <Button type="submit" size="sm" loading={rhythmForm.processing}>
@@ -476,7 +476,7 @@ export default function Profile({
                       </select>
                     </label>
                     {typeForm.errors.type && (
-                      <p className="text-[13px] text-red-500">{typeForm.errors.type}</p>
+                      <p className="text-[13px] text-error">{typeForm.errors.type}</p>
                     )}
                     <div className="flex gap-2">
                       <Button type="submit" size="sm" loading={typeForm.processing}>
@@ -503,7 +503,7 @@ export default function Profile({
                       />
                     </label>
                     {nameForm.errors.name && (
-                      <p className="text-[13px] text-red-500">{nameForm.errors.name}</p>
+                      <p className="text-[13px] text-error">{nameForm.errors.name}</p>
                     )}
                     <div className="flex gap-2">
                       <Button type="submit" size="sm" loading={nameForm.processing}>
@@ -530,7 +530,7 @@ export default function Profile({
                       />
                     </label>
                     {emailForm.errors.email && (
-                      <p className="text-[13px] text-red-500">{emailForm.errors.email}</p>
+                      <p className="text-[13px] text-error">{emailForm.errors.email}</p>
                     )}
                     <div className="flex gap-2">
                       <Button type="submit" size="sm" loading={emailForm.processing}>
@@ -544,7 +544,7 @@ export default function Profile({
                 )}
 
                 {/* Notification time editing (shown when subscribed and user taps pill) */}
-                {notifError && <p className="text-[12px] text-red-500 mt-2">{notifError}</p>}
+                {notifError && <p className="text-[12px] text-error mt-2">{notifError}</p>}
               </div>
             )}
 
@@ -586,7 +586,7 @@ export default function Profile({
               <div className="flex items-center gap-2.5">
                 <span className="text-[14px] font-medium text-text">Mon abonnement</span>
                 {subscription?.status === 'trialing' && (
-                  <span className="bg-amber-100 text-amber-700 text-[11px] font-semibold px-2 py-0.5 rounded-full">
+                  <span className="bg-warning/10 text-warning text-[11px] font-semibold px-2 py-0.5 rounded-full">
                     Essai {subscription.trialDaysRemaining}j
                   </span>
                 )}
@@ -604,8 +604,8 @@ export default function Profile({
                 <span
                   className={`w-2 h-2 rounded-full ${
                     instagram?.status === 'connected'
-                      ? 'bg-emerald-500'
-                      : 'bg-red-500'
+                      ? 'bg-success'
+                      : 'bg-error'
                   }`}
                 />
               </div>
@@ -744,7 +744,7 @@ export default function Profile({
 
             {isInstalled && (
               <div className="flex items-center gap-2.5 py-3.5 px-4">
-                <CheckCircle size={15} className="text-emerald-500" />
+                <CheckCircle size={15} className="text-success" />
                 <span className="text-[14px] text-text-secondary">Application installée</span>
               </div>
             )}

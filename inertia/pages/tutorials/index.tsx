@@ -55,7 +55,7 @@ export default function TutorialsIndex({ categories, userLevel }: Props) {
     <AppLayout>
       <Head title="Apprendre - Le Phare" />
 
-      <div className="pb-28">
+      <div className="pb-28 animate-fade-up">
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-[22px] font-bold text-text tracking-tight">Apprendre</h1>
@@ -120,7 +120,7 @@ export default function TutorialsIndex({ categories, userLevel }: Props) {
                         <Link
                           key={tutorial.id}
                           href={`/tutorials/${tutorial.id}`}
-                          className="flex items-center gap-3.5 p-3.5 bg-bg-card rounded-2xl shadow-xs active:scale-[0.98] transition-transform"
+                          className="flex items-center gap-3.5 p-3.5 bg-bg-card border border-border rounded-2xl active:scale-[0.98] transition-transform"
                         >
                           <div className="w-10 h-10 rounded-xl bg-success-light flex items-center justify-center shrink-0">
                             <Check size={16} className="text-success" strokeWidth={2.5} />
@@ -139,7 +139,7 @@ export default function TutorialsIndex({ categories, userLevel }: Props) {
                         <Link
                           key={tutorial.id}
                           href={`/tutorials/${tutorial.id}`}
-                          className="flex items-center gap-3.5 p-3.5 bg-bg-card rounded-2xl shadow-card border border-text/10 active:scale-[0.98] transition-transform"
+                          className="flex items-center gap-3.5 p-3.5 bg-bg-card border border-primary/30 rounded-2xl active:scale-[0.98] transition-transform"
                         >
                           <div className="w-10 h-10 rounded-xl bg-text flex items-center justify-center shrink-0">
                             <Play size={14} className="text-white ml-0.5" />
@@ -158,7 +158,7 @@ export default function TutorialsIndex({ categories, userLevel }: Props) {
                       <Link
                         key={tutorial.id}
                         href={`/tutorials/${tutorial.id}`}
-                        className="flex items-center gap-3.5 p-3.5 bg-bg-card rounded-2xl shadow-xs active:scale-[0.98] transition-transform"
+                        className="flex items-center gap-3.5 p-3.5 bg-bg-card border border-border rounded-2xl active:scale-[0.98] transition-transform"
                       >
                         <div className="w-10 h-10 rounded-xl bg-bg-subtle border border-border flex items-center justify-center shrink-0">
                           <Play size={12} className="text-text-muted ml-0.5" />
@@ -190,7 +190,7 @@ export default function TutorialsIndex({ categories, userLevel }: Props) {
 
       {/* Locked tutorial toast */}
       {lockedMessage && (
-        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 bg-text text-white px-4 py-2.5 rounded-full shadow-float text-[12px] font-medium flex items-center gap-2 animate-fade-up">
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 bg-text text-white px-4 py-2.5 rounded-full border border-border text-[12px] font-medium flex items-center gap-2 animate-fade-up">
           <Lock className="w-3 h-3 shrink-0" />
           {lockedMessage}
         </div>

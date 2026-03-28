@@ -284,8 +284,8 @@ export default function CalendarPage({ year, month, missionsByDay: initialMissio
   const getDotColor = (dateStr: string): string | null => {
     const stats = dayStats[dateStr]
     if (!stats) return null
-    if (stats.completed > 0) return 'bg-emerald-500'
-    if (stats.pending > 0) return 'bg-amber-400'
+    if (stats.completed > 0) return 'bg-success'
+    if (stats.pending > 0) return 'bg-warning'
     if (stats.skipped > 0) return 'bg-text-muted'
     return null
   }
@@ -295,7 +295,7 @@ export default function CalendarPage({ year, month, missionsByDay: initialMissio
       <Head title="Calendrier - Le Phare" />
 
       {/* Compact level bar */}
-      <div className="flex items-center justify-between py-3 px-1">
+      <div className="flex items-center justify-between py-3 px-1 animate-fade-up">
         <div className="flex items-center gap-2">
           <span className="text-[14px]">{level.levelIcon}</span>
           <span className="text-[13px] font-medium text-text-secondary">
@@ -472,7 +472,7 @@ export default function CalendarPage({ year, month, missionsByDay: initialMissio
                   key={mission.id}
                   className={`
                     flex items-center gap-3 p-3 rounded-xl border transition-all
-                    ${isCompleted ? 'bg-emerald-50/50 border-emerald-100' : ''}
+                    ${isCompleted ? 'bg-success/10 border-success/20' : ''}
                     ${isSkipped ? 'bg-bg-subtle border-border' : ''}
                     ${isPending ? 'bg-bg-card border-border' : ''}
                   `}
@@ -480,9 +480,9 @@ export default function CalendarPage({ year, month, missionsByDay: initialMissio
                   {/* Type icon */}
                   <div className={`
                     w-10 h-10 rounded-xl flex items-center justify-center shrink-0
-                    ${isCompleted ? 'bg-emerald-100 text-emerald-600' : ''}
+                    ${isCompleted ? 'bg-success/10 text-success' : ''}
                     ${isSkipped ? 'bg-bg-subtle text-text-muted' : ''}
-                    ${isPending ? 'bg-amber-50 text-amber-600' : ''}
+                    ${isPending ? 'bg-warning/10 text-warning' : ''}
                   `}>
                     {config.icon}
                   </div>
@@ -497,7 +497,7 @@ export default function CalendarPage({ year, month, missionsByDay: initialMissio
 
                   {/* Status / action */}
                   {isCompleted && (
-                    <div className="flex items-center text-emerald-600">
+                    <div className="flex items-center text-success">
                       <Check className="w-4 h-4" />
                     </div>
                   )}

@@ -196,7 +196,7 @@ export default function Description({ publication, mission, instagramAccount, to
         </div>
 
         {/* Fixed bottom buttons */}
-        <div className="fixed bottom-0 left-0 right-0 p-5 bg-bg/80 backdrop-blur-lg border-t border-border">
+        <div className="fixed bottom-0 left-0 right-0 p-5 bg-bg/80 backdrop-blur-xl border-t border-border">
           <Button
             onClick={handlePublish}
             disabled={publishForm.processing || isEditing || !caption.trim()}

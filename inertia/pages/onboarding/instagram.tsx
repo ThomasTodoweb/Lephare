@@ -81,7 +81,7 @@ export default function Instagram({ isConnected, instagramUsername, instagramPro
             {isConnected ? (
               // Connected state
               <>
-                <Card className="border border-green-200 bg-green-50/50">
+                <Card className="border border-green-500/30 bg-green-500/10">
                   <div className="flex items-center gap-3.5">
                     {instagramProfilePicture ? (
                       <img
@@ -117,19 +117,19 @@ export default function Instagram({ isConnected, instagramUsername, instagramPro
             ) : (
               // Not connected state
               <>
-                <Card variant="flat" className="mb-5">
+                <Card variant="flat" className="mb-5 bg-white/5 border border-border">
                   <h3 className="text-[14px] font-semibold text-text mb-2">Pourquoi connecter Instagram ?</h3>
                   <ul className="text-[13px] text-text-secondary space-y-1.5">
                     <li className="flex items-start gap-2">
-                      <span className="text-text-muted mt-0.5">--</span>
+                      <span className="text-primary mt-0.5">--</span>
                       <span>Publie en un clic depuis Le Phare</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-text-muted mt-0.5">--</span>
+                      <span className="text-primary mt-0.5">--</span>
                       <span>Recois des idees adaptees a ton style</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-text-muted mt-0.5">--</span>
+                      <span className="text-primary mt-0.5">--</span>
                       <span>Suis tes statistiques facilement</span>
                     </li>
                   </ul>
@@ -138,7 +138,7 @@ export default function Instagram({ isConnected, instagramUsername, instagramPro
                 {/* WebView/PWA warning and alternative connection method */}
                 {isWebView ? (
                   <div className="space-y-3">
-                    <Card variant="flat" className="bg-amber-50">
+                    <Card variant="flat" className="bg-amber-500/10 border border-amber-500/20">
                       <div className="flex items-start gap-3">
                         <span className="text-[18px]">!</span>
                         <div>
@@ -199,7 +199,7 @@ export default function Instagram({ isConnected, instagramUsername, instagramPro
         </div>
 
         {/* Fixed bottom buttons */}
-        <div className="fixed bottom-0 left-0 right-0 p-5 bg-bg/80 backdrop-blur-lg">
+        <div className="fixed bottom-0 left-0 right-0 p-5 bg-bg/80 backdrop-blur-lg border-t border-border/50">
           <div className="max-w-lg mx-auto">
             {isConnected ? (
               <Button

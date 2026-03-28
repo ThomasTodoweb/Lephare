@@ -28,21 +28,22 @@ export function Toast({ message, type = 'success', duration = 3500, onClose }: T
   if (!isVisible) return null
 
   const config = {
-    success: { icon: <Check className="w-3.5 h-3.5" />, bg: 'bg-text text-white' },
-    error: { icon: <AlertCircle className="w-3.5 h-3.5" />, bg: 'bg-error text-white' },
-    warning: { icon: <AlertTriangle className="w-3.5 h-3.5" />, bg: 'bg-warning text-white' },
-    info: { icon: <Info className="w-3.5 h-3.5" />, bg: 'bg-text text-white' },
+    success: { icon: <Check className="w-4 h-4" />, bg: 'bg-success text-white', glow: 'shadow-glow-success' },
+    error: { icon: <AlertCircle className="w-4 h-4" />, bg: 'bg-error text-white', glow: '' },
+    warning: { icon: <AlertTriangle className="w-4 h-4" />, bg: 'bg-warning text-bg', glow: '' },
+    info: { icon: <Info className="w-4 h-4" />, bg: 'bg-bg-elevated text-text border border-border', glow: '' },
   }
 
-  const { icon, bg } = config[type]
+  const { icon, bg, glow } = config[type]
 
   return (
     <div
       className={`
         fixed left-1/2 -translate-x-1/2 z-[100]
         w-auto max-w-[calc(100%-3rem)]
-        ${bg} rounded-full shadow-lg
-        flex items-center gap-2 px-4 py-2
+        ${bg} rounded-full ${glow}
+        flex items-center gap-2.5 px-4 py-2.5
+        backdrop-blur-xl
         transition-all duration-200
         ${isLeaving ? 'opacity-0 -translate-y-2 scale-95' : 'opacity-100 translate-y-0 scale-100'}
         animate-slide-down
@@ -51,9 +52,9 @@ export function Toast({ message, type = 'success', duration = 3500, onClose }: T
       role="alert"
     >
       {icon}
-      <p className="text-[12px] font-medium whitespace-nowrap">{message}</p>
-      <button onClick={handleClose} className="p-0.5 opacity-60 hover:opacity-100 ml-1" aria-label="Fermer">
-        <X className="w-3 h-3" />
+      <p className="text-[13px] font-semibold whitespace-nowrap">{message}</p>
+      <button onClick={handleClose} className="p-0.5 opacity-60 hover:opacity-100 ml-1 tap-target" aria-label="Fermer">
+        <X className="w-3.5 h-3.5" />
       </button>
     </div>
   )

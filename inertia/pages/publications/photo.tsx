@@ -151,7 +151,7 @@ export default function PhotoCapture({ mission }: Props) {
                     setSelectedFile(null)
                     form.setData('photo', null)
                   }}
-                  className="absolute top-3 right-3 bg-bg-card/90 backdrop-blur-sm rounded-full w-11 h-11 flex items-center justify-center shadow-card border border-border text-text-secondary hover:text-text active:scale-[0.97] transition-all"
+                  className="absolute top-3 right-3 bg-bg-card/90 backdrop-blur-sm rounded-full w-11 h-11 flex items-center justify-center border border-border border border-border text-text-secondary hover:text-text active:scale-[0.97] transition-all"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -161,7 +161,7 @@ export default function PhotoCapture({ mission }: Props) {
                 onClick={handleChooseFromGallery}
                 className="w-full aspect-[4/5] bg-bg-subtle rounded-2xl border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-text-muted active:scale-[0.98] transition-all animate-fade-up"
               >
-                <div className="w-14 h-14 rounded-2xl bg-bg-card shadow-card flex items-center justify-center mb-4">
+                <div className="w-14 h-14 rounded-2xl bg-bg-card border border-border flex items-center justify-center mb-4">
                   <Camera className="w-6 h-6 text-text-muted" />
                 </div>
                 <p className="text-[14px] font-medium text-text-secondary">Appuie pour choisir une photo</p>
@@ -189,7 +189,7 @@ export default function PhotoCapture({ mission }: Props) {
         </div>
 
         {/* Fixed bottom buttons */}
-        <div className="fixed bottom-0 left-0 right-0 p-5 bg-bg/80 backdrop-blur-lg border-t border-border">
+        <div className="fixed bottom-0 left-0 right-0 p-5 bg-bg/80 backdrop-blur-xl border-t border-border">
           {isCompressing ? (
             <div className="text-center py-3">
               <p className="text-[14px] text-text-secondary">Optimisation de l'image...</p>

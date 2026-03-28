@@ -18,14 +18,19 @@ export default function ForgotPassword() {
   return (
     <>
       <Head title="Mot de passe oublié - Le Phare" />
-      <div className="min-h-screen bg-bg flex flex-col items-center justify-center px-5 py-12">
+      <div className="min-h-screen bg-bg flex flex-col items-center justify-center px-5 py-12 relative overflow-hidden">
+        {/* Subtle radial gradient */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl" />
+        </div>
+
         {/* Flash messages as toasts */}
         {flash?.error && <Toast message={flash.error} type="error" />}
         {flash?.success && <Toast message={flash.success} type="success" />}
 
-        <div className="w-full max-w-sm mx-auto">
+        <div className="w-full max-w-sm mx-auto relative z-10">
           <div className="text-center mb-8">
-            <div className="w-12 h-12 bg-bg-subtle rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <div className="w-12 h-12 bg-white/10 border border-border rounded-2xl flex items-center justify-center mx-auto mb-4">
               <svg className="w-5 h-5 text-text" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
               </svg>

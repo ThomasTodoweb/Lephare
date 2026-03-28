@@ -6,7 +6,7 @@ export default function ServerError(props: { error: any }) {
   return (
     <>
       <Head title="Erreur serveur - Le Phare" />
-      <div className="min-h-screen bg-bg flex flex-col items-center justify-center px-5 py-12">
+      <div className="min-h-screen bg-bg flex flex-col items-center justify-center px-5 py-12 animate-fade-up">
         <div className="text-center max-w-sm">
           <p className="text-[64px] font-bold text-text leading-none tracking-tight">500</p>
           <h1 className="text-[22px] font-bold text-text mt-4 tracking-tight">

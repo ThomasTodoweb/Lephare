@@ -9,11 +9,11 @@ export default function SubscriptionSuccess() {
     <AppLayout>
       <Head title="Abonnement active - Le Phare" />
 
-      <div className="py-4">
+      <div className="py-4 animate-fade-up">
         <div className="text-center py-12">
           {/* Success Icon — entry animation */}
           <div className="animate-fade-up" style={{ animationDelay: '0ms' }}>
-            <div className="w-16 h-16 mx-auto bg-success-light rounded-2xl flex items-center justify-center mb-5">
+            <div className="w-16 h-16 mx-auto bg-success/10 border border-success/20 rounded-2xl flex items-center justify-center mb-5">
               <div className="w-10 h-10 bg-success rounded-full flex items-center justify-center">
                 <Check size={22} className="text-white" />
               </div>
@@ -29,7 +29,7 @@ export default function SubscriptionSuccess() {
           </div>
 
           <div className="animate-fade-up" style={{ animationDelay: '80ms', animationFillMode: 'both' }}>
-            <Card variant="bordered" className="mb-6 text-left shadow-xs">
+            <Card variant="bordered" className="mb-6 text-left border border-border">
               <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-4">
                 Prochaines etapes
               </p>

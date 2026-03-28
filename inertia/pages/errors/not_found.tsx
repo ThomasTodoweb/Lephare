@@ -6,7 +6,7 @@ export default function NotFound() {
   return (
     <>
       <Head title="Page introuvable - Le Phare" />
-      <div className="min-h-screen bg-bg flex flex-col items-center justify-center px-5 py-12">
+      <div className="min-h-screen bg-bg flex flex-col items-center justify-center px-5 py-12 animate-fade-up">
         <div className="text-center max-w-sm">
           <p className="text-[64px] font-bold text-text leading-none tracking-tight">404</p>
           <h1 className="text-[22px] font-bold text-text mt-4 tracking-tight">

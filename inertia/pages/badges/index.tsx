@@ -46,7 +46,7 @@ export default function BadgesIndex({ badges, stats }: Props) {
     <AppLayout>
       <Head title="Mes Badges - Le Phare" />
 
-      <div className="pt-4 pb-8">
+      <div className="pt-4 pb-8 animate-fade-up">
         {/* Header */}
         <div className="mb-6">
           <Link href="/profile" className="inline-flex items-center gap-1 text-[13px] text-text-secondary min-h-[44px] -ml-1 pl-1 pr-2">

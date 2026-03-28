@@ -455,7 +455,7 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
                           e.stopPropagation()
                           removeMedia(index)
                         }}
-                        className="absolute top-2.5 right-2.5 bg-bg-card/90 backdrop-blur-sm rounded-full p-1.5 shadow-card border border-border hover:bg-bg-subtle transition-colors"
+                        className="absolute top-2.5 right-2.5 bg-bg-card/90 backdrop-blur-sm rounded-full p-1.5 border border-border border border-border hover:bg-bg-subtle transition-colors"
                       >
                         <X className="w-4 h-4 text-text-secondary" />
                       </button>
@@ -483,7 +483,7 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
                 onClick={isStory ? undefined : handleChooseFromGallery}
                 className={`w-full max-w-xs mx-auto bg-bg-subtle rounded-2xl border-2 border-dashed border-border flex flex-col items-center justify-center ${isStory ? '' : 'cursor-pointer hover:border-text-muted'} transition-colors ${(isReel || isStory) ? 'aspect-[9/16]' : 'aspect-[4/5]'}`}
               >
-                <div className="w-12 h-12 rounded-xl bg-bg-card shadow-card flex items-center justify-center mb-3">
+                <div className="w-12 h-12 rounded-xl bg-bg-card border border-border flex items-center justify-center mb-3">
                   <Upload className="w-5 h-5 text-text-muted" />
                 </div>
                 <p className="text-[14px] text-text-secondary font-medium">{getPlaceholderText()}</p>
@@ -683,7 +683,7 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
                         setCoverImage(null)
                         form.setData('cover', null)
                       }}
-                      className="absolute -top-1.5 -right-1.5 bg-bg-card rounded-full p-0.5 shadow-card border border-border"
+                      className="absolute -top-1.5 -right-1.5 bg-bg-card rounded-full p-0.5 border border-border border border-border"
                     >
                       <X className="w-3 h-3 text-text-muted" />
                     </button>
@@ -761,7 +761,7 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
         </div>
 
         {/* Fixed bottom buttons */}
-        <div className="fixed bottom-0 left-0 right-0 p-5 bg-bg/80 backdrop-blur-lg border-t border-border space-y-3">
+        <div className="fixed bottom-0 left-0 right-0 p-5 bg-bg/80 backdrop-blur-xl border-t border-border space-y-3">
           {isCompressing ? (
             <p className="text-center text-[13px] text-text-muted py-3">
               Optimisation des images...

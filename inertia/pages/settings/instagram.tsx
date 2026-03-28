@@ -49,9 +49,9 @@ export default function InstagramSettings({ isConfigured, account }: Props) {
         </div>
 
         {/* Content */}
-        <div className="px-5 pt-4 pb-32 space-y-4">
+        <div className="px-5 pt-4 pb-32 space-y-4 animate-fade-up">
           {!isConfigured ? (
-            <Card className="text-center py-10 shadow-xs">
+            <Card className="text-center py-10 border border-border">
               <div className="w-14 h-14 mx-auto mb-4 bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 rounded-2xl flex items-center justify-center">
                 <svg className="w-7 h-7 text-white" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069z" />
@@ -67,7 +67,7 @@ export default function InstagramSettings({ isConfigured, account }: Props) {
           ) : account ? (
             <>
               {/* Connected account */}
-              <Card className="shadow-xs">
+              <Card className="border border-border">
                 <div className="flex items-center gap-3">
                   {account.profilePictureUrl ? (
                     <img
@@ -89,7 +89,7 @@ export default function InstagramSettings({ isConfigured, account }: Props) {
                     <div className="flex items-center gap-1.5 mt-0.5">
                       <span
                         className={`w-2 h-2 rounded-full ${
-                          account.status === 'active' ? 'bg-emerald-500' : 'bg-red-500'
+                          account.status === 'active' ? 'bg-success' : 'bg-error'
                         }`}
                       />
                       <span className="text-[12px] text-text-muted">
@@ -101,14 +101,14 @@ export default function InstagramSettings({ isConfigured, account }: Props) {
               </Card>
 
               {/* Status info */}
-              <Card className="bg-emerald-50/50 shadow-xs">
+              <Card className="bg-success/10 border border-success/20">
                 <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <div className="w-5 h-5 rounded-full bg-success flex items-center justify-center flex-shrink-0 mt-0.5">
                     <Check size={12} className="text-white" />
                   </div>
                   <div>
-                    <p className="text-[14px] font-medium text-emerald-800">Compte connecte</p>
-                    <p className="text-[13px] text-emerald-700 mt-0.5">
+                    <p className="text-[14px] font-medium text-success">Compte connecte</p>
+                    <p className="text-[13px] text-success/80 mt-0.5">
                       Tu peux publier sur Instagram directement depuis tes missions quotidiennes.
                     </p>
                   </div>
@@ -135,7 +135,7 @@ export default function InstagramSettings({ isConfigured, account }: Props) {
           ) : (
             <>
               {/* Not connected */}
-              <Card className="text-center py-10 shadow-xs">
+              <Card className="text-center py-10 border border-border">
                 <div className="w-14 h-14 mx-auto mb-4 bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 rounded-2xl flex items-center justify-center">
                   <svg className="w-7 h-7 text-white" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069z" />
@@ -155,7 +155,7 @@ export default function InstagramSettings({ isConfigured, account }: Props) {
               </Card>
 
               {/* Benefits */}
-              <Card className="shadow-xs">
+              <Card className="border border-border">
                 <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-4">
                   Avantages
                 </p>
@@ -197,7 +197,7 @@ export default function InstagramSettings({ isConfigured, account }: Props) {
               </Card>
 
               {/* Security info */}
-              <Card className="bg-bg-subtle shadow-xs">
+              <Card className="bg-bg-subtle border border-border">
                 <div className="flex items-start gap-3">
                   <Shield size={16} className="text-text-muted mt-0.5 shrink-0" />
                   <div>

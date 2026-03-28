@@ -17,7 +17,7 @@ export default function TutorialBravo({ tutorial }: Props) {
       <div className="min-h-screen bg-bg flex flex-col items-center justify-center px-5">
         {/* Celebration — entry animations with stagger */}
         <div className="text-center mb-8 animate-fade-up" style={{ animationDelay: '0ms' }}>
-          <div className="w-16 h-16 bg-success-light rounded-2xl flex items-center justify-center mx-auto mb-5">
+          <div className="w-16 h-16 bg-success/10 border border-success/20 rounded-2xl flex items-center justify-center mx-auto mb-5">
             <Check size={28} className="text-success" strokeWidth={2.5} />
           </div>
           <h1 className="text-[22px] font-bold text-text mb-2 tracking-tight">

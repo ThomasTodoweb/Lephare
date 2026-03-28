@@ -102,9 +102,9 @@ export default function MissionHistory({ missions }: Props) {
     <AppLayout>
       <Head title="Historique missions - Le Phare" />
 
-      <div className="pt-4 pb-8">
+      <div className="pt-4 pb-8 animate-fade-up">
         {/* Header */}
-        <div className="mb-6 animate-fade-up">
+        <div className="mb-6">
           <Link href="/missions" className="inline-flex items-center gap-1 text-[13px] text-text-secondary mb-3 min-h-[44px] active:scale-[0.97] transition-transform">
             <ChevronLeft className="w-4 h-4" />
             Missions
@@ -117,14 +117,14 @@ export default function MissionHistory({ missions }: Props) {
 
         {/* Content */}
         {missions.length > 0 ? (
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2.5">
             {missions.map((mission, index) => {
               const style = STATUS_STYLES[mission.status]
               const isExpanded = expandedMission === mission.id
               const hasPublication = mission.publication !== null
 
               return (
-                <Card key={mission.id} padding="none" className="overflow-hidden animate-fade-up" style={{ animationDelay: `${Math.min(index * 50, 300)}ms` }}>
+                <div key={mission.id} className="bg-bg-card border border-border rounded-2xl overflow-hidden animate-fade-up" style={{ animationDelay: `${Math.min(index * 50, 300)}ms` }}>
                   {/* Main row - always visible */}
                   <div
                     className={`p-4 ${hasPublication ? 'cursor-pointer active:scale-[0.98] transition-transform' : ''}`}
@@ -147,7 +147,7 @@ export default function MissionHistory({ missions }: Props) {
                           )}
                         </div>
                       ) : (
-                        <div className="w-11 h-11 bg-bg-subtle rounded-xl flex items-center justify-center text-[13px] text-text-muted shrink-0">
+                        <div className="w-11 h-11 bg-bg-subtle border border-border rounded-xl flex items-center justify-center text-[13px] text-text-muted shrink-0">
                           {TYPE_LABELS[mission.template.type]?.[0] || 'M'}
                         </div>
                       )}
@@ -253,7 +253,7 @@ export default function MissionHistory({ missions }: Props) {
                       </div>
                     </div>
                   )}
-                </Card>
+                </div>
               )
             })}
           </div>

@@ -25,19 +25,19 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
 }, ref) {
   const isDisabled = disabled || loading
 
-  const base = 'inline-flex items-center justify-center gap-2 font-semibold transition-all active:scale-[0.97]'
+  const base = 'inline-flex items-center justify-center gap-2 font-semibold transition-all duration-[var(--duration-normal)] active:scale-[0.97] tap-target relative overflow-hidden'
 
   const variants = {
-    primary: 'bg-text text-white hover:opacity-90 disabled:opacity-40',
-    secondary: 'bg-bg-subtle text-text border border-border hover:bg-bg-inset disabled:opacity-40',
-    ghost: 'bg-transparent text-text-secondary hover:bg-bg-subtle disabled:opacity-40',
-    danger: 'bg-error text-white hover:opacity-90 disabled:opacity-40',
+    primary: 'bg-primary text-white hover:brightness-110 disabled:opacity-40 shadow-md hover:shadow-glow-primary',
+    secondary: 'bg-bg-elevated text-text border border-border hover:bg-bg-subtle hover:border-border-light disabled:opacity-40',
+    ghost: 'bg-transparent text-text-secondary hover:bg-bg-elevated hover:text-text disabled:opacity-40',
+    danger: 'bg-error text-white hover:brightness-110 disabled:opacity-40 shadow-md',
   }
 
   const sizes = {
     sm: 'h-9 px-3.5 text-[13px] rounded-lg',
     md: 'h-11 px-5 text-[15px] rounded-xl',
-    lg: 'h-[52px] px-6 text-base rounded-xl',
+    lg: 'h-[52px] px-6 text-base rounded-2xl font-bold',
   }
 
   const iconSize = size === 'sm' ? 14 : size === 'lg' ? 20 : 16

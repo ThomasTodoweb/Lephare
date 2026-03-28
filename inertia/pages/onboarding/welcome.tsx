@@ -25,8 +25,10 @@ export default function Welcome({ step, totalSteps }: Props) {
 
           {/* Popote welcome */}
           <div className="flex flex-col items-center text-center mt-6 mb-10">
-            <div className="w-24 h-24 rounded-3xl bg-white shadow-lg flex items-center justify-center mb-5 animate-scale-in">
-              <img src="/images/popote.png" alt="Popote" className="w-16 h-16 object-contain" />
+            <div className="w-24 h-24 rounded-3xl bg-bg-card border border-border flex items-center justify-center mb-5 animate-scale-in relative">
+              {/* Subtle glow behind Popote */}
+              <div className="absolute inset-0 rounded-3xl bg-primary/10 blur-xl" />
+              <img src="/images/popote.png" alt="Popote" className="w-16 h-16 object-contain relative z-10" />
             </div>
             <h1 className="text-[24px] font-black text-text tracking-tight animate-fade-up">
               Salut, moi c'est Popote !
@@ -36,7 +38,7 @@ export default function Welcome({ step, totalSteps }: Props) {
             </p>
           </div>
 
-          {/* 3 promises — clean, no video */}
+          {/* 3 promises */}
           <div className="space-y-3">
             {[
               { icon: Camera, title: 'Des missions quotidiennes', desc: 'On te dit quoi poster, tu prends la photo, c\'est fait.' },
@@ -45,10 +47,10 @@ export default function Welcome({ step, totalSteps }: Props) {
             ].map((item, i) => (
               <div
                 key={i}
-                className="flex items-start gap-3.5 bg-bg-card rounded-2xl p-4 shadow-xs animate-fade-up"
+                className="flex items-start gap-3.5 bg-bg-card border border-border rounded-2xl p-4 animate-fade-up"
                 style={{ animationDelay: `${200 + i * 80}ms` }}
               >
-                <div className="w-10 h-10 rounded-xl bg-bg-subtle flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-white/5 border border-border flex items-center justify-center flex-shrink-0">
                   <item.icon size={18} className="text-text" />
                 </div>
                 <div>
@@ -61,7 +63,7 @@ export default function Welcome({ step, totalSteps }: Props) {
         </div>
 
         {/* CTA */}
-        <div className="fixed bottom-0 left-0 right-0 p-5 bg-bg/80 backdrop-blur-lg">
+        <div className="fixed bottom-0 left-0 right-0 p-5 bg-bg/80 backdrop-blur-lg border-t border-border/50">
           <div className="max-w-lg mx-auto">
             <Button variant="primary" fullWidth size="lg" loading={continueForm.processing} onClick={handleContinue}>
               On y va !
