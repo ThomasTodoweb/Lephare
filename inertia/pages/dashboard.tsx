@@ -12,7 +12,7 @@ import {
   InsightCard,
 } from '~/components/ui/mobile'
 import { StreakMilestone } from '~/components/features/celebrations/StreakMilestone'
-import { ChevronRight, Check } from 'lucide-react'
+import { ChevronRight, Check, Moon } from 'lucide-react'
 import type { MissionType } from '~/components/ui/mobile'
 
 interface TodayMission {
@@ -159,10 +159,12 @@ export default function Dashboard({ restaurant, todayMissions, streak, calendarM
             />
           </div>
         ) : pendingMissions.length === 0 && todayMissions.length === 0 ? (
-          <div className="bg-bg-subtle rounded-2xl py-12 px-6 text-center">
-            <p className="text-[28px] mb-2">🌙</p>
+          <div className="bg-bg-subtle rounded-2xl py-12 px-6 text-center animate-fade-up" style={{ animationDelay: '150ms' }}>
+            <div className="w-12 h-12 rounded-full bg-bg-inset flex items-center justify-center mx-auto mb-3">
+              <Moon size={24} className="text-text-secondary" />
+            </div>
             <p className="text-[16px] font-semibold text-text">Journée libre</p>
-            <p className="text-[13px] text-text-muted mt-1">Profite de cette pause.</p>
+            <p className="text-[13px] text-text-muted mt-1 leading-relaxed">Profite de cette pause.</p>
           </div>
         ) : null}
 
@@ -189,8 +191,8 @@ export default function Dashboard({ restaurant, todayMissions, streak, calendarM
                     <p className="text-[11px] text-text-muted capitalize">{m.type}</p>
                   </div>
                   {m.status === 'completed' ? (
-                    <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center">
-                      <Check size={12} className="text-green-600" />
+                    <div className="w-6 h-6 rounded-full bg-success-light flex items-center justify-center">
+                      <Check size={12} className="text-success" />
                     </div>
                   ) : (
                     <ChevronRight size={16} className="text-text-muted" />

@@ -24,15 +24,15 @@ function getNotificationIcon(type: string) {
     case 'mission_reminder':
       return <Target className="w-4.5 h-4.5 text-text" />
     case 'mission_completed':
-      return <Check className="w-4.5 h-4.5 text-green-600" />
+      return <Check className="w-4.5 h-4.5 text-success" />
     case 'streak_milestone':
-      return <Flame className="w-4.5 h-4.5 text-orange-500" />
+      return <Flame className="w-4.5 h-4.5 text-streak" />
     case 'badge_earned':
-      return <Trophy className="w-4.5 h-4.5 text-yellow-500" />
+      return <Trophy className="w-4.5 h-4.5 text-xp" />
     case 'level_up':
-      return <TrendingUp className="w-4.5 h-4.5 text-purple-500" />
+      return <TrendingUp className="w-4.5 h-4.5 text-level" />
     case 'weekly_summary':
-      return <Gift className="w-4.5 h-4.5 text-blue-500" />
+      return <Gift className="w-4.5 h-4.5 text-info" />
     default:
       return <Info className="w-4.5 h-4.5 text-text-muted" />
   }
@@ -100,11 +100,11 @@ export default function Notifications({ notifications, unreadCount }: Props) {
           <div className="flex items-center gap-3">
             <Link
               href="/dashboard"
-              className="w-9 h-9 flex items-center justify-center rounded-xl bg-bg-card shadow-card"
+              className="w-11 h-11 flex items-center justify-center rounded-xl bg-bg-card shadow-xs active:scale-[0.97] transition-transform"
             >
               <ArrowLeft className="w-4.5 h-4.5 text-text" />
             </Link>
-            <h1 className="text-[17px] font-bold text-text">
+            <h1 className="text-[17px] font-bold text-text tracking-tight">
               Notifications
               {unreadCount > 0 && (
                 <span className="ml-2 px-1.5 py-0.5 text-[11px] font-semibold bg-text text-white rounded-lg">
@@ -128,31 +128,34 @@ export default function Notifications({ notifications, unreadCount }: Props) {
 
         {notifications.length === 0 ? (
           /* Empty state */
-          <Card className="text-center py-12">
-            <div className="w-12 h-12 mx-auto mb-3 bg-bg-subtle rounded-2xl flex items-center justify-center">
-              <Bell className="w-5 h-5 text-text-muted" />
+          <div className="text-center py-16">
+            <div className="w-14 h-14 mx-auto mb-4 bg-bg-subtle rounded-2xl flex items-center justify-center">
+              <Bell className="w-6 h-6 text-text-muted" />
             </div>
             <h2 className="text-[15px] font-semibold text-text mb-1">
               Aucune notification
             </h2>
-            <p className="text-[13px] text-text-muted max-w-xs mx-auto">
-              Elles apparaitront ici quand vous en recevrez.
+            <p className="text-[13px] text-text-muted max-w-xs mx-auto leading-relaxed">
+              Tes notifications apparaitront ici quand tu en recevras.
             </p>
-          </Card>
+            <Link href="/missions" className="block mt-6">
+              <Button variant="secondary">Voir mes missions</Button>
+            </Link>
+          </div>
         ) : (
           /* Notifications list */
-          <div className="space-y-2">
+          <div className="space-y-2.5">
             {notifications.map((notification) => (
               <Card
                 key={notification.id}
                 padding="sm"
-                className={`transition-colors ${
+                className={`${
                   notification.isRead ? '' : 'bg-bg-subtle'
                 }`}
               >
                 <div className="flex gap-3">
                   {/* Icon */}
-                  <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-bg-subtle flex items-center justify-center">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-bg-subtle flex items-center justify-center">
                     {getNotificationIcon(notification.type)}
                   </div>
 
@@ -176,7 +179,7 @@ export default function Notifications({ notifications, unreadCount }: Props) {
                         <button
                           onClick={() => handleMarkAsRead(notification.id)}
                           disabled={loadingIds.has(notification.id)}
-                          className="text-[12px] font-medium text-text hover:text-text-secondary flex items-center gap-1 transition-colors disabled:opacity-50"
+                          className="text-[12px] font-medium text-text flex items-center gap-1 min-h-[44px] active:scale-[0.97] transition-transform disabled:opacity-50"
                         >
                           <Check className="w-3 h-3" />
                           Marquer comme lue
@@ -185,7 +188,7 @@ export default function Notifications({ notifications, unreadCount }: Props) {
                       <button
                         onClick={() => handleDelete(notification.id)}
                         disabled={loadingIds.has(notification.id)}
-                        className="text-[12px] text-text-muted hover:text-error flex items-center gap-1 ml-auto transition-colors disabled:opacity-50"
+                        className="text-[12px] text-text-muted flex items-center gap-1 ml-auto min-h-[44px] active:scale-[0.97] transition-transform disabled:opacity-50"
                       >
                         <Trash2 className="w-3 h-3" />
                         Supprimer

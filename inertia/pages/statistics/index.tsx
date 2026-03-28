@@ -1,6 +1,6 @@
 import { Head, Link } from '@inertiajs/react'
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { ChevronDown, ChevronUp, ArrowUpRight, ArrowDownRight } from 'lucide-react'
+import { ChevronDown, ChevronUp, ArrowUpRight, ArrowDownRight, TrendingUp, TrendingDown, ThumbsUp } from 'lucide-react'
 import { AppLayout } from '~/components/layout'
 import { Card, Button } from '~/components/ui'
 
@@ -245,7 +245,8 @@ export default function StatisticsIndex({ keyMetrics, summary, comparison, insta
     }
   }, [selectedPeriod])
 
-  const sentimentEmoji = interpretation?.sentiment === 'positive' ? '\u{1F680}' : interpretation?.sentiment === 'negative' ? '\u{1F4AA}' : '\u{1F44D}'
+  const SentimentIcon = interpretation?.sentiment === 'positive' ? TrendingUp : interpretation?.sentiment === 'negative' ? TrendingDown : ThumbsUp
+  const sentimentColor = interpretation?.sentiment === 'positive' ? 'text-emerald-600' : interpretation?.sentiment === 'negative' ? 'text-red-500' : 'text-text-secondary'
 
   return (
     <AppLayout>
@@ -254,7 +255,7 @@ export default function StatisticsIndex({ keyMetrics, summary, comparison, insta
       <div className="pt-4 pb-8 space-y-4">
 
         {/* ─── Zone 1 — Le Verdict (hero) ─────────────────────────────── */}
-        <div className="bg-bg-card rounded-3xl shadow-md p-5 animate-fade-up">
+        <div className="bg-bg-card rounded-3xl shadow-card p-5 animate-fade-up">
           {isLoadingInterpretation ? (
             <div className="flex flex-col items-center gap-3 py-4">
               <div className="w-8 h-8 rounded-full overflow-hidden border border-border">
@@ -279,13 +280,13 @@ export default function StatisticsIndex({ keyMetrics, summary, comparison, insta
                     ? `Avec ${(instagram.followers?.current ?? 0).toLocaleString('fr-FR')} abonnés et ${(instagram.engagement?.impressions ?? 0).toLocaleString('fr-FR')} vues, tu as une belle base pour progresser.`
                     : "Continue tes missions pour que je puisse analyser tes stats !")}
               </p>
-              <span className="text-[28px]">{sentimentEmoji}</span>
+              <SentimentIcon size={28} className={sentimentColor} />
             </div>
           )}
         </div>
 
         {/* ─── Zone 2 — 3 chiffres clés ───────────────────────────────── */}
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-3 gap-2.5">
           {/* Abonnés */}
           <div className="bg-bg-card rounded-2xl p-3 text-center shadow-xs">
             <p className="text-[22px] font-black text-text">
@@ -409,7 +410,7 @@ export default function StatisticsIndex({ keyMetrics, summary, comparison, insta
               </div>
             </button>
 
-            {detailOpen && (
+            <div className={`transition-all duration-300 ease-out overflow-hidden ${detailOpen ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'}`}>
               <div className="px-4 pb-4 space-y-3">
                 <div className="grid grid-cols-2 gap-2">
                   <div className="bg-bg-subtle rounded-xl p-3 text-center">
@@ -479,7 +480,7 @@ export default function StatisticsIndex({ keyMetrics, summary, comparison, insta
                   </p>
                 )}
               </div>
-            )}
+            </div>
           </div>
         )}
 
@@ -491,7 +492,7 @@ export default function StatisticsIndex({ keyMetrics, summary, comparison, insta
                 <button
                   key={period}
                   onClick={() => setSelectedPeriod(period)}
-                  className={`px-3 py-1 rounded-xl text-[12px] font-medium transition-colors ${
+                  className={`px-3 py-1.5 rounded-xl text-[12px] font-medium transition-all active:scale-[0.97] ${
                     selectedPeriod === period
                       ? 'bg-text text-white'
                       : 'bg-bg-subtle text-text-secondary'

@@ -1,6 +1,7 @@
 import { Head, Link, useForm } from '@inertiajs/react'
 import { AdminLayout } from '~/components/layout'
 import { Card, Button, Input } from '~/components/ui'
+import { ArrowLeft } from 'lucide-react'
 
 interface Tutorial {
   id: number
@@ -45,8 +46,9 @@ export default function AdminTutorialsEdit({ tutorial, categories }: Props) {
     <AdminLayout title={`Modifier: ${tutorial.title}`}>
       <Head title={`Modifier ${tutorial.title} - Admin Le Phare`} />
 
-      <Link href="/admin/tutorials" className="text-primary text-sm mb-4 inline-block">
-        ← Retour aux tutoriels
+      <Link href="/admin/tutorials" className="inline-flex items-center gap-1.5 text-[13px] text-neutral-500 hover:text-neutral-900 mb-4 transition-colors">
+        <ArrowLeft size={14} />
+        Retour aux tutoriels
       </Link>
 
       <Card>
@@ -167,7 +169,7 @@ export default function AdminTutorialsEdit({ tutorial, categories }: Props) {
           {/* Submit */}
           <div className="flex gap-3 pt-4">
             <Link href="/admin/tutorials" className="flex-1">
-              <Button type="button" variant="outlined" className="w-full">
+              <Button type="button" variant="secondary" className="w-full">
                 Annuler
               </Button>
             </Link>

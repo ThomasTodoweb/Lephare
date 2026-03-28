@@ -1,5 +1,5 @@
 import { Head, Link, useForm } from '@inertiajs/react'
-import { ChevronLeft, ChevronRight, Star, Gift } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Star, Gift, Sparkles, Check } from 'lucide-react'
 import { AppLayout } from '~/components/layout'
 import { Button } from '~/components/ui/Button'
 import { Card } from '~/components/ui/Card'
@@ -54,9 +54,9 @@ export default function TodayMission({ mission, todayMissions = [] }: Props) {
     <AppLayout>
       <Head title="Ma mission - Le Phare" />
 
-      <div className="pb-4">
+      <div className="pb-4 animate-fade-up">
         <div className="flex items-center justify-between mb-1">
-          <p className="text-[13px] text-text-muted font-medium">
+          <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider">
             {isRequired ? 'Objectif du jour' : 'Mission bonus'}
           </p>
           {sortedMissions.length > 1 && mission && (
@@ -71,13 +71,13 @@ export default function TodayMission({ mission, todayMissions = [] }: Props) {
       {sortedMissions.length > 1 && (
         <div className="flex justify-between items-center mb-4">
           {prevMission ? (
-            <Link href={`/missions/${prevMission.id}`} className="flex items-center gap-1 text-text-secondary text-[13px] font-medium">
+            <Link href={`/missions/${prevMission.id}`} className="flex items-center gap-1 text-text-secondary text-[13px] font-medium min-h-[44px] active:scale-[0.97] transition-transform">
               <ChevronLeft className="w-4 h-4" />
               {prevMission.isRecommended ? 'Objectif' : 'Bonus'}
             </Link>
           ) : <div />}
           {nextMission ? (
-            <Link href={`/missions/${nextMission.id}`} className="flex items-center gap-1 text-text-secondary text-[13px] font-medium">
+            <Link href={`/missions/${nextMission.id}`} className="flex items-center gap-1 text-text-secondary text-[13px] font-medium min-h-[44px] active:scale-[0.97] transition-transform">
               {nextMission.isRecommended ? 'Objectif' : 'Bonus'}
               <ChevronRight className="w-4 h-4" />
             </Link>
@@ -85,11 +85,11 @@ export default function TodayMission({ mission, todayMissions = [] }: Props) {
         </div>
       )}
 
-      <div className="pb-32">
+      <div className="pb-32 space-y-6">
         {mission ? (
           <>
             {/* Mission Card */}
-            <Card variant="bordered" padding="lg" className="mb-4 animate-fade-up">
+            <Card variant="bordered" padding="lg" className="animate-fade-up">
               <div className="flex items-start gap-3.5">
                 <div className={`w-12 h-12 ${isRequired ? 'bg-text text-white' : 'bg-bg-subtle text-text-secondary'} rounded-xl flex items-center justify-center`}>
                   <MissionTypeIcon type={mission.template.type as MissionType} size={22} />
@@ -99,7 +99,7 @@ export default function TodayMission({ mission, todayMissions = [] }: Props) {
                     <Badge variant={isRequired ? 'primary' : 'default'}>
                       {isRequired ? 'Objectif' : 'Bonus'}
                     </Badge>
-                    <span className="text-[11px] font-medium text-text-muted uppercase">
+                    <span className="text-[11px] font-semibold text-text-muted uppercase tracking-wider">
                       {TYPE_LABELS[mission.template.type]}
                     </span>
                   </div>
@@ -111,15 +111,15 @@ export default function TodayMission({ mission, todayMissions = [] }: Props) {
             </Card>
 
             {/* Content Idea */}
-            <Card variant="flat" padding="md" className="mb-4">
-              <p className="text-[12px] font-semibold text-text-muted uppercase tracking-wide mb-1.5">L'idée</p>
+            <Card variant="flat" padding="md" className="animate-fade-up" style={{ animationDelay: '50ms' }}>
+              <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-1.5">L'idée</p>
               <p className="text-[14px] text-text leading-relaxed">{mission.template.contentIdea}</p>
             </Card>
 
             {/* Other missions */}
             {sortedMissions.length > 1 && (
-              <div className="mb-4">
-                <p className="text-[12px] font-medium text-text-muted mb-2">
+              <div className="animate-fade-up" style={{ animationDelay: '100ms' }}>
+                <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-2">
                   {isRequired ? 'Missions bonus' : 'Retour à l\'objectif'}
                 </p>
                 <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
@@ -128,9 +128,9 @@ export default function TodayMission({ mission, todayMissions = [] }: Props) {
                       key={m.id}
                       href={`/missions/${m.id}`}
                       className={`
-                        flex-shrink-0 px-3 py-2.5 rounded-xl border transition-colors
+                        flex-shrink-0 px-3 py-2.5 rounded-xl border transition-all active:scale-[0.97]
                         ${m.status === 'completed'
-                          ? 'border-green-200 bg-green-50'
+                          ? 'border-success/20 bg-success-light'
                           : 'border-border bg-bg-card hover:bg-bg-subtle'
                         }
                       `}
@@ -143,7 +143,7 @@ export default function TodayMission({ mission, todayMissions = [] }: Props) {
                           </p>
                           <p className="text-[13px] font-semibold text-text truncate max-w-[120px]">{m.template.title}</p>
                         </div>
-                        {m.status === 'completed' && <span className="text-green-600 text-sm">✓</span>}
+                        {m.status === 'completed' && <Check className="w-4 h-4 text-success" />}
                       </div>
                     </Link>
                   ))}
@@ -152,8 +152,10 @@ export default function TodayMission({ mission, todayMissions = [] }: Props) {
             )}
           </>
         ) : (
-          <div className="flex flex-col items-center justify-center py-16">
-            <p className="text-3xl mb-3">✨</p>
+          <div className="flex flex-col items-center justify-center py-16 animate-fade-up">
+            <div className="w-12 h-12 bg-bg-subtle rounded-2xl flex items-center justify-center mb-3">
+              <Sparkles className="w-6 h-6 text-text-muted" />
+            </div>
             <h2 className="text-[17px] font-bold text-text mb-1">Pas de mission aujourd'hui</h2>
             <p className="text-[13px] text-text-muted text-center">
               Repose-toi ! Ta prochaine mission arrive bientôt.
@@ -176,8 +178,8 @@ export default function TodayMission({ mission, todayMissions = [] }: Props) {
 
       {mission && mission.status === 'completed' && (
         <div className="fixed bottom-20 left-0 right-0 p-5 bg-bg/80 backdrop-blur-lg">
-          <div className="bg-green-50 text-green-700 rounded-xl p-3.5 text-center text-[14px] font-medium">
-            Mission accomplie ✓
+          <div className="bg-success-light text-success rounded-xl p-3.5 text-center text-[14px] font-medium flex items-center justify-center gap-1.5">
+            Mission accomplie <Check className="w-4 h-4" />
           </div>
         </div>
       )}

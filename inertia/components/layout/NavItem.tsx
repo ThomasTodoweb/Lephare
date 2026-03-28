@@ -15,15 +15,15 @@ export const NavItem = memo(function NavItem({ icon: Icon, label, href, isActive
       href={href}
       className={`
         flex flex-col items-center justify-center gap-0.5 py-1 min-w-[52px]
-        transition-colors duration-100
-        active:opacity-60
-        ${isActive ? 'text-text' : 'text-neutral-500'}
+        transition-all duration-100
+        active:scale-90
+        ${isActive ? 'text-text' : 'text-text-muted'}
       `}
       aria-label={label}
       aria-current={isActive ? 'page' : undefined}
     >
       <Icon size={20} strokeWidth={isActive ? 2.2 : 1.5} />
-      <span className={`text-[11px] leading-none ${isActive ? 'font-semibold text-text' : 'font-medium text-neutral-500'}`}>
+      <span className={`text-[11px] leading-none ${isActive ? 'font-semibold text-text' : 'font-medium text-text-muted'}`}>
         {label}
       </span>
     </Link>

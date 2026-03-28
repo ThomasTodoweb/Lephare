@@ -39,7 +39,7 @@ export function BottomNav() {
         <div className="relative flex items-center justify-center min-w-[52px]">
           <Link
             href="/missions"
-            className="absolute -top-5 flex items-center justify-center w-[52px] h-[52px] rounded-full bg-[#dd2c0c] shadow-lg active:scale-95 transition-transform"
+            className="absolute -top-5 flex items-center justify-center w-[52px] h-[52px] rounded-full bg-primary shadow-lg active:scale-95 transition-transform"
             aria-label="Mission du jour"
           >
             <Camera size={24} className="text-white" strokeWidth={2} />

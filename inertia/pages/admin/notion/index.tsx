@@ -1,5 +1,6 @@
 import { Head, router } from '@inertiajs/react'
 import { AdminLayout } from '~/components/layout'
+import { Button } from '~/components/ui'
 import { useState, useRef } from 'react'
 import {
   Download,
@@ -59,7 +60,7 @@ interface Props {
 }
 
 const CONTENT_TYPE_CONFIG: Record<ContentType, { label: string; icon: typeof Camera; color: string }> = {
-  post: { label: 'Post', icon: Camera, color: 'bg-blue-100 text-blue-700' },
+  post: { label: 'Post', icon: Camera, color: 'bg-blue-100 text-primary' },
   carousel: { label: 'Carrousel', icon: Images, color: 'bg-purple-100 text-purple-700' },
   reel: { label: 'Reel', icon: Film, color: 'bg-pink-100 text-pink-700' },
   story: { label: 'Story', icon: Smartphone, color: 'bg-orange-100 text-orange-700' },
@@ -67,7 +68,7 @@ const CONTENT_TYPE_CONFIG: Record<ContentType, { label: string; icon: typeof Cam
 
 const STATUS_CONFIG: Record<IdeaStatus, { label: string; icon: typeof Clock; color: string }> = {
   pending: { label: 'En attente', icon: Clock, color: 'bg-yellow-100 text-yellow-700' },
-  reviewed: { label: 'Vu', icon: CheckCircle, color: 'bg-blue-100 text-blue-700' },
+  reviewed: { label: 'Vu', icon: CheckCircle, color: 'bg-blue-100 text-primary' },
   approved: { label: 'Approuvé', icon: CheckCircle, color: 'bg-green-100 text-green-700' },
   rejected: { label: 'Rejeté', icon: XCircle, color: 'bg-red-100 text-red-700' },
   converted: { label: 'Converti', icon: CheckCircle, color: 'bg-purple-100 text-purple-700' },
@@ -345,52 +346,44 @@ export default function NotionIdeasIndex({ ideas, stats, isNotionConfigured }: P
   }
 
   return (
-    <AdminLayout>
+    <AdminLayout title="Import Notion">
       <Head title="Import Notion - Admin" />
 
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Import Notion</h1>
-            <p className="text-gray-600 mt-1">
-              Importez vos idées de contenu depuis Notion
-            </p>
-          </div>
-          <button
+          <p className="text-[13px] text-neutral-500">
+            Importez vos idées de contenu depuis Notion
+          </p>
+          <Button
+            icon={isImporting ? RefreshCw : Download}
             onClick={handleImport}
             disabled={isImporting || !isNotionConfigured}
-            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isImporting ? (
-              <RefreshCw className="h-5 w-5 mr-2 animate-spin" />
-            ) : (
-              <Download className="h-5 w-5 mr-2" />
-            )}
             {isImporting ? 'Import en cours...' : 'Importer depuis Notion'}
-          </button>
+          </Button>
         </div>
 
         {/* Import Progress */}
         {isImporting && importProgress && (
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-white rounded-xl border border-neutral-100 p-6">
             <div className="flex items-center gap-4 mb-4">
-              <RefreshCw className="h-6 w-6 text-blue-600 animate-spin" />
+              <RefreshCw className="h-6 w-6 text-primary animate-spin" />
               <div className="flex-1">
-                <p className="font-medium text-gray-900">{importProgress.message}</p>
+                <p className="font-medium text-neutral-900">{importProgress.message}</p>
                 {importProgress.phase === 'downloading' && importProgress.total > 0 && (
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-neutral-500">
                     {importProgress.current} / {importProgress.total} pages traitées
                   </p>
                 )}
               </div>
             </div>
             {importProgress.total > 0 && (
-              <div className="w-full bg-gray-200 rounded-full h-3">
+              <div className="w-full bg-neutral-200 rounded-full h-3">
                 <div
                   className={`h-3 rounded-full transition-all duration-300 ${
                     importProgress.phase === 'error' ? 'bg-red-600' :
-                    importProgress.phase === 'done' ? 'bg-green-600' : 'bg-blue-600'
+                    importProgress.phase === 'done' ? 'bg-green-600' : 'bg-neutral-900'
                   }`}
                   style={{
                     width: `${Math.min(100, (importProgress.current / importProgress.total) * 100)}%`,
@@ -399,7 +392,7 @@ export default function NotionIdeasIndex({ ideas, stats, isNotionConfigured }: P
               </div>
             )}
             {importProgress.phase === 'downloading' && (
-              <p className="text-xs text-gray-400 mt-2">
+              <p className="text-xs text-neutral-400 mt-2">
                 Téléchargement des médias en cours... Cela peut prendre plusieurs minutes.
               </p>
             )}
@@ -421,7 +414,7 @@ export default function NotionIdeasIndex({ ideas, stats, isNotionConfigured }: P
 
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4">
-          <StatCard label="Total" value={stats.total} color="bg-gray-100" />
+          <StatCard label="Total" value={stats.total} color="bg-neutral-100" />
           <StatCard label="En attente" value={stats.pending} color="bg-yellow-100" />
           <StatCard label="Approuvés" value={stats.approved} color="bg-green-100" />
           <StatCard label="Posts" value={stats.byType.post} color="bg-blue-100" />
@@ -430,34 +423,34 @@ export default function NotionIdeasIndex({ ideas, stats, isNotionConfigured }: P
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-white rounded-xl border border-neutral-100 p-4">
           <div className="flex flex-wrap gap-4 items-end">
             {/* Search */}
             <div className="flex-1 min-w-[200px]">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-neutral-700 mb-1">
                 Recherche
               </label>
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-neutral-400" />
                 <input
                   type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Titre, client..."
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full pl-10 pr-4 py-2 border border-neutral-200 rounded-lg focus:ring-1 focus:ring-primary focus:border-primary outline-none"
                 />
               </div>
             </div>
 
             {/* Status Filter */}
             <div className="min-w-[140px]">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-neutral-700 mb-1">
                 Statut
               </label>
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-neutral-200 rounded-lg focus:ring-2 focus:ring-primary"
               >
                 <option value="">Tous</option>
                 {Object.entries(STATUS_CONFIG).map(([value, config]) => (
@@ -470,13 +463,13 @@ export default function NotionIdeasIndex({ ideas, stats, isNotionConfigured }: P
 
             {/* Type Filter */}
             <div className="min-w-[140px]">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-neutral-700 mb-1">
                 Type
               </label>
               <select
                 value={typeFilter}
                 onChange={(e) => setTypeFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-neutral-200 rounded-lg focus:ring-2 focus:ring-primary"
               >
                 <option value="">Tous</option>
                 {Object.entries(CONTENT_TYPE_CONFIG).map(([value, config]) => (
@@ -495,7 +488,7 @@ export default function NotionIdeasIndex({ ideas, stats, isNotionConfigured }: P
                   setTypeFilter('')
                   setSearch('')
                 }}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                className="px-4 py-2 bg-neutral-200 text-neutral-700 rounded-lg hover:bg-neutral-300 transition-colors"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -506,7 +499,7 @@ export default function NotionIdeasIndex({ ideas, stats, isNotionConfigured }: P
         {/* Bulk Actions */}
         {selectedIds.length > 0 && (
           <div className="bg-blue-50 rounded-lg p-4 flex flex-wrap items-center gap-4">
-            <span className="text-blue-700 font-medium">
+            <span className="text-primary font-medium">
               {selectedIds.length} sélectionnée(s)
             </span>
             <div className="flex gap-2">
@@ -525,7 +518,7 @@ export default function NotionIdeasIndex({ ideas, stats, isNotionConfigured }: P
               </button>
               <button
                 onClick={() => handleBulkStatus('rejected')}
-                className="px-3 py-1.5 bg-gray-600 text-white text-sm rounded-lg hover:bg-gray-700"
+                className="px-3 py-1.5 bg-neutral-600 text-white text-sm rounded-lg hover:bg-neutral-700"
               >
                 Rejeter
               </button>
@@ -538,7 +531,7 @@ export default function NotionIdeasIndex({ ideas, stats, isNotionConfigured }: P
             </div>
             <button
               onClick={() => setSelectedIds([])}
-              className="ml-auto text-blue-600 hover:text-blue-700 text-sm"
+              className="ml-auto text-primary hover:text-primary text-sm"
             >
               Désélectionner
             </button>
@@ -552,9 +545,9 @@ export default function NotionIdeasIndex({ ideas, stats, isNotionConfigured }: P
               type="checkbox"
               checked={selectedIds.length === filteredIdeas.length}
               onChange={toggleSelectAll}
-              className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              className="w-4 h-4 rounded border-neutral-200 text-primary focus:ring-primary"
             />
-            <span className="text-sm text-gray-600">
+            <span className="text-sm text-neutral-600">
               Tout sélectionner ({filteredIdeas.length})
             </span>
           </div>
@@ -577,13 +570,13 @@ export default function NotionIdeasIndex({ ideas, stats, isNotionConfigured }: P
 
         {filteredIdeas.length === 0 && (
           <div className="text-center py-12 bg-white rounded-lg shadow">
-            <Image className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-500">Aucune idée trouvée</p>
+            <Image className="h-12 w-12 mx-auto text-neutral-400 mb-4" />
+            <p className="text-neutral-500">Aucune idée trouvée</p>
             {isNotionConfigured ? (
               <button
                 onClick={handleImport}
                 disabled={isImporting}
-                className="inline-flex items-center mt-4 text-blue-600 hover:text-blue-700"
+                className="inline-flex items-center mt-4 text-primary hover:text-primary"
               >
                 <Download className="h-4 w-4 mr-1" />
                 Importer depuis Notion
@@ -611,8 +604,8 @@ function StatCard({
 }) {
   return (
     <div className={`${color} rounded-lg p-4`}>
-      <p className="text-sm font-medium text-gray-600">{label}</p>
-      <p className="text-2xl font-bold text-gray-900">{value}</p>
+      <p className="text-sm font-medium text-neutral-600">{label}</p>
+      <p className="text-2xl font-bold text-neutral-900">{value}</p>
     </div>
   )
 }
@@ -635,8 +628,8 @@ function IdeaCard({ idea, isSelected, onSelect, onUpdateStatus, onDelete, onConv
 
   return (
     <div
-      className={`bg-white rounded-lg shadow overflow-hidden transition-all ${
-        isSelected ? 'ring-2 ring-blue-500' : ''
+      className={`bg-white rounded-xl border border-neutral-100 overflow-hidden transition-all ${
+        isSelected ? 'ring-2 ring-primary' : ''
       }`}
     >
       {/* Selection Checkbox */}
@@ -645,12 +638,12 @@ function IdeaCard({ idea, isSelected, onSelect, onUpdateStatus, onDelete, onConv
           type="checkbox"
           checked={isSelected}
           onChange={onSelect}
-          className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 bg-white/90 shadow"
+          className="w-5 h-5 rounded border-neutral-200 text-primary focus:ring-primary bg-white/90 shadow"
         />
       </div>
 
       {/* Media Preview */}
-      <div className="aspect-square bg-gray-100 relative">
+      <div className="aspect-square bg-neutral-100 relative">
         {idea.thumbnailPath ? (
           isVideo ? (
             <>
@@ -684,7 +677,7 @@ function IdeaCard({ idea, isSelected, onSelect, onUpdateStatus, onDelete, onConv
           )
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <Image className="h-12 w-12 text-gray-300" />
+            <Image className="h-12 w-12 text-neutral-300" />
           </div>
         )}
 
@@ -707,13 +700,13 @@ function IdeaCard({ idea, isSelected, onSelect, onUpdateStatus, onDelete, onConv
       {/* Content */}
       <div className="p-4">
         {/* Title */}
-        <h3 className="font-semibold text-gray-900 truncate" title={idea.displayTitle}>
+        <h3 className="font-semibold text-neutral-900 truncate" title={idea.displayTitle}>
           {idea.displayTitle}
         </h3>
 
         {/* Client */}
         {idea.clientName && (
-          <p className="text-sm text-gray-500 truncate">{idea.clientName}</p>
+          <p className="text-sm text-neutral-500 truncate">{idea.clientName}</p>
         )}
 
         {/* Type Badge */}
@@ -727,7 +720,7 @@ function IdeaCard({ idea, isSelected, onSelect, onUpdateStatus, onDelete, onConv
         </div>
 
         {/* Actions */}
-        <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+        <div className="flex items-center justify-between mt-4 pt-3 border-t border-neutral-100">
           {/* Status Buttons */}
           <div className="flex gap-1">
             {idea.status !== 'converted' && (
@@ -744,7 +737,7 @@ function IdeaCard({ idea, isSelected, onSelect, onUpdateStatus, onDelete, onConv
               className={`p-1.5 rounded-lg transition-colors ${
                 idea.status === 'approved'
                   ? 'bg-green-100 text-green-700'
-                  : 'text-gray-400 hover:bg-green-50 hover:text-green-600'
+                  : 'text-neutral-400 hover:bg-green-50 hover:text-green-600'
               }`}
               title="Approuver"
             >
@@ -755,7 +748,7 @@ function IdeaCard({ idea, isSelected, onSelect, onUpdateStatus, onDelete, onConv
               className={`p-1.5 rounded-lg transition-colors ${
                 idea.status === 'rejected'
                   ? 'bg-red-100 text-red-700'
-                  : 'text-gray-400 hover:bg-red-50 hover:text-red-600'
+                  : 'text-neutral-400 hover:bg-red-50 hover:text-red-600'
               }`}
               title="Rejeter"
             >

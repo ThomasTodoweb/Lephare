@@ -16,13 +16,13 @@ export function WeekProgress({ days, todayIndex }: WeekProgressProps) {
         const isFuture = i > todayIndex
 
         return (
-          <div key={i} className="flex flex-col items-center gap-1">
-            <span className={`text-[10px] font-medium ${isToday ? 'text-text' : 'text-text-muted'}`}>
+          <div key={i} className="flex flex-col items-center gap-1.5 flex-1">
+            <span className={`text-[11px] font-medium ${isToday ? 'text-text font-semibold' : 'text-text-muted'}`}>
               {label}
             </span>
             <div
               className={`
-                w-8 h-8 rounded-lg flex items-center justify-center text-[12px] font-semibold
+                w-9 h-9 rounded-xl flex items-center justify-center text-[12px] font-semibold
                 transition-all duration-200
                 ${isDone
                   ? 'bg-text text-white'

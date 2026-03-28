@@ -25,13 +25,13 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
 }, ref) {
   const isDisabled = disabled || loading
 
-  const base = 'inline-flex items-center justify-center gap-2 font-semibold transition-all active:scale-[0.98]'
+  const base = 'inline-flex items-center justify-center gap-2 font-semibold transition-all active:scale-[0.97]'
 
   const variants = {
-    primary: 'bg-text text-white hover:bg-neutral-800 disabled:opacity-40',
+    primary: 'bg-text text-white hover:opacity-90 disabled:opacity-40',
     secondary: 'bg-bg-subtle text-text border border-border hover:bg-bg-inset disabled:opacity-40',
     ghost: 'bg-transparent text-text-secondary hover:bg-bg-subtle disabled:opacity-40',
-    danger: 'bg-error text-white hover:bg-red-600 disabled:opacity-40',
+    danger: 'bg-error text-white hover:opacity-90 disabled:opacity-40',
   }
 
   const sizes = {

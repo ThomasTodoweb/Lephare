@@ -1,6 +1,6 @@
 import { Head, Link, router } from '@inertiajs/react'
 import { useState, useEffect } from 'react'
-import { ChevronLeft, Search } from 'lucide-react'
+import { ChevronLeft, Search, Check, Play } from 'lucide-react'
 import { AppLayout } from '~/components/layout'
 import { Card } from '~/components/ui/Card'
 
@@ -42,16 +42,16 @@ export default function TutorialsSearch({ query: initialQuery, tutorials }: Prop
 
       {/* Header */}
       <div className="pt-4 pb-4">
-        <Link href="/tutorials" className="inline-flex items-center gap-1 text-[13px] text-text-secondary mb-3">
+        <Link href="/tutorials" className="inline-flex items-center gap-1 text-[13px] text-text-secondary min-h-[44px] -ml-1 pl-1 pr-2">
           <ChevronLeft className="w-4 h-4" />
           Tutoriels
         </Link>
-        <h1 className="text-[20px] font-bold text-text">Rechercher</h1>
+        <h1 className="text-[20px] font-bold text-text tracking-tight">Rechercher</h1>
       </div>
 
       {/* Search input */}
       <div className="mb-6">
-        <Card variant="flat" className="flex items-center gap-3">
+        <div className="flex items-center gap-3 bg-bg-subtle rounded-2xl p-4">
           <Search className="w-4 h-4 text-text-muted shrink-0" />
           <input
             type="text"
@@ -59,9 +59,9 @@ export default function TutorialsSearch({ query: initialQuery, tutorials }: Prop
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             autoFocus
-            className="flex-1 bg-transparent text-[14px] text-text placeholder:text-text-muted outline-none"
+            className="flex-1 bg-transparent text-[14px] text-text placeholder:text-text-muted outline-none min-h-[24px]"
           />
-        </Card>
+        </div>
       </div>
 
       {/* Results */}
@@ -75,31 +75,39 @@ export default function TutorialsSearch({ query: initialQuery, tutorials }: Prop
 
         {!isSearching && query.length >= 2 && tutorials.length === 0 && (
           <div className="text-center py-16">
-            <p className="text-[14px] text-text-secondary">Aucun tutoriel trouvé pour "{query}"</p>
+            <div className="w-14 h-14 mx-auto mb-4 bg-bg-subtle rounded-2xl flex items-center justify-center">
+              <Search className="w-6 h-6 text-text-muted" />
+            </div>
+            <p className="text-[15px] font-semibold text-text mb-1">Aucun resultat</p>
+            <p className="text-[13px] text-text-muted">Essaie avec d'autres mots-cles pour "{query}"</p>
           </div>
         )}
 
         {!isSearching && query.length < 2 && (
           <div className="text-center py-16">
-            <p className="text-[14px] text-text-muted">Tapez au moins 2 caractères pour rechercher</p>
+            <p className="text-[14px] text-text-muted">Tape au moins 2 caracteres pour rechercher</p>
           </div>
         )}
 
         {!isSearching && tutorials.length > 0 && (
           <div>
             <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-3">
-              {tutorials.length} résultat{tutorials.length > 1 ? 's' : ''}
+              {tutorials.length} resultat{tutorials.length > 1 ? 's' : ''}
             </p>
-            <div className="flex flex-col gap-2">
+            <div className="space-y-2.5">
               {tutorials.map((tutorial) => (
-                <Link key={tutorial.id} href={`/tutorials/${tutorial.id}`}>
+                <Link
+                  key={tutorial.id}
+                  href={`/tutorials/${tutorial.id}`}
+                  className="block active:scale-[0.98] transition-transform"
+                >
                   <Card variant={tutorial.isCompleted ? 'bordered' : 'default'}>
                     <div className="flex items-center gap-3">
-                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${tutorial.isCompleted ? 'bg-emerald-50' : 'bg-bg-subtle'}`}>
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${tutorial.isCompleted ? 'bg-success-light' : 'bg-bg-subtle'}`}>
                         {tutorial.isCompleted ? (
-                          <span className="text-emerald-600 text-[13px] font-bold">✓</span>
+                          <Check size={16} className="text-success" strokeWidth={2.5} />
                         ) : (
-                          <span className="text-text-muted text-[12px]">▶</span>
+                          <Play size={12} className="text-text-muted ml-0.5" />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -110,7 +118,7 @@ export default function TutorialsSearch({ query: initialQuery, tutorials }: Prop
                           </span>
                         )}
                         {tutorial.description && (
-                          <p className="text-[13px] text-text-secondary line-clamp-1 mt-0.5">
+                          <p className="text-[13px] text-text-secondary line-clamp-1 mt-0.5 leading-relaxed">
                             {tutorial.description}
                           </p>
                         )}

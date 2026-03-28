@@ -34,10 +34,10 @@ export function PopoteAvatar({ size = 'md', variant = 'default', className = '' 
 
   return (
     <div
-      className={`${SIZE_CLASSES[size]} rounded-full bg-white border-2 border-neutral flex items-center justify-center overflow-hidden ${className}`}
+      className={`${SIZE_CLASSES[size]} rounded-full bg-bg-card border-2 border-border flex items-center justify-center overflow-hidden ${className}`}
     >
       {hasError ? (
-        <span className="text-xs text-neutral-400">🍳</span>
+        <span className="text-xs text-text-muted">🍳</span>
       ) : (
         <img
           src={VARIANT_IMAGES[variant]}

@@ -2,6 +2,7 @@ import { Head, Link, useForm, usePage } from '@inertiajs/react'
 import { AdminLayout } from '~/components/layout'
 import { Card } from '~/components/ui/Card'
 import { Button } from '~/components/ui/Button'
+import { ArrowLeft } from 'lucide-react'
 
 interface EmailLog {
   id: number
@@ -79,29 +80,20 @@ export default function EmailLogShow({ log }: Props) {
   }
 
   return (
-    <AdminLayout>
+    <AdminLayout title={`Email #${log.id}`}>
       <Head title={`Email #${log.id} - Admin`} />
 
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link href="/admin/email-logs">
-              <Button variant="ghost" size="sm">
-                <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-                Retour
-              </Button>
+            <Link href="/admin/email-logs" className="inline-flex items-center gap-1.5 text-[13px] text-neutral-500 hover:text-neutral-900 transition-colors">
+              <ArrowLeft size={14} />
+              Retour
             </Link>
-            <div>
-              <h1 className="text-2xl font-extrabold text-neutral-900 uppercase tracking-tight">
-                Email #{log.id}
-              </h1>
-              <p className="text-neutral-600 mt-1">
-                {typeLabels[log.emailType] || log.emailType}
-              </p>
-            </div>
+            <p className="text-[13px] text-neutral-500">
+              {typeLabels[log.emailType] || log.emailType}
+            </p>
           </div>
           <div className={`px-4 py-2 rounded-xl border text-lg font-semibold ${statusColors[log.status]}`}>
             {statusLabels[log.status] || log.status}
@@ -123,7 +115,7 @@ export default function EmailLogShow({ log }: Props) {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Main info */}
           <Card className="p-6 space-y-6">
-            <h2 className="text-lg font-bold text-neutral-900 uppercase">Informations</h2>
+            <h2 className="text-[15px] font-semibold text-neutral-900">Informations</h2>
 
             <div className="space-y-4">
               <div>
@@ -176,7 +168,7 @@ export default function EmailLogShow({ log }: Props) {
 
           {/* Provider info */}
           <Card className="p-6 space-y-6">
-            <h2 className="text-lg font-bold text-neutral-900 uppercase">Details techniques</h2>
+            <h2 className="text-[15px] font-semibold text-neutral-900">Details techniques</h2>
 
             <div className="space-y-4">
               {log.providerMessageId && (
@@ -216,7 +208,7 @@ export default function EmailLogShow({ log }: Props) {
 
         {/* Manual status update */}
         <Card className="p-6">
-          <h2 className="text-lg font-bold text-neutral-900 uppercase mb-4">Mise a jour manuelle</h2>
+          <h2 className="text-[15px] font-semibold text-neutral-900 mb-4">Mise a jour manuelle</h2>
           <p className="text-sm text-neutral-500 mb-4">
             Mettez a jour le statut manuellement si necessaire (ex: apres verification d'un bounce)
           </p>

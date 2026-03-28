@@ -2,6 +2,7 @@ import { Head, Link, useForm, usePage } from '@inertiajs/react'
 import { AdminLayout } from '~/components/layout'
 import { Card, Button, Input } from '~/components/ui'
 import { useState } from 'react'
+import { Eye, EyeOff, FileSearch } from 'lucide-react'
 
 interface PageProps {
   settings: {
@@ -144,14 +145,10 @@ export default function AdminEmailsIndex() {
             Templates
           </button>
         </div>
-        <Link
-          href="/admin/email-logs"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-neutral-100 text-neutral-700 rounded-lg font-medium hover:bg-neutral-200 transition-colors"
-        >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-          </svg>
-          Historique
+        <Link href="/admin/email-logs">
+          <Button variant="secondary" icon={FileSearch}>
+            Historique
+          </Button>
         </Link>
       </div>
 
@@ -232,7 +229,7 @@ export default function AdminEmailsIndex() {
                         onClick={() => setShowApiKey(!showApiKey)}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
                       >
-                        {showApiKey ? '🙈' : '👁️'}
+                        {showApiKey ? <EyeOff size={16} /> : <Eye size={16} />}
                       </button>
                     </div>
                     <p className="text-xs text-neutral-500 mt-1">
@@ -297,7 +294,7 @@ export default function AdminEmailsIndex() {
                         onClick={() => setShowSmtpPassword(!showSmtpPassword)}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
                       >
-                        {showSmtpPassword ? '🙈' : '👁️'}
+                        {showSmtpPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                       </button>
                     </div>
                   </div>
@@ -620,7 +617,7 @@ export default function AdminEmailsIndex() {
             className="flex-1"
             required
           />
-          <Button type="submit" variant="outlined" disabled={testForm.processing}>
+          <Button type="submit" variant="secondary" disabled={testForm.processing}>
             {testForm.processing ? 'Envoi...' : 'Envoyer un test'}
           </Button>
         </form>

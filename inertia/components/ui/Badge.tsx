@@ -12,10 +12,10 @@ export function Badge({ variant = 'default', children, className = '' }: BadgePr
   const variants = {
     default: 'bg-bg-subtle text-text-secondary',
     primary: 'bg-primary-50 text-primary',
-    success: 'bg-success-light text-green-700',
-    warning: 'bg-warning-light text-amber-700',
-    error: 'bg-error-light text-red-700',
-    streak: 'bg-orange-50 text-orange-600',
+    success: 'bg-success-light text-success',
+    warning: 'bg-warning-light text-warning',
+    error: 'bg-error-light text-error',
+    streak: 'bg-primary-50 text-streak',
   }
 
   return <span className={`${base} ${variants[variant]} ${className}`}>{children}</span>

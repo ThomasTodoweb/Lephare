@@ -2,7 +2,7 @@ import { Head, Link, useForm } from '@inertiajs/react'
 import { useState, useRef } from 'react'
 import { AdminLayout } from '~/components/layout'
 import { Card, Button, Input, LazyVideo } from '~/components/ui'
-import { Plus, Trash2, Edit2, Check, X, Lightbulb, Tag, Upload, Image, Film, Link2, Unlink } from 'lucide-react'
+import { Plus, Trash2, Edit2, Check, X, Lightbulb, Tag, Upload, Image, Film, Link2, Unlink, ArrowLeft } from 'lucide-react'
 
 type RestaurantType = 'brasserie' | 'gastronomique' | 'fast_food' | 'pizzeria' | 'cafe_bar' | 'autre'
 
@@ -462,20 +462,28 @@ export default function AdminTemplatesEdit({ template, strategies, tutorials, th
   }
 
   // Les tutos sont gérés séparément dans /admin/tutorials
+  const typeIcons: Record<string, typeof Image> = {
+    post: Image,
+    carousel: Tag,
+    story: Upload,
+    reel: Film,
+    engagement: Edit2,
+  }
   const typeOptions = [
-    { value: 'post', label: 'Post', icon: '📸' },
-    { value: 'carousel', label: 'Carrousel', icon: '🎠' },
-    { value: 'story', label: 'Story', icon: '📱' },
-    { value: 'reel', label: 'Reel', icon: '🎬' },
-    { value: 'engagement', label: 'Engagement', icon: '💬' },
+    { value: 'post', label: 'Post' },
+    { value: 'carousel', label: 'Carrousel' },
+    { value: 'story', label: 'Story' },
+    { value: 'reel', label: 'Reel' },
+    { value: 'engagement', label: 'Engagement' },
   ]
 
   return (
     <AdminLayout title={`Modifier: ${template.title}`}>
       <Head title={`Modifier ${template.title} - Admin Le Phare`} />
 
-      <Link href="/admin/templates" className="text-primary text-sm mb-4 inline-block">
-        ← Retour aux missions
+      <Link href="/admin/templates" className="inline-flex items-center gap-1.5 text-[13px] text-neutral-500 hover:text-neutral-900 mb-4 transition-colors">
+        <ArrowLeft size={14} />
+        Retour aux missions
       </Link>
 
       {/* Cover Image Section */}
@@ -582,7 +590,7 @@ export default function AdminTemplatesEdit({ template, strategies, tutorials, th
                       : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
                   }`}
                 >
-                  <span className="text-lg block mb-1">{opt.icon}</span>
+                  {(() => { const TypeIcon = typeIcons[opt.value]; return TypeIcon ? <TypeIcon size={20} className="block mx-auto mb-1" /> : null })()}
                   {opt.label}
                 </button>
               ))}
@@ -725,7 +733,7 @@ export default function AdminTemplatesEdit({ template, strategies, tutorials, th
           {/* Submit */}
           <div className="flex gap-3 pt-4">
             <Link href="/admin/templates" className="flex-1">
-              <Button type="button" variant="outlined" className="w-full">
+              <Button type="button" variant="secondary" className="w-full">
                 Annuler
               </Button>
             </Link>
@@ -747,7 +755,7 @@ export default function AdminTemplatesEdit({ template, strategies, tutorials, th
             <div className="flex gap-2">
               <Button
                 type="button"
-                variant="outlined"
+                variant="secondary"
                 onClick={() => setIsLinkingIdea(true)}
                 className="flex items-center gap-1 text-sm"
                 disabled={localAvailableIdeas.length === 0}
@@ -757,7 +765,7 @@ export default function AdminTemplatesEdit({ template, strategies, tutorials, th
               </Button>
               <Button
                 type="button"
-                variant="outlined"
+                variant="secondary"
                 onClick={() => setIsAddingIdea(true)}
                 className="flex items-center gap-1 text-sm"
               >
@@ -947,7 +955,7 @@ export default function AdminTemplatesEdit({ template, strategies, tutorials, th
               <div className="flex gap-2 justify-end">
                 <Button
                   type="button"
-                  variant="outlined"
+                  variant="secondary"
                   onClick={() => {
                     setIsAddingIdea(false)
                     setNewIdea({ suggestionText: '', photoTips: '', restaurantTags: [] })

@@ -2,6 +2,7 @@ import { Head, router } from '@inertiajs/react'
 import { useState } from 'react'
 import { AdminLayout } from '~/components/layout'
 import { Card, Button } from '~/components/ui'
+import { Moon, HeartCrack, Clock, PartyPopper } from 'lucide-react'
 
 interface AlertTarget {
   id: number
@@ -38,16 +39,16 @@ function formatTimeAgo(timestamp: string | null): string {
 
 function AlertTypeBadge({ type }: { type: AlertTarget['alertType'] }) {
   const styles: Record<string, { bg: string; text: string; label: string }> = {
-    inactive: { bg: 'bg-yellow-100', text: 'text-yellow-700', label: 'Inactif' },
-    streak_lost: { bg: 'bg-red-100', text: 'text-red-700', label: 'Streak perdu' },
-    trial_ending: { bg: 'bg-blue-100', text: 'text-blue-700', label: 'Trial expirant' },
-    subscription_expired: { bg: 'bg-neutral-100', text: 'text-neutral-700', label: 'Abo expiré' },
+    inactive: { bg: 'bg-amber-50', text: 'text-amber-700', label: 'Inactif' },
+    streak_lost: { bg: 'bg-red-50', text: 'text-red-700', label: 'Streak perdu' },
+    trial_ending: { bg: 'bg-blue-50', text: 'text-blue-700', label: 'Trial expirant' },
+    subscription_expired: { bg: 'bg-neutral-100', text: 'text-neutral-600', label: 'Abo expiré' },
   }
 
   const style = styles[type] || styles.inactive
 
   return (
-    <span className={`px-2 py-1 text-xs rounded-full ${style.bg} ${style.text}`}>
+    <span className={`px-2.5 py-1 text-[11px] font-medium rounded-full ${style.bg} ${style.text}`}>
       {style.label}
     </span>
   )
@@ -104,20 +105,32 @@ export default function AdminAlertsIndex({ stats, targets }: Props) {
 
       {/* Stats cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <Card className="text-center">
-          <span className="text-3xl mb-2 block">😴</span>
-          <p className="text-3xl font-bold text-yellow-600">{stats.inactiveUsers}</p>
-          <p className="text-sm text-neutral-500">Utilisateurs inactifs (+7j)</p>
+        <Card className="flex items-center gap-4" padding="lg">
+          <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
+            <Moon size={22} className="text-amber-600" />
+          </div>
+          <div>
+            <p className="text-[22px] font-bold text-neutral-900">{stats.inactiveUsers}</p>
+            <p className="text-[13px] text-neutral-500">Utilisateurs inactifs (+7j)</p>
+          </div>
         </Card>
-        <Card className="text-center">
-          <span className="text-3xl mb-2 block">💔</span>
-          <p className="text-3xl font-bold text-red-600">{stats.streakLostUsers}</p>
-          <p className="text-sm text-neutral-500">Streaks perdus</p>
+        <Card className="flex items-center gap-4" padding="lg">
+          <div className="w-12 h-12 rounded-xl bg-red-50 flex items-center justify-center shrink-0">
+            <HeartCrack size={22} className="text-red-600" />
+          </div>
+          <div>
+            <p className="text-[22px] font-bold text-neutral-900">{stats.streakLostUsers}</p>
+            <p className="text-[13px] text-neutral-500">Streaks perdus</p>
+          </div>
         </Card>
-        <Card className="text-center">
-          <span className="text-3xl mb-2 block">⏰</span>
-          <p className="text-3xl font-bold text-blue-600">{stats.trialEndingUsers}</p>
-          <p className="text-sm text-neutral-500">Trials expirant bientôt</p>
+        <Card className="flex items-center gap-4" padding="lg">
+          <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+            <Clock size={22} className="text-blue-600" />
+          </div>
+          <div>
+            <p className="text-[22px] font-bold text-neutral-900">{stats.trialEndingUsers}</p>
+            <p className="text-[13px] text-neutral-500">Trials expirant bientôt</p>
+          </div>
         </Card>
       </div>
 
@@ -184,7 +197,7 @@ export default function AdminAlertsIndex({ stats, targets }: Props) {
                 </div>
 
                 <Button
-                  variant="outlined"
+                  variant="secondary"
                   className="text-sm"
                   onClick={() => sendAlert(target.id, target.alertType)}
                   disabled={sending}
@@ -196,9 +209,11 @@ export default function AdminAlertsIndex({ stats, targets }: Props) {
           </div>
         ) : (
           <div className="text-center py-12">
-            <span className="text-4xl block mb-2">🎉</span>
-            <p className="text-neutral-500">Aucun utilisateur à relancer</p>
-            <p className="text-sm text-neutral-400 mt-1">
+            <div className="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center mx-auto mb-3">
+              <PartyPopper size={24} className="text-emerald-500" />
+            </div>
+            <p className="text-[13px] text-neutral-900 font-medium mb-1">Aucun utilisateur à relancer</p>
+            <p className="text-[12px] text-neutral-500">
               Tous vos utilisateurs sont actifs !
             </p>
           </div>

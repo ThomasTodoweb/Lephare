@@ -1,6 +1,4 @@
 import { Head, useForm, usePage } from '@inertiajs/react'
-import { Button } from '~/components/ui/Button'
-import { Card } from '~/components/ui/Card'
 import { Toast } from '~/components/ui/Toast'
 import { useState, useRef, useEffect } from 'react'
 import { Loader2 } from 'lucide-react'
@@ -68,12 +66,12 @@ export default function VerifyEmail({ email }: Props) {
 
   return (
     <>
-      <Head title="Verifie ton email - Le Phare" />
+      <Head title="Vérifie ton email - Le Phare" />
       <div className="min-h-screen bg-bg flex flex-col items-center justify-center px-5 py-12">
         {flash?.error && <Toast message={flash.error} type="error" />}
         {flash?.success && <Toast message={flash.success} type="success" />}
 
-        <Card className="w-full max-w-md" padding="lg">
+        <div className="w-full max-w-sm mx-auto">
           <div className="text-center mb-8">
             <div className="w-12 h-12 bg-bg-subtle rounded-2xl flex items-center justify-center mx-auto mb-4">
               <svg className="w-5 h-5 text-text" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -81,10 +79,10 @@ export default function VerifyEmail({ email }: Props) {
               </svg>
             </div>
             <h1 className="text-[22px] font-bold text-text tracking-tight">
-              Verifie ton email
+              Vérifie ton email
             </h1>
             <p className="text-[14px] text-text-secondary mt-2 leading-relaxed">
-              Un code a 6 chiffres a ete envoye a<br />
+              Un code à 6 chiffres a été envoyé à<br />
               <span className="font-medium text-text">{maskedEmail}</span>
             </p>
           </div>
@@ -111,20 +109,20 @@ export default function VerifyEmail({ email }: Props) {
           {verifyForm.processing && (
             <div className="flex items-center justify-center gap-2 mb-4">
               <Loader2 className="w-4 h-4 animate-spin text-text" />
-              <span className="text-[13px] text-text-secondary">Verification en cours...</span>
+              <span className="text-[13px] text-text-secondary">Vérification en cours...</span>
             </div>
           )}
 
           {/* Resend link */}
           <div className="text-center">
             <p className="text-[13px] text-text-muted mb-1.5">
-              Tu n'as pas recu le code ?
+              Tu n'as pas reçu le code ?
             </p>
             <button
               type="button"
               onClick={handleResend}
               disabled={resendForm.processing}
-              className="text-[13px] font-medium text-text hover:text-text-secondary transition-colors disabled:opacity-50"
+              className="text-[13px] font-medium text-text hover:text-text-secondary transition-colors disabled:opacity-50 min-h-11 px-4"
             >
               {resendForm.processing ? 'Envoi en cours...' : 'Renvoyer le code'}
             </button>
@@ -133,10 +131,10 @@ export default function VerifyEmail({ email }: Props) {
           {/* Info */}
           <div className="mt-6 p-3 bg-bg-subtle rounded-xl">
             <p className="text-[12px] text-text-muted text-center">
-              Le code expire dans 15 minutes. Verifie aussi tes spams si tu ne trouves pas l'email.
+              Le code expire dans 15 minutes. Vérifie aussi tes spams si tu ne trouves pas l'email.
             </p>
           </div>
-        </Card>
+        </div>
       </div>
     </>
   )

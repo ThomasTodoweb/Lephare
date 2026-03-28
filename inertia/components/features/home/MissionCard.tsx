@@ -63,7 +63,7 @@ export function MissionCard({ mission, onStart, isActive = true }: MissionCardPr
       onClick={onStart}
       className={`
         relative overflow-hidden rounded-2xl cursor-pointer
-        transition-all duration-200 w-full
+        active:scale-[0.98] transition-transform duration-200 w-full
         ${isCompleted ? 'opacity-60' : ''}
       `}
       style={{ aspectRatio: '3/4' }}
@@ -72,12 +72,12 @@ export function MissionCard({ mission, onStart, isActive = true }: MissionCardPr
       {isVideo ? (
         <>
           {!videoLoaded && !videoError && (
-            <div className="absolute inset-0 bg-neutral-900 flex items-center justify-center">
+            <div className="absolute inset-0 bg-text flex items-center justify-center">
               <Loader2 className="w-6 h-6 text-white/40 animate-spin" />
             </div>
           )}
           {videoError && (
-            <div className="absolute inset-0 bg-neutral-900 flex items-center justify-center">
+            <div className="absolute inset-0 bg-text flex items-center justify-center">
               <Film className="w-10 h-10 text-white/20" />
             </div>
           )}
@@ -122,13 +122,13 @@ export function MissionCard({ mission, onStart, isActive = true }: MissionCardPr
         </div>
 
         {isCompleted && (
-          <div className="bg-green-500 text-white px-2.5 py-1 rounded-lg flex items-center gap-1">
+          <div className="bg-success text-white px-2.5 py-1 rounded-lg flex items-center gap-1">
             <Check className="w-3 h-3" />
             <span className="text-[11px] font-semibold">Fait</span>
           </div>
         )}
         {isSkipped && (
-          <div className="bg-neutral-500 text-white px-2.5 py-1 rounded-lg">
+          <div className="bg-text-muted text-white px-2.5 py-1 rounded-lg">
             <span className="text-[11px] font-semibold">Passé</span>
           </div>
         )}
@@ -144,7 +144,7 @@ export function MissionCard({ mission, onStart, isActive = true }: MissionCardPr
         </p>
 
         {!isCompleted && !isSkipped && (
-          <div className="flex items-center justify-between bg-white text-text rounded-xl px-4 py-3 font-semibold text-[14px]">
+          <div className="flex items-center justify-between bg-bg-card text-text rounded-xl px-4 py-3 font-semibold text-[14px] min-h-[44px] active:scale-[0.97] transition-transform">
             <span>C'est parti</span>
             <ChevronRight size={16} />
           </div>

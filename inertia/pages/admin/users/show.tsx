@@ -1,6 +1,7 @@
 import { Head, Link } from '@inertiajs/react'
 import { AdminLayout } from '~/components/layout'
 import { Card, Button } from '~/components/ui'
+import { ArrowLeft, Instagram, Flame } from 'lucide-react'
 
 interface User {
   id: number
@@ -76,11 +77,11 @@ function formatDate(timestamp: string | null): string {
 
 function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
-    pending: 'bg-yellow-100 text-yellow-700',
-    in_progress: 'bg-blue-100 text-blue-700',
-    completed: 'bg-green-100 text-green-700',
+    pending: 'bg-amber-50 text-amber-700',
+    in_progress: 'bg-blue-50 text-blue-700',
+    completed: 'bg-emerald-50 text-emerald-700',
     skipped: 'bg-neutral-100 text-neutral-500',
-    abandoned: 'bg-red-100 text-red-700',
+    abandoned: 'bg-red-50 text-red-700',
   }
 
   const labels: Record<string, string> = {
@@ -92,7 +93,7 @@ function StatusBadge({ status }: { status: string }) {
   }
 
   return (
-    <span className={`px-2 py-1 text-xs rounded-full ${styles[status] || 'bg-neutral-100'}`}>
+    <span className={`px-2.5 py-1 text-[11px] font-medium rounded-full ${styles[status] || 'bg-neutral-100'}`}>
       {labels[status] || status}
     </span>
   )
@@ -100,10 +101,10 @@ function StatusBadge({ status }: { status: string }) {
 
 function SubscriptionStatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
-    active: 'bg-green-100 text-green-700',
-    trialing: 'bg-blue-100 text-blue-700',
-    canceled: 'bg-red-100 text-red-700',
-    past_due: 'bg-yellow-100 text-yellow-700',
+    active: 'bg-emerald-50 text-emerald-700',
+    trialing: 'bg-blue-50 text-blue-700',
+    canceled: 'bg-red-50 text-red-700',
+    past_due: 'bg-amber-50 text-amber-700',
   }
 
   const labels: Record<string, string> = {
@@ -114,7 +115,7 @@ function SubscriptionStatusBadge({ status }: { status: string }) {
   }
 
   return (
-    <span className={`px-3 py-1 text-sm rounded-full ${styles[status] || 'bg-neutral-100'}`}>
+    <span className={`px-2.5 py-1 text-[11px] font-medium rounded-full ${styles[status] || 'bg-neutral-100'}`}>
       {labels[status] || status}
     </span>
   )
@@ -126,8 +127,9 @@ export default function AdminUserShow({ user, stats, subscription, recentMission
       <Head title={`${user.fullName || user.email} - Admin Le Phare`} />
 
       {/* Back link */}
-      <Link href="/admin/users" className="text-primary text-sm mb-4 inline-block">
-        ← Retour à la liste
+      <Link href="/admin/users" className="inline-flex items-center gap-1.5 text-[13px] text-neutral-500 hover:text-neutral-900 mb-4 transition-colors">
+        <ArrowLeft size={14} />
+        Retour à la liste
       </Link>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -168,7 +170,7 @@ export default function AdminUserShow({ user, stats, subscription, recentMission
           {/* Restaurant info */}
           {user.restaurant && (
             <Card>
-              <h3 className="font-bold text-lg text-neutral-900 mb-4">Restaurant</h3>
+              <h3 className="font-semibold text-[15px] text-neutral-900 mb-4">Restaurant</h3>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="text-neutral-500">Nom</p>
@@ -197,10 +199,10 @@ export default function AdminUserShow({ user, stats, subscription, recentMission
           {/* Instagram connection */}
           {user.instagramConnection && (
             <Card>
-              <h3 className="font-bold text-lg text-neutral-900 mb-4">Instagram</h3>
+              <h3 className="font-semibold text-[15px] text-neutral-900 mb-4">Instagram</h3>
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600 flex items-center justify-center text-white text-xl">
-                  📷
+                <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600 flex items-center justify-center text-white">
+                  <Instagram size={22} />
                 </div>
                 <div>
                   <p className="font-medium">
@@ -216,7 +218,7 @@ export default function AdminUserShow({ user, stats, subscription, recentMission
 
           {/* Email preferences */}
           <Card>
-            <h3 className="font-bold text-lg text-neutral-900 mb-4">Préférences emails</h3>
+            <h3 className="font-semibold text-[15px] text-neutral-900 mb-4">Préférences emails</h3>
             <div className="space-y-3 text-sm">
               <div className="flex items-center justify-between">
                 <span className="text-neutral-600">Mission quotidienne</span>
@@ -253,7 +255,7 @@ export default function AdminUserShow({ user, stats, subscription, recentMission
 
           {/* Recent missions */}
           <Card>
-            <h3 className="font-bold text-lg text-neutral-900 mb-4">Missions récentes</h3>
+            <h3 className="font-semibold text-[15px] text-neutral-900 mb-4">Missions récentes</h3>
             {recentMissions.length > 0 ? (
               <div className="space-y-3">
                 {recentMissions.map((mission) => (
@@ -284,7 +286,7 @@ export default function AdminUserShow({ user, stats, subscription, recentMission
         <div className="space-y-6">
           {/* Stats card */}
           <Card>
-            <h3 className="font-bold text-lg text-neutral-900 mb-4">Statistiques</h3>
+            <h3 className="font-semibold text-[15px] text-neutral-900 mb-4">Statistiques</h3>
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <span className="text-neutral-500">Missions complétées</span>
@@ -298,7 +300,10 @@ export default function AdminUserShow({ user, stats, subscription, recentMission
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-neutral-500">Streak actuel</span>
-                <span className="font-bold text-lg">{stats.currentStreak}j 🔥</span>
+                <span className="font-bold text-lg flex items-center gap-1">
+                  {stats.currentStreak}j
+                  {stats.currentStreak > 0 && <Flame size={16} className="text-orange-500" />}
+                </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-neutral-500">Record streak</span>
@@ -309,7 +314,7 @@ export default function AdminUserShow({ user, stats, subscription, recentMission
 
           {/* Subscription card */}
           <Card>
-            <h3 className="font-bold text-lg text-neutral-900 mb-4">Abonnement</h3>
+            <h3 className="font-semibold text-[15px] text-neutral-900 mb-4">Abonnement</h3>
             {subscription ? (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -350,16 +355,16 @@ export default function AdminUserShow({ user, stats, subscription, recentMission
 
           {/* Actions */}
           <Card>
-            <h3 className="font-bold text-lg text-neutral-900 mb-4">Actions</h3>
+            <h3 className="font-semibold text-[15px] text-neutral-900 mb-4">Actions</h3>
             <div className="space-y-2">
-              <Button variant="outlined" className="w-full" disabled>
+              <Button variant="secondary" className="w-full" disabled>
                 Envoyer un email
               </Button>
-              <Button variant="outlined" className="w-full" disabled>
+              <Button variant="secondary" className="w-full" disabled>
                 Réinitialiser mot de passe
               </Button>
               <Button
-                variant="outlined"
+                variant="secondary"
                 className="w-full text-red-600 border-red-600 hover:bg-red-50"
                 disabled
               >

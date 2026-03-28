@@ -246,7 +246,7 @@ export default function Profile({
 
       <div className="pb-8 pt-4">
         {/* ===== ZONE 1: Carte de joueur ===== */}
-        <div className="bg-gradient-to-br from-primary-50 to-[#fdf8f3] rounded-3xl p-5 animate-fade-up">
+        <div className="bg-gradient-to-br from-primary/5 to-bg rounded-3xl p-5 animate-fade-up">
           {/* Profile header */}
           <div className="flex items-center gap-3.5 mb-4">
             {instagram?.profilePictureUrl ? (
@@ -274,7 +274,7 @@ export default function Profile({
                   <span
                     className={`w-2 h-2 rounded-full ${
                       instagram.status === 'connected'
-                        ? 'bg-green-500'
+                        ? 'bg-emerald-500'
                         : 'bg-red-500'
                     }`}
                   />
@@ -291,9 +291,9 @@ export default function Profile({
 
           {/* Level progress bar */}
           <div className="mb-4">
-            <div className="h-2.5 rounded-full bg-bg-subtle overflow-hidden">
+            <div className="h-2 rounded-full bg-bg-subtle overflow-hidden">
               <div
-                className="h-full bg-text rounded-full transition-all duration-500"
+                className="h-full bg-primary rounded-full transition-all duration-500"
                 style={{ width: `${level.progressPercent}%` }}
               />
             </div>
@@ -313,15 +313,15 @@ export default function Profile({
 
           {/* Stats grid */}
           <div className="grid grid-cols-3 gap-2.5">
-            <div className="bg-white/80 rounded-xl p-2.5 text-center">
+            <div className="bg-bg-card rounded-xl p-2.5 text-center shadow-xs">
               <p className="text-[16px] font-bold text-text">{streak.longestStreak}</p>
               <p className="text-[11px] text-text-muted mt-0.5">Record</p>
             </div>
-            <div className="bg-white/80 rounded-xl p-2.5 text-center">
+            <div className="bg-bg-card rounded-xl p-2.5 text-center shadow-xs">
               <p className="text-[16px] font-bold text-text">{streak.currentStreak}</p>
               <p className="text-[11px] text-text-muted mt-0.5">Série en cours</p>
             </div>
-            <div className="bg-white/80 rounded-xl p-2.5 text-center">
+            <div className="bg-bg-card rounded-xl p-2.5 text-center shadow-xs">
               <p className="text-[16px] font-bold text-text">{daysOnApp}</p>
               <p className="text-[11px] text-text-muted mt-0.5">Jours sur l'app</p>
             </div>
@@ -344,7 +344,7 @@ export default function Profile({
                     strategyForm.setData('strategy_id', strategy?.id || 0)
                     setEditingField('strategy')
                   }}
-                  className="bg-bg-card border border-border rounded-2xl px-4 py-2.5 flex items-center gap-2 text-left"
+                  className="bg-bg-card border border-border rounded-2xl px-4 py-2.5 flex items-center gap-2 text-left active:scale-[0.97] transition-transform"
                 >
                   <Target size={15} className="text-text-muted shrink-0" />
                   <span className="text-[13px] font-medium text-text">
@@ -356,7 +356,7 @@ export default function Profile({
                 <button
                   type="button"
                   onClick={() => setEditingField('rhythm')}
-                  className="bg-bg-card border border-border rounded-2xl px-4 py-2.5 flex items-center gap-2 text-left"
+                  className="bg-bg-card border border-border rounded-2xl px-4 py-2.5 flex items-center gap-2 text-left active:scale-[0.97] transition-transform"
                 >
                   <Clock size={15} className="text-text-muted shrink-0" />
                   <span className="text-[13px] font-medium text-text">
@@ -370,7 +370,7 @@ export default function Profile({
                 <button
                   type="button"
                   onClick={() => setEditingField('type')}
-                  className="bg-bg-card border border-border rounded-2xl px-4 py-2.5 flex items-center gap-2 text-left"
+                  className="bg-bg-card border border-border rounded-2xl px-4 py-2.5 flex items-center gap-2 text-left active:scale-[0.97] transition-transform"
                 >
                   <Utensils size={15} className="text-text-muted shrink-0" />
                   <span className="text-[13px] font-medium text-text">
@@ -384,7 +384,7 @@ export default function Profile({
                     type="button"
                     onClick={handleNotificationToggle}
                     disabled={notifLoading}
-                    className="bg-bg-card border border-border rounded-2xl px-4 py-2.5 flex items-center gap-2 text-left"
+                    className="bg-bg-card border border-border rounded-2xl px-4 py-2.5 flex items-center gap-2 text-left active:scale-[0.97] transition-transform"
                   >
                     <Bell size={15} className="text-text-muted shrink-0" />
                     <span className="text-[13px] font-medium text-text">
@@ -581,7 +581,7 @@ export default function Profile({
             {/* Mon abonnement */}
             <Link
               href="/subscription"
-              className="flex items-center justify-between py-3.5 px-4 border-b border-border-light"
+              className="flex items-center justify-between py-3.5 px-4 border-b border-border"
             >
               <div className="flex items-center gap-2.5">
                 <span className="text-[14px] font-medium text-text">Mon abonnement</span>
@@ -597,14 +597,14 @@ export default function Profile({
             {/* Compte Instagram */}
             <Link
               href="/settings/instagram"
-              className="flex items-center justify-between py-3.5 px-4 border-b border-border-light"
+              className="flex items-center justify-between py-3.5 px-4 border-b border-border"
             >
               <div className="flex items-center gap-2.5">
                 <span className="text-[14px] font-medium text-text">Compte Instagram</span>
                 <span
                   className={`w-2 h-2 rounded-full ${
                     instagram?.status === 'connected'
-                      ? 'bg-green-500'
+                      ? 'bg-emerald-500'
                       : 'bg-red-500'
                   }`}
                 />
@@ -616,7 +616,7 @@ export default function Profile({
             <button
               type="button"
               onClick={() => setEmailPrefsExpanded(!emailPrefsExpanded)}
-              className="w-full flex items-center justify-between py-3.5 px-4 border-b border-border-light text-left"
+              className="w-full flex items-center justify-between py-3.5 px-4 border-b border-border text-left"
             >
               <span className="text-[14px] font-medium text-text">Préférences email</span>
               <ChevronRight
@@ -626,7 +626,7 @@ export default function Profile({
             </button>
 
             {emailPrefsExpanded && (
-              <div className="px-4 py-3 space-y-3 border-b border-border-light bg-bg-subtle/50">
+              <div className="px-4 py-3 space-y-3 border-b border-border bg-bg-subtle/50">
                 {/* Email: Daily Mission */}
                 <div className="flex items-center justify-between">
                   <div>
@@ -637,7 +637,7 @@ export default function Profile({
                     onClick={() => updateEmailPreference('dailyMission', !emailDailyMission)}
                     disabled={emailPrefLoading}
                     className={`relative w-[44px] h-[24px] rounded-full transition-colors ${
-                      emailDailyMission ? 'bg-text' : 'bg-neutral-300'
+                      emailDailyMission ? 'bg-text' : 'bg-bg-subtle'
                     }`}
                   >
                     <span
@@ -658,7 +658,7 @@ export default function Profile({
                     onClick={() => updateEmailPreference('weeklySummary', !emailWeeklySummary)}
                     disabled={emailPrefLoading}
                     className={`relative w-[44px] h-[24px] rounded-full transition-colors ${
-                      emailWeeklySummary ? 'bg-text' : 'bg-neutral-300'
+                      emailWeeklySummary ? 'bg-text' : 'bg-bg-subtle'
                     }`}
                   >
                     <span
@@ -679,7 +679,7 @@ export default function Profile({
                     onClick={() => updateEmailPreference('accountChanges', !emailAccountChanges)}
                     disabled={emailPrefLoading}
                     className={`relative w-[44px] h-[24px] rounded-full transition-colors ${
-                      emailAccountChanges ? 'bg-text' : 'bg-neutral-300'
+                      emailAccountChanges ? 'bg-text' : 'bg-bg-subtle'
                     }`}
                   >
                     <span
@@ -696,7 +696,7 @@ export default function Profile({
             <button
               type="button"
               onClick={() => setEditingField('email')}
-              className="w-full flex items-center justify-between py-3.5 px-4 border-b border-border-light text-left"
+              className="w-full flex items-center justify-between py-3.5 px-4 border-b border-border text-left"
             >
               <div>
                 <span className="text-[14px] font-medium text-text block">Email</span>
@@ -710,7 +710,7 @@ export default function Profile({
               <button
                 type="button"
                 onClick={() => setEditingField('name')}
-                className="w-full flex items-center justify-between py-3.5 px-4 border-b border-border-light text-left"
+                className="w-full flex items-center justify-between py-3.5 px-4 border-b border-border text-left"
               >
                 <div>
                   <span className="text-[14px] font-medium text-text block">Nom du restaurant</span>
@@ -744,7 +744,7 @@ export default function Profile({
 
             {isInstalled && (
               <div className="flex items-center gap-2.5 py-3.5 px-4">
-                <CheckCircle size={15} className="text-green-500" />
+                <CheckCircle size={15} className="text-emerald-500" />
                 <span className="text-[14px] text-text-secondary">Application installée</span>
               </div>
             )}

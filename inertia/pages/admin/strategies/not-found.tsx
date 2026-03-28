@@ -1,6 +1,7 @@
 import { Head, Link } from '@inertiajs/react'
 import { AdminLayout } from '~/components/layout'
 import { Card, Button } from '~/components/ui'
+import { SearchX } from 'lucide-react'
 
 export default function AdminStrategyNotFound() {
   return (
@@ -8,9 +9,11 @@ export default function AdminStrategyNotFound() {
       <Head title="Stratégie non trouvée - Admin Le Phare" />
 
       <Card className="text-center py-12">
-        <span className="text-6xl block mb-4">🎯</span>
-        <h2 className="text-xl font-bold text-neutral-900 mb-2">Stratégie introuvable</h2>
-        <p className="text-neutral-500 mb-6">
+        <div className="w-16 h-16 rounded-2xl bg-neutral-100 flex items-center justify-center mx-auto mb-4">
+          <SearchX size={28} className="text-neutral-400" />
+        </div>
+        <h2 className="text-xl font-semibold text-neutral-900 mb-2">Stratégie introuvable</h2>
+        <p className="text-[13px] text-neutral-500 mb-6">
           La stratégie que vous recherchez n'existe pas ou a été supprimée.
         </p>
         <Link href="/admin/strategies">

@@ -3,7 +3,7 @@ import { useRef, useState, useCallback, useEffect } from 'react'
 import { Button } from '~/components/ui/Button'
 import { Card } from '~/components/ui/Card'
 import { Toast } from '~/components/ui/Toast'
-import { Upload, X, Plus, Image, Film, Smartphone, Grid, Lightbulb, ChevronDown, ChevronUp, Check, Play, Volume2, VolumeX } from 'lucide-react'
+import { Upload, X, Plus, Image, Film, Smartphone, Grid, Lightbulb, ChevronDown, ChevronUp, ChevronLeft, Check, Play, Volume2, VolumeX } from 'lucide-react'
 import axios from 'axios'
 
 interface ContentIdea {
@@ -376,10 +376,10 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
       <div className="min-h-screen bg-bg flex flex-col">
         {/* Header */}
         <div className="px-5 pt-8 pb-4 border-b border-border pwa-safe-area-top">
-          <Link href="/missions" className="text-[13px] text-text-muted mb-4 inline-flex items-center gap-1 hover:text-text-secondary transition-colors">
-            <span>&larr;</span> Retour
+          <Link href="/missions" className="text-[13px] text-text-muted mb-4 inline-flex items-center gap-1 min-h-[44px] hover:text-text-secondary active:scale-[0.97] transition-all">
+            <ChevronLeft className="w-4 h-4" /> Retour
           </Link>
-          <h1 className="text-[20px] font-bold text-text tracking-tight mb-1">
+          <h1 className="text-[24px] font-bold text-text tracking-tight mb-1">
             Ajouter ton {getContentTypeLabel().toLowerCase()}
           </h1>
           <p className="text-[13px] text-text-secondary">{mission.template.title}</p>
@@ -390,15 +390,15 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
           {/* Error messages as toasts */}
           {flash?.error && <Toast message={flash.error} type="error" />}
           {(videoError || uploadError) && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl">
-              <p className="text-red-700 text-[13px]">
+            <div className="mb-4 p-3 bg-error-light border border-error/20 rounded-xl">
+              <p className="text-error text-[13px]">
                 {videoError || uploadError}
               </p>
             </div>
           )}
 
           {/* Media preview */}
-          <div className="mb-6">
+          <div className="mb-6 animate-fade-up">
             {mediaFiles.length > 0 ? (
               <div className={isCarousel ? 'grid grid-cols-2 gap-3' : 'flex justify-center'}>
                 {mediaFiles.map((media, index) => {
@@ -500,7 +500,7 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
               <button
                 type="button"
                 onClick={() => setShowIdeas(!showIdeas)}
-                className="w-full flex items-center justify-between p-3 bg-bg-subtle rounded-xl text-text-secondary hover:bg-bg-card transition-colors"
+                className="w-full flex items-center justify-between p-3 bg-bg-subtle rounded-xl text-text-secondary hover:bg-bg-card active:scale-[0.98] transition-all"
               >
                 <div className="flex items-center gap-2">
                   <Lightbulb className="w-4 h-4" />
@@ -586,7 +586,7 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
               <button
                 type="button"
                 onClick={() => setShowIdeas(!showIdeas)}
-                className="w-full flex items-center justify-between p-3 bg-bg-subtle rounded-xl text-text-secondary hover:bg-bg-card transition-colors"
+                className="w-full flex items-center justify-between p-3 bg-bg-subtle rounded-xl text-text-secondary hover:bg-bg-card active:scale-[0.98] transition-all"
               >
                 <div className="flex items-center gap-2">
                   <Lightbulb className="w-4 h-4" />
@@ -657,7 +657,7 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
             <p className="text-[13px] text-text-muted text-center mb-4">
               Taille : {formatFileSize(currentFileSize)}
               {currentFileSize > 50 * 1024 * 1024 && (
-                <span className="text-amber-600 ml-1">(fichier volumineux)</span>
+                <span className="text-warning ml-1">(fichier volumineux)</span>
               )}
             </p>
           )}
@@ -667,7 +667,7 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
             <div className="space-y-4 mb-6">
               {/* Cover image */}
               <div>
-                <label className="block text-[13px] font-medium text-text-secondary mb-2">
+                <label className="block text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-2">
                   Image de couverture (optionnel)
                 </label>
                 {coverImage ? (
@@ -791,10 +791,10 @@ export default function MediaCapture({ mission, contentType, maxImages, acceptVi
             /* Story: offer image gallery, video gallery, and direct video capture */
             <>
               <div className="grid grid-cols-2 gap-3">
-                <Button onClick={handleChooseImageFromGallery} icon={Image} fullWidth>
+                <Button onClick={handleChooseImageFromGallery} icon={Image} fullWidth size="lg">
                   Photo
                 </Button>
-                <Button onClick={() => videoInputRef.current?.click()} icon={Film} fullWidth>
+                <Button onClick={() => videoInputRef.current?.click()} icon={Film} fullWidth size="lg">
                   Video
                 </Button>
               </div>

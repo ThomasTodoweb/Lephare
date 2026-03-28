@@ -2,6 +2,7 @@ import { Head, useForm, Link } from '@inertiajs/react'
 import { useRef, useState } from 'react'
 import { Button } from '~/components/ui/Button'
 import { Card } from '~/components/ui/Card'
+import { Camera, X, ChevronLeft } from 'lucide-react'
 
 interface Props {
   mission: {
@@ -115,10 +116,10 @@ export default function PhotoCapture({ mission }: Props) {
       <div className="min-h-screen bg-bg flex flex-col">
         {/* Header */}
         <div className="px-5 pt-8 pb-2 pwa-safe-area-top">
-          <Link href="/missions" className="text-[13px] font-medium text-text-muted mb-4 inline-block hover:text-text-secondary transition-colors">
-            &larr; Retour a la mission
+          <Link href="/missions" className="text-[13px] font-medium text-text-muted mb-4 inline-flex items-center gap-1 min-h-[44px] hover:text-text-secondary active:scale-[0.97] transition-all">
+            <ChevronLeft className="w-4 h-4" /> Retour a la mission
           </Link>
-          <h1 className="text-[20px] font-bold text-text tracking-tight">
+          <h1 className="text-[24px] font-bold text-text tracking-tight">
             Ta photo
           </h1>
           <p className="text-[14px] text-text-secondary mt-1">
@@ -129,8 +130,8 @@ export default function PhotoCapture({ mission }: Props) {
         {/* Content */}
         <div className="flex-1 px-5 pb-36 pt-4">
           {/* Tip Card */}
-          <Card variant="flat" padding="md" className="mb-5">
-            <p className="text-[13px] font-medium text-text-secondary mb-1">Conseil</p>
+          <Card variant="flat" padding="md" className="mb-5 animate-fade-up">
+            <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-1">Conseil</p>
             <p className="text-[14px] text-text leading-relaxed">{mission.template.contentIdea}</p>
           </Card>
 
@@ -150,21 +151,18 @@ export default function PhotoCapture({ mission }: Props) {
                     setSelectedFile(null)
                     form.setData('photo', null)
                   }}
-                  className="absolute top-3 right-3 bg-bg-card rounded-full w-8 h-8 flex items-center justify-center shadow-card text-text-secondary hover:text-text transition-colors"
+                  className="absolute top-3 right-3 bg-bg-card/90 backdrop-blur-sm rounded-full w-11 h-11 flex items-center justify-center shadow-card border border-border text-text-secondary hover:text-text active:scale-[0.97] transition-all"
                 >
-                  <span className="text-[14px]">&times;</span>
+                  <X className="w-5 h-5" />
                 </button>
               </div>
             ) : (
               <div
                 onClick={handleChooseFromGallery}
-                className="w-full aspect-[4/5] bg-bg-subtle rounded-2xl border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-text-muted transition-colors"
+                className="w-full aspect-[4/5] bg-bg-subtle rounded-2xl border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-text-muted active:scale-[0.98] transition-all animate-fade-up"
               >
                 <div className="w-14 h-14 rounded-2xl bg-bg-card shadow-card flex items-center justify-center mb-4">
-                  <svg width="24" height="24" fill="none" viewBox="0 0 24 24" className="text-text-muted">
-                    <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    <circle cx="12" cy="13" r="4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
+                  <Camera className="w-6 h-6 text-text-muted" />
                 </div>
                 <p className="text-[14px] font-medium text-text-secondary">Appuie pour choisir une photo</p>
                 <p className="text-[12px] text-text-muted mt-1">JPG, PNG -- max 10 Mo</p>

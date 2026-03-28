@@ -1,7 +1,7 @@
 import { Head, useForm } from '@inertiajs/react'
 import { Button } from '~/components/ui/Button'
 import { OnboardingProgress } from '~/components/OnboardingProgress'
-import { Sparkles, Camera, BookOpen, TrendingUp } from 'lucide-react'
+import { Sparkles, Camera, TrendingUp } from 'lucide-react'
 
 interface Props {
   step: number

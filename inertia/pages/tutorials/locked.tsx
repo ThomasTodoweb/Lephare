@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react'
-import { Lock, ChevronLeft } from 'lucide-react'
+import { Lock } from 'lucide-react'
 import { AppLayout } from '~/components/layout'
 import { Button } from '~/components/ui/Button'
 import { Card } from '~/components/ui/Card'
@@ -16,7 +16,7 @@ interface Props {
 export default function TutorialLocked({ tutorial, userLevel }: Props) {
   return (
     <AppLayout>
-      <Head title={`${tutorial.title} - Verrouillé`} />
+      <Head title={`${tutorial.title} - Verrouille`} />
 
       <div className="flex flex-col items-center justify-center min-h-[70vh] px-4 text-center">
         {/* Lock icon */}
@@ -25,8 +25,8 @@ export default function TutorialLocked({ tutorial, userLevel }: Props) {
         </div>
 
         {/* Title */}
-        <h1 className="text-[18px] font-bold text-text mb-1">{tutorial.title}</h1>
-        <p className="text-[14px] text-text-secondary mb-6">Ce tutoriel est verrouillé</p>
+        <h1 className="text-[18px] font-bold text-text mb-1 tracking-tight">{tutorial.title}</h1>
+        <p className="text-[14px] text-text-secondary mb-6 leading-relaxed">Ce tutoriel est verrouille</p>
 
         {/* Level comparison */}
         <Card variant="bordered" className="w-full max-w-sm mb-6">
@@ -35,7 +35,7 @@ export default function TutorialLocked({ tutorial, userLevel }: Props) {
               <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-1">Ton niveau</p>
               <span className="text-[24px] font-bold text-text">{userLevel}</span>
             </div>
-            <div className="text-text-muted">→</div>
+            <div className="text-text-muted text-[20px]">&rarr;</div>
             <div className="text-center">
               <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-1">Requis</p>
               <span className="text-[24px] font-bold text-text">{tutorial.requiredLevel}</span>
@@ -47,26 +47,26 @@ export default function TutorialLocked({ tutorial, userLevel }: Props) {
               style={{ width: `${Math.min(100, (userLevel / tutorial.requiredLevel) * 100)}%` }}
             />
           </div>
-          <p className="text-[12px] text-text-muted mt-2">
-            Encore {tutorial.requiredLevel - userLevel} niveau{tutorial.requiredLevel - userLevel > 1 ? 'x' : ''} pour débloquer
+          <p className="text-[12px] text-text-muted mt-2 leading-relaxed">
+            Encore {tutorial.requiredLevel - userLevel} niveau{tutorial.requiredLevel - userLevel > 1 ? 'x' : ''} pour debloquer
           </p>
         </Card>
 
         {/* Tips */}
         <Card variant="flat" className="w-full max-w-sm mb-6 text-left">
           <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-3">Comment gagner des points ?</p>
-          <ul className="space-y-2">
+          <ul className="space-y-2.5">
             <li className="flex items-start gap-2.5">
-              <span className="w-5 h-5 rounded-md bg-bg-subtle flex items-center justify-center text-[11px] shrink-0 mt-0.5">1</span>
-              <span className="text-[13px] text-text-secondary">Complete tes missions quotidiennes</span>
+              <span className="w-5 h-5 rounded-md bg-bg-inset flex items-center justify-center text-[11px] text-text-secondary font-semibold shrink-0 mt-0.5">1</span>
+              <span className="text-[13px] text-text-secondary leading-relaxed">Complete tes missions quotidiennes</span>
             </li>
             <li className="flex items-start gap-2.5">
-              <span className="w-5 h-5 rounded-md bg-bg-subtle flex items-center justify-center text-[11px] shrink-0 mt-0.5">2</span>
-              <span className="text-[13px] text-text-secondary">Regarde les tutoriels disponibles</span>
+              <span className="w-5 h-5 rounded-md bg-bg-inset flex items-center justify-center text-[11px] text-text-secondary font-semibold shrink-0 mt-0.5">2</span>
+              <span className="text-[13px] text-text-secondary leading-relaxed">Regarde les tutoriels disponibles</span>
             </li>
             <li className="flex items-start gap-2.5">
-              <span className="w-5 h-5 rounded-md bg-bg-subtle flex items-center justify-center text-[11px] shrink-0 mt-0.5">3</span>
-              <span className="text-[13px] text-text-secondary">Maintiens ta série active</span>
+              <span className="w-5 h-5 rounded-md bg-bg-inset flex items-center justify-center text-[11px] text-text-secondary font-semibold shrink-0 mt-0.5">3</span>
+              <span className="text-[13px] text-text-secondary leading-relaxed">Maintiens ta serie active</span>
             </li>
           </ul>
         </Card>
@@ -80,7 +80,7 @@ export default function TutorialLocked({ tutorial, userLevel }: Props) {
           </Link>
           <Link href="/dashboard" className="block">
             <Button variant="secondary" fullWidth>
-              Retour à l'accueil
+              Retour a l'accueil
             </Button>
           </Link>
         </div>

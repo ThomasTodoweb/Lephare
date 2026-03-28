@@ -1,6 +1,6 @@
 import { Head, Link, useForm } from '@inertiajs/react'
 import { useState } from 'react'
-import { ChevronLeft } from 'lucide-react'
+import { ChevronLeft, Check } from 'lucide-react'
 import { AppLayout } from '~/components/layout'
 import { Button } from '~/components/ui/Button'
 import { Card } from '~/components/ui/Card'
@@ -55,16 +55,16 @@ export default function TutorialShow({ tutorial, isCompleted, feedback }: Props)
       .split('\n')
       .map((line, i) => {
         if (line.startsWith('## ')) {
-          return <h2 key={i} className="text-[17px] font-bold text-text mt-6 mb-2">{line.replace('## ', '')}</h2>
+          return <h2 key={i} className="text-[17px] font-bold text-text mt-6 mb-2 tracking-tight">{line.replace('## ', '')}</h2>
         }
         if (line.startsWith('### ')) {
           return <h3 key={i} className="text-[15px] font-semibold text-text mt-4 mb-2">{line.replace('### ', '')}</h3>
         }
         if (line.startsWith('- ')) {
-          return <li key={i} className="text-[14px] text-text-secondary ml-4">{line.replace('- ', '')}</li>
+          return <li key={i} className="text-[14px] text-text-secondary ml-4 leading-relaxed">{line.replace('- ', '')}</li>
         }
         if (line.match(/^\d+\. /)) {
-          return <li key={i} className="text-[14px] text-text-secondary ml-4 list-decimal">{line.replace(/^\d+\. /, '')}</li>
+          return <li key={i} className="text-[14px] text-text-secondary ml-4 list-decimal leading-relaxed">{line.replace(/^\d+\. /, '')}</li>
         }
         if (line.trim() === '') {
           return <br key={i} />
@@ -79,7 +79,7 @@ export default function TutorialShow({ tutorial, isCompleted, feedback }: Props)
 
       {/* Header */}
       <div className="pt-4 pb-4">
-        <Link href="/tutorials" className="inline-flex items-center gap-1 text-[13px] text-text-secondary mb-3">
+        <Link href="/tutorials" className="inline-flex items-center gap-1 text-[13px] text-text-secondary min-h-[44px] -ml-1 pl-1 pr-2">
           <ChevronLeft className="w-4 h-4" />
           Tutoriels
         </Link>
@@ -88,7 +88,7 @@ export default function TutorialShow({ tutorial, isCompleted, feedback }: Props)
             {tutorial.categoryName}
           </p>
         )}
-        <h1 className="text-[20px] font-bold text-text">
+        <h1 className="text-[20px] font-bold text-text tracking-tight">
           {tutorial.title}
         </h1>
         <p className="text-[13px] text-text-muted mt-1">
@@ -112,8 +112,7 @@ export default function TutorialShow({ tutorial, isCompleted, feedback }: Props)
                 />
               ) : (
                 <div className="text-center text-white">
-                  <span className="text-[32px] block mb-2">▶</span>
-                  <p className="text-[14px]">Vidéo non disponible</p>
+                  <p className="text-[14px]">Video non disponible</p>
                 </div>
               )}
             </div>
@@ -136,13 +135,13 @@ export default function TutorialShow({ tutorial, isCompleted, feedback }: Props)
 
         {/* Completion status */}
         {isCompleted && (
-          <Card variant="bordered" className="mt-6 border-emerald-200 bg-emerald-50/50">
+          <Card variant="bordered" className="mt-6 border-success/20 bg-success-light">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center">
-                <span className="text-emerald-600 text-[14px] font-bold">✓</span>
+              <div className="w-8 h-8 rounded-lg bg-success-light flex items-center justify-center">
+                <Check size={16} className="text-success" strokeWidth={2.5} />
               </div>
               <div>
-                <p className="text-[14px] font-semibold text-text">Tutoriel terminé</p>
+                <p className="text-[14px] font-semibold text-text">Tutoriel termine</p>
                 {feedback && (
                   <p className="text-[12px] text-text-secondary mt-0.5">
                     Ton avis : {feedback === 'useful' ? 'Utile' : 'Pas utile'}
@@ -156,7 +155,7 @@ export default function TutorialShow({ tutorial, isCompleted, feedback }: Props)
 
       {/* Fixed bottom button */}
       <div className="fixed bottom-20 left-0 right-0 p-5 bg-bg/80 backdrop-blur-lg border-t border-border">
-        <div className="max-w-[430px] mx-auto">
+        <div className="max-w-[428px] mx-auto">
           {isCompleted ? (
             <Link href="/tutorials" className="block">
               <Button variant="secondary" fullWidth>
@@ -175,38 +174,42 @@ export default function TutorialShow({ tutorial, isCompleted, feedback }: Props)
         </div>
       </div>
 
-      {/* Feedback Modal */}
+      {/* Feedback Bottom Sheet */}
       {showFeedbackModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-6 z-50">
-          <Card className="w-full max-w-sm">
-            <h3 className="text-[17px] font-bold text-text mb-5 text-center">
-              Ce tutoriel t'a été utile ?
-            </h3>
-            <div className="flex gap-3">
-              <Button
-                onClick={() => handleFeedback('useful')}
-                loading={feedbackForm.processing}
-                fullWidth
+        <div className="fixed inset-0 z-50">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setShowFeedbackModal(false)} />
+          <div className="absolute bottom-0 left-0 right-0 bg-bg-card rounded-t-3xl animate-fade-up">
+            <div className="w-10 h-1 bg-bg-inset rounded-full mx-auto mt-3 mb-4" />
+            <div className="px-5 pb-8">
+              <h3 className="text-[17px] font-bold text-text mb-5 text-center tracking-tight">
+                Ce tutoriel t'a ete utile ?
+              </h3>
+              <div className="flex gap-3">
+                <Button
+                  onClick={() => handleFeedback('useful')}
+                  loading={feedbackForm.processing}
+                  fullWidth
+                >
+                  Oui, utile
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => handleFeedback('not_useful')}
+                  disabled={feedbackForm.processing}
+                  fullWidth
+                >
+                  Pas vraiment
+                </Button>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowFeedbackModal(false)}
+                className="w-full mt-3 text-[13px] text-text-muted py-2 min-h-[44px] active:scale-[0.97] transition-transform"
               >
-                Oui, utile
-              </Button>
-              <Button
-                variant="secondary"
-                onClick={() => handleFeedback('not_useful')}
-                disabled={feedbackForm.processing}
-                fullWidth
-              >
-                Pas vraiment
-              </Button>
+                Passer
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => setShowFeedbackModal(false)}
-              className="w-full mt-3 text-[13px] text-text-muted hover:text-text-secondary py-2"
-            >
-              Passer
-            </button>
-          </Card>
+          </div>
         </div>
       )}
     </AppLayout>

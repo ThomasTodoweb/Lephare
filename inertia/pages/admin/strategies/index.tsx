@@ -2,6 +2,7 @@ import { Head, Link, router } from '@inertiajs/react'
 import { useState } from 'react'
 import { AdminLayout } from '~/components/layout'
 import { Card, Button } from '~/components/ui'
+import { Target, Plus } from 'lucide-react'
 
 interface Strategy {
   id: number
@@ -49,7 +50,7 @@ export default function AdminStrategiesIndex({ strategies }: Props) {
       <div className="flex justify-between items-center mb-6">
         <p className="text-neutral-500">{strategies.length} stratégie(s)</p>
         <Link href="/admin/strategies/create">
-          <Button>+ Nouvelle stratégie</Button>
+          <Button icon={Plus}>Nouvelle stratégie</Button>
         </Link>
       </div>
 
@@ -90,37 +91,37 @@ export default function AdminStrategiesIndex({ strategies }: Props) {
             {/* Actions */}
             <div className="flex flex-col gap-2">
               <Link href={`/admin/strategies/${strategy.id}/edit`}>
-                <Button variant="outlined" className="w-full text-sm">
+                <Button variant="secondary" className="w-full text-sm">
                   Modifier
                 </Button>
               </Link>
-              <button
+              <Button
+                size="sm"
+                variant="secondary"
                 onClick={() => handleToggle(strategy.id)}
-                className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${
-                  strategy.isActive
-                    ? 'border-green-500 text-green-600 hover:bg-green-50'
-                    : 'border-neutral-300 text-neutral-500 hover:bg-neutral-50'
-                }`}
               >
                 {strategy.isActive ? 'Active' : 'Inactive'}
-              </button>
-              <button
+              </Button>
+              <Button
+                size="sm"
+                variant="danger"
                 onClick={() => handleDelete(strategy.id, strategy.restaurantsCount)}
                 disabled={deleting === strategy.id}
-                className="px-3 py-1.5 text-sm rounded-lg border border-red-300 text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
               >
                 {deleting === strategy.id ? '...' : 'Supprimer'}
-              </button>
+              </Button>
             </div>
           </Card>
         ))}
 
         {strategies.length === 0 && (
           <Card className="text-center py-12">
-            <span className="text-4xl block mb-2">🎯</span>
-            <p className="text-neutral-500">Aucune stratégie créée</p>
-            <Link href="/admin/strategies/create" className="text-primary text-sm mt-2 inline-block">
-              Créer votre première stratégie →
+            <div className="w-14 h-14 rounded-2xl bg-neutral-100 flex items-center justify-center mx-auto mb-3">
+              <Target size={24} className="text-neutral-400" />
+            </div>
+            <p className="text-[13px] text-neutral-500 mb-2">Aucune stratégie créée</p>
+            <Link href="/admin/strategies/create" className="text-primary text-[13px] font-medium hover:underline">
+              Créer votre première stratégie
             </Link>
           </Card>
         )}

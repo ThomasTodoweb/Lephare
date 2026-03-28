@@ -7,52 +7,56 @@ import { Check } from 'lucide-react'
 export default function SubscriptionSuccess() {
   return (
     <AppLayout>
-      <Head title="Abonnement activé - Le Phare" />
+      <Head title="Abonnement active - Le Phare" />
 
       <div className="py-4">
         <div className="text-center py-12">
-          {/* Success Icon */}
-          <div className="w-16 h-16 mx-auto bg-green-50 rounded-2xl flex items-center justify-center mb-5">
-            <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
-              <Check size={22} className="text-white" />
+          {/* Success Icon — entry animation */}
+          <div className="animate-fade-up" style={{ animationDelay: '0ms' }}>
+            <div className="w-16 h-16 mx-auto bg-success-light rounded-2xl flex items-center justify-center mb-5">
+              <div className="w-10 h-10 bg-success rounded-full flex items-center justify-center">
+                <Check size={22} className="text-white" />
+              </div>
             </div>
+
+            <h1 className="text-[22px] font-bold text-text mb-2 tracking-tight">
+              Bienvenue !
+            </h1>
+
+            <p className="text-[14px] text-text-secondary mb-8 max-w-sm mx-auto leading-relaxed">
+              Ton abonnement est maintenant actif. Tu as acces a toutes les fonctionnalites de Le Phare !
+            </p>
           </div>
 
-          <h1 className="text-[22px] font-bold text-text mb-2">
-            Bienvenue !
-          </h1>
+          <div className="animate-fade-up" style={{ animationDelay: '80ms', animationFillMode: 'both' }}>
+            <Card variant="bordered" className="mb-6 text-left shadow-xs">
+              <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-4">
+                Prochaines etapes
+              </p>
+              <ul className="space-y-4">
+                <li className="flex items-center gap-3">
+                  <span className="w-6 h-6 rounded-full bg-text text-white flex items-center justify-center text-[12px] font-semibold flex-shrink-0">
+                    1
+                  </span>
+                  <span className="text-[14px] text-text">Decouvre ta mission du jour</span>
+                </li>
+                <li className="flex items-center gap-3">
+                  <span className="w-6 h-6 rounded-full bg-text text-white flex items-center justify-center text-[12px] font-semibold flex-shrink-0">
+                    2
+                  </span>
+                  <span className="text-[14px] text-text">Explore les tutoriels</span>
+                </li>
+                <li className="flex items-center gap-3">
+                  <span className="w-6 h-6 rounded-full bg-text text-white flex items-center justify-center text-[12px] font-semibold flex-shrink-0">
+                    3
+                  </span>
+                  <span className="text-[14px] text-text">Active les rappels quotidiens</span>
+                </li>
+              </ul>
+            </Card>
+          </div>
 
-          <p className="text-[14px] text-text-secondary mb-8 max-w-sm mx-auto">
-            Ton abonnement est maintenant actif. Tu as accès à toutes les fonctionnalités de Le Phare !
-          </p>
-
-          <Card variant="bordered" className="mb-6 text-left">
-            <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-4">
-              Prochaines étapes
-            </p>
-            <ul className="space-y-4">
-              <li className="flex items-center gap-3">
-                <span className="w-6 h-6 rounded-full bg-text text-white flex items-center justify-center text-[12px] font-semibold flex-shrink-0">
-                  1
-                </span>
-                <span className="text-[14px] text-text">Découvre ta mission du jour</span>
-              </li>
-              <li className="flex items-center gap-3">
-                <span className="w-6 h-6 rounded-full bg-text text-white flex items-center justify-center text-[12px] font-semibold flex-shrink-0">
-                  2
-                </span>
-                <span className="text-[14px] text-text">Explore les tutoriels</span>
-              </li>
-              <li className="flex items-center gap-3">
-                <span className="w-6 h-6 rounded-full bg-text text-white flex items-center justify-center text-[12px] font-semibold flex-shrink-0">
-                  3
-                </span>
-                <span className="text-[14px] text-text">Active les rappels quotidiens</span>
-              </li>
-            </ul>
-          </Card>
-
-          <div className="space-y-3">
+          <div className="space-y-3 animate-fade-up" style={{ animationDelay: '160ms', animationFillMode: 'both' }}>
             <Link href="/missions">
               <Button fullWidth>Voir ma mission du jour</Button>
             </Link>

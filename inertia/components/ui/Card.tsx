@@ -18,7 +18,7 @@ export function Card({
     default: 'bg-bg-card shadow-card',
     bordered: 'bg-bg-card border border-border',
     flat: 'bg-bg-subtle',
-    interactive: 'bg-bg-card shadow-card hover:shadow-card-hover transition-shadow cursor-pointer',
+    interactive: 'bg-bg-card shadow-card hover:shadow-card-hover transition-all cursor-pointer active:scale-[0.98]',
   }
 
   const paddings = {

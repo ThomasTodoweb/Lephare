@@ -104,20 +104,15 @@ export default function EmailLogsIndex({ logs, filters, stats }: Props) {
   }
 
   return (
-    <AdminLayout>
+    <AdminLayout title="Logs emails">
       <Head title="Historique emails - Admin" />
 
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-extrabold text-neutral-900 uppercase tracking-tight">
-              Historique des emails
-            </h1>
-            <p className="text-neutral-600 mt-1">
-              Suivez tous les emails envoyes par la plateforme
-            </p>
-          </div>
+          <p className="text-[13px] text-neutral-500">
+            Suivez tous les emails envoyés par la plateforme
+          </p>
           <Link href="/admin/emails">
             <Button variant="secondary">
               Configuration
@@ -216,15 +211,15 @@ export default function EmailLogsIndex({ logs, filters, stats }: Props) {
         <Card>
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-neutral-50 border-b border-neutral-200">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">Date</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">Destinataire</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">Sujet</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">Type</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">Statut</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-neutral-600 uppercase">Provider</th>
-                  <th className="px-4 py-3 text-right text-xs font-semibold text-neutral-600 uppercase">Actions</th>
+              <thead>
+                <tr className="border-b border-neutral-100">
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold text-neutral-500 uppercase tracking-wider">Date</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold text-neutral-500 uppercase tracking-wider">Destinataire</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold text-neutral-500 uppercase tracking-wider">Sujet</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold text-neutral-500 uppercase tracking-wider">Type</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold text-neutral-500 uppercase tracking-wider">Statut</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-semibold text-neutral-500 uppercase tracking-wider">Provider</th>
+                  <th className="px-4 py-3 text-right text-[11px] font-semibold text-neutral-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-100">
@@ -236,7 +231,7 @@ export default function EmailLogsIndex({ logs, filters, stats }: Props) {
                   </tr>
                 ) : (
                   logs.data.map((log) => (
-                    <tr key={log.id} className="hover:bg-neutral-50">
+                    <tr key={log.id} className="hover:bg-neutral-50/50">
                       <td className="px-4 py-3 text-sm text-neutral-600">
                         {formatDate(log.createdAt)}
                       </td>

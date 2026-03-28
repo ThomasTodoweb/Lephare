@@ -285,7 +285,7 @@ export default function CalendarPage({ year, month, missionsByDay: initialMissio
     const stats = dayStats[dateStr]
     if (!stats) return null
     if (stats.completed > 0) return 'bg-emerald-500'
-    if (stats.pending > 0) return 'bg-blue-400'
+    if (stats.pending > 0) return 'bg-amber-400'
     if (stats.skipped > 0) return 'bg-text-muted'
     return null
   }
@@ -333,7 +333,7 @@ export default function CalendarPage({ year, month, missionsByDay: initialMissio
                 key={i}
                 onClick={() => selectDate(dateStr)}
                 className={`
-                  flex flex-col items-center py-2 rounded-xl transition-all
+                  flex flex-col items-center py-2.5 min-h-[44px] rounded-xl transition-all active:scale-[0.97]
                   ${isSelected ? 'bg-text text-white' : 'text-text'}
                   ${isToday && !isSelected ? 'ring-1 ring-text' : ''}
                 `}
@@ -378,14 +378,14 @@ export default function CalendarPage({ year, month, missionsByDay: initialMissio
           <div className="flex items-center justify-between mb-3">
             <button
               onClick={() => navigateMonth(-1)}
-              className="p-1.5 rounded-lg hover:bg-bg-subtle transition-colors"
+              className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-bg-subtle active:scale-[0.97] transition-all"
             >
               <ChevronLeft className="w-5 h-5 text-text-secondary" />
             </button>
             <span className="text-[14px] font-semibold text-text capitalize">{monthLabel}</span>
             <button
               onClick={() => navigateMonth(1)}
-              className="p-1.5 rounded-lg hover:bg-bg-subtle transition-colors"
+              className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-bg-subtle active:scale-[0.97] transition-all"
             >
               <ChevronRight className="w-5 h-5 text-text-secondary" />
             </button>
@@ -419,7 +419,7 @@ export default function CalendarPage({ year, month, missionsByDay: initialMissio
                       setShowMonth(false)
                     }}
                     className={`
-                      aspect-square rounded-lg flex flex-col items-center justify-center transition-all
+                      aspect-square min-h-[44px] rounded-lg flex flex-col items-center justify-center transition-all active:scale-[0.97]
                       ${isSelected ? 'bg-text text-white' : ''}
                       ${isToday && !isSelected ? 'ring-1 ring-text' : ''}
                     `}
@@ -482,7 +482,7 @@ export default function CalendarPage({ year, month, missionsByDay: initialMissio
                     w-10 h-10 rounded-xl flex items-center justify-center shrink-0
                     ${isCompleted ? 'bg-emerald-100 text-emerald-600' : ''}
                     ${isSkipped ? 'bg-bg-subtle text-text-muted' : ''}
-                    ${isPending ? 'bg-blue-50 text-blue-600' : ''}
+                    ${isPending ? 'bg-amber-50 text-amber-600' : ''}
                   `}>
                     {config.icon}
                   </div>

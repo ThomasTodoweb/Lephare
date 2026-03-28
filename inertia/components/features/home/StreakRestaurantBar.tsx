@@ -1,3 +1,5 @@
+import { Flame } from 'lucide-react'
+
 interface StreakRestaurantBarProps {
   restaurantName: string
   currentStreak: number
@@ -20,9 +22,9 @@ export function StreakRestaurantBar({
         </p>
       </div>
       {currentStreak > 0 && (
-        <div className="flex items-center gap-1.5 bg-orange-50 px-3 py-1.5 rounded-xl">
-          <span className="text-lg">🔥</span>
-          <span className="text-[15px] font-bold text-orange-600">{currentStreak}</span>
+        <div className="flex items-center gap-1.5 bg-warning-light px-3 py-2 rounded-xl min-h-[44px]">
+          <Flame size={18} className="text-streak" />
+          <span className="text-[15px] font-bold text-streak">{currentStreak}</span>
         </div>
       )}
     </div>

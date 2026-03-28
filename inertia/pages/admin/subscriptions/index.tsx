@@ -70,23 +70,23 @@ function formatDateTime(timestamp: string | null): string {
 
 function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
-    active: 'bg-green-100 text-green-700',
-    trialing: 'bg-blue-100 text-blue-700',
-    canceled: 'bg-red-100 text-red-700',
-    past_due: 'bg-yellow-100 text-yellow-700',
+    active: 'bg-emerald-50 text-emerald-700',
+    trialing: 'bg-blue-50 text-blue-700',
+    canceled: 'bg-red-50 text-red-700',
+    past_due: 'bg-amber-50 text-amber-700',
     incomplete: 'bg-neutral-100 text-neutral-500',
   }
 
   const labels: Record<string, string> = {
     active: 'Actif',
     trialing: 'Trial',
-    canceled: 'Annule',
-    past_due: 'Impaye',
+    canceled: 'Annulé',
+    past_due: 'Impayé',
     incomplete: 'Incomplet',
   }
 
   return (
-    <span className={`px-2 py-1 text-xs font-medium rounded-full ${styles[status] || 'bg-neutral-100'}`}>
+    <span className={`px-2.5 py-1 text-[11px] font-medium rounded-full ${styles[status] || 'bg-neutral-100'}`}>
       {labels[status] || status}
     </span>
   )
@@ -187,10 +187,10 @@ export default function AdminSubscriptionsIndex({ subscriptions, stats, filters 
             <button
               key={option.value}
               onClick={() => handleStatusFilter(option.value)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-3.5 py-2 rounded-xl text-[13px] font-medium transition-colors ${
                 filters.status === option.value
-                  ? 'bg-primary text-white'
-                  : 'bg-white text-neutral-600 hover:bg-neutral-100'
+                  ? 'bg-neutral-900 text-white'
+                  : 'bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-50/50'
               }`}
             >
               {option.label}
@@ -220,31 +220,31 @@ export default function AdminSubscriptionsIndex({ subscriptions, stats, filters 
       <Card className="overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-neutral-50 border-b border-neutral-100">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+            <thead>
+              <tr className="border-b border-neutral-100">
+                <th className="px-4 py-3 text-left text-[11px] font-semibold text-neutral-500 uppercase tracking-wider">
                   Utilisateur
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-[11px] font-semibold text-neutral-500 uppercase tracking-wider">
                   Plan
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-[11px] font-semibold text-neutral-500 uppercase tracking-wider">
                   Statut
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                  Fin periode
+                <th className="px-4 py-3 text-left text-[11px] font-semibold text-neutral-500 uppercase tracking-wider">
+                  Fin période
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                  Cree le
+                <th className="px-4 py-3 text-left text-[11px] font-semibold text-neutral-500 uppercase tracking-wider">
+                  Créé le
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-right text-[11px] font-semibold text-neutral-500 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-100">
               {data.map((sub) => (
-                <tr key={sub.id} className="hover:bg-neutral-50">
+                <tr key={sub.id} className="hover:bg-neutral-50/50">
                   <td className="px-4 py-4">
                     <div>
                       <p className="font-medium text-neutral-900">
@@ -295,7 +295,7 @@ export default function AdminSubscriptionsIndex({ subscriptions, stats, filters 
           {meta.currentPage > 1 && (
             <Link
               href={`/admin/subscriptions?page=${meta.currentPage - 1}&status=${filters.status}&search=${search}`}
-              className="px-4 py-2 rounded-lg bg-white border border-neutral-200 text-neutral-600 hover:bg-neutral-50"
+              className="px-4 py-2 rounded-lg bg-white border border-neutral-200 text-neutral-600 hover:bg-neutral-50/50"
             >
               Precedent
             </Link>
@@ -308,7 +308,7 @@ export default function AdminSubscriptionsIndex({ subscriptions, stats, filters 
           {meta.currentPage < meta.lastPage && (
             <Link
               href={`/admin/subscriptions?page=${meta.currentPage + 1}&status=${filters.status}&search=${search}`}
-              className="px-4 py-2 rounded-lg bg-white border border-neutral-200 text-neutral-600 hover:bg-neutral-50"
+              className="px-4 py-2 rounded-lg bg-white border border-neutral-200 text-neutral-600 hover:bg-neutral-50/50"
             >
               Suivant
             </Link>

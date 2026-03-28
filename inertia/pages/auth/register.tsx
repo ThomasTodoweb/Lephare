@@ -21,24 +21,27 @@ export default function Register() {
   return (
     <>
       <Head title="Inscription" />
-      <div className="min-h-screen bg-bg flex flex-col justify-center px-6 py-12">
-        <div className="w-full max-w-[380px] mx-auto">
+      <div className="min-h-screen bg-bg flex flex-col justify-center px-5 py-12">
+        <div className="w-full max-w-sm mx-auto">
           <img
             src="/logo-rectangle.png"
             alt="LE PHARE"
             className="h-10 mx-auto mb-10"
           />
 
-          <h1 className="text-[22px] font-bold text-text text-center mb-8 tracking-tight">
+          <h1 className="text-[22px] font-bold text-text text-center mb-2 tracking-tight">
             Créer un compte
           </h1>
+          <p className="text-[13px] text-text-muted text-center mb-8">
+            14 jours gratuits, sans engagement
+          </p>
 
           {flash?.error && <Toast message={flash.error} type="error" />}
 
           {/* Social Login */}
           <a
             href="/auth/google"
-            className="flex items-center justify-center gap-3 w-full h-11 bg-bg-card border border-border rounded-xl text-[14px] font-semibold text-text hover:bg-bg-subtle transition-colors mb-6"
+            className="flex items-center justify-center gap-3 w-full h-11 bg-bg-card border border-border rounded-xl text-[14px] font-semibold text-text active:scale-[0.97] transition-all mb-6"
           >
             <svg className="w-4.5 h-4.5" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />

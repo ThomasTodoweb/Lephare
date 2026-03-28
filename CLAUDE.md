@@ -208,6 +208,36 @@ pm2 restart lephare                 # Restart
 
 Production runs from `/var/www/lephare/build/`, not the project root.
 
+## Règles de travail pour Claude Code
+
+### TOUJOURS déléguer aux agents
+- Ne JAMAIS faire le travail soi-même directement — toujours invoquer des agents spécialisés
+- Chaque agent reçoit un brief détaillé avec les fichiers à lire, les règles à respecter, et le résultat attendu
+- Cela préserve le contexte de la conversation principale
+- Lancer les agents en parallèle quand les tâches sont indépendantes
+
+### Workflow design pour chaque page
+1. Lire la page existante via un agent
+2. Appliquer les skills `impeccable`, `tailwind-design-system`, `mobile-first-design`
+3. Vérifier visuellement via Chrome DevTools (emulation mobile 390x844)
+4. Corriger les anti-patterns identifiés par `/polish` et `/critique`
+
+### Design system tokens (ne JAMAIS utiliser de couleurs brutes)
+- `bg-bg` (#faf8f5), `bg-bg-card` (white), `bg-bg-subtle`
+- `text-text`, `text-text-secondary`, `text-text-muted`
+- `border-border`, `shadow-xs`, `shadow-card`, `shadow-float`
+- `bg-primary` (#dd2c0c) — réservé aux CTAs uniquement
+
+### Glossaire français (ne JAMAIS utiliser de jargon anglais dans l'UI)
+- Streak → Série | XP → Points | Reel → Vidéo courte | Post → Photo
+- Carousel → Album | Engagement → Interactions | Portée → Personnes touchées
+- Impressions → Vues | Saves → Enregistrements
+- Tutoyer partout (sauf landing page home.tsx)
+
+### Compte test design
+- Email: `test-design@lephare.fr` / Mot de passe: `testdesign2026`
+- Restaurant: "Le Testaurant", brasserie, user_id=12
+
 ## Features désactivées (à supprimer si non réactivées)
 
 ### Notifications in-app (désactivée le 31/01/2026)

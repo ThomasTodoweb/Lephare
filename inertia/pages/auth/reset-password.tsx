@@ -1,6 +1,5 @@
 import { Head, useForm, usePage, Link } from '@inertiajs/react'
 import { Button } from '~/components/ui/Button'
-import { Card } from '~/components/ui/Card'
 import { Toast } from '~/components/ui/Toast'
 import { useState } from 'react'
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react'
@@ -29,7 +28,7 @@ export default function ResetPassword({ token }: Props) {
     }
 
     if (form.data.password.length < 8) {
-      form.setError('password', 'Le mot de passe doit contenir au moins 8 caracteres')
+      form.setError('password', 'Le mot de passe doit contenir au moins 8 caractères')
       return
     }
 
@@ -42,7 +41,7 @@ export default function ResetPassword({ token }: Props) {
       <div className="min-h-screen bg-bg flex flex-col items-center justify-center px-5 py-12">
         {flash?.error && <Toast message={flash.error} type="error" />}
 
-        <Card className="w-full max-w-md" padding="lg">
+        <div className="w-full max-w-sm mx-auto">
           <div className="text-center mb-8">
             <div className="w-12 h-12 bg-bg-subtle rounded-2xl flex items-center justify-center mx-auto mb-4">
               <svg className="w-5 h-5 text-text" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -53,7 +52,7 @@ export default function ResetPassword({ token }: Props) {
               Nouveau mot de passe
             </h1>
             <p className="text-[14px] text-text-secondary mt-2 leading-relaxed">
-              Choisis un nouveau mot de passe securise.
+              Choisis un nouveau mot de passe sécurisé.
             </p>
           </div>
 
@@ -72,13 +71,13 @@ export default function ResetPassword({ token }: Props) {
                   value={form.data.password}
                   onChange={(e) => form.setData('password', e.target.value)}
                   className="w-full h-11 px-3.5 pr-11 bg-bg-card border border-border rounded-xl text-[15px] text-text placeholder-text-muted transition-colors focus:outline-none focus:border-text focus:ring-1 focus:ring-text/10"
-                  placeholder="Minimum 8 caracteres"
+                  placeholder="Minimum 8 caractères"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text transition-colors w-11 h-11 flex items-center justify-center -mr-3"
                 >
                   {showPassword ? <EyeOff className="w-4.5 h-4.5" /> : <Eye className="w-4.5 h-4.5" />}
                 </button>
@@ -106,7 +105,7 @@ export default function ResetPassword({ token }: Props) {
                 <button
                   type="button"
                   onClick={() => setShowConfirm(!showConfirm)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text transition-colors w-11 h-11 flex items-center justify-center -mr-3"
                 >
                   {showConfirm ? <EyeOff className="w-4.5 h-4.5" /> : <Eye className="w-4.5 h-4.5" />}
                 </button>
@@ -119,11 +118,11 @@ export default function ResetPassword({ token }: Props) {
             {/* Password requirement */}
             <div className="p-3 bg-bg-subtle rounded-xl">
               <div className="flex items-center gap-2 text-[12px]">
-                <span className={form.data.password.length >= 8 ? 'text-green-600 font-medium' : 'text-text-muted'}>
+                <span className={form.data.password.length >= 8 ? 'text-text font-medium' : 'text-text-muted'}>
                   {form.data.password.length >= 8 ? '/' : 'o'}
                 </span>
                 <span className={form.data.password.length >= 8 ? 'text-text-secondary' : 'text-text-muted'}>
-                  Contenir au moins 8 caracteres
+                  Contenir au moins 8 caractères
                 </span>
               </div>
             </div>
@@ -134,17 +133,17 @@ export default function ResetPassword({ token }: Props) {
               fullWidth
               loading={form.processing}
             >
-              Mettre a jour le mot de passe
+              Mettre à jour le mot de passe
             </Button>
           </form>
 
           <div className="mt-6 text-center">
-            <Link href="/login" className="inline-flex items-center gap-1.5 text-[13px] font-medium text-text-secondary hover:text-text transition-colors">
+            <Link href="/login" className="inline-flex items-center gap-1.5 text-[13px] font-medium text-text-secondary hover:text-text transition-colors min-h-11">
               <ArrowLeft className="w-3.5 h-3.5" />
-              Retour a la connexion
+              Retour à la connexion
             </Link>
           </div>
-        </Card>
+        </div>
       </div>
     </>
   )

@@ -83,7 +83,7 @@ export default function Description({ publication, mission, instagramAccount, to
           <div className="flex items-center justify-between mb-5">
             <button
               onClick={() => router.visit(`/publications/${publication.id}/analysis`)}
-              className="p-2 -ml-2 text-text-muted hover:text-text transition-colors"
+              className="p-2.5 -ml-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-text-muted hover:text-text active:scale-[0.97] transition-all"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
@@ -92,13 +92,13 @@ export default function Description({ publication, mission, instagramAccount, to
             </span>
           </div>
 
-          <h1 className="text-[20px] font-bold text-text tracking-tight">
+          <h1 className="text-[24px] font-bold text-text tracking-tight">
             Légende
           </h1>
         </div>
 
         {/* Content Type Badge + Title */}
-        <div className="px-5 pb-4">
+        <div className="px-5 pb-4 animate-fade-up">
           <div className="flex items-center gap-2.5">
             <span className="bg-text text-white px-2.5 py-1 rounded-lg text-[12px] font-semibold tracking-wide">
               {CONTENT_TYPE_LABELS[publication.contentType] || 'POST'}
@@ -113,7 +113,7 @@ export default function Description({ publication, mission, instagramAccount, to
         <div className="flex-1 px-5 py-2 pb-44 overflow-y-auto">
           {/* Instagram Preview */}
           {!isEditing && (
-            <div className="mb-4">
+            <div className="mb-4 animate-fade-up">
               <InstagramPreview
                 username={instagramAccount?.username || null}
                 profilePictureUrl={instagramAccount?.profilePictureUrl || null}
@@ -128,7 +128,7 @@ export default function Description({ publication, mission, instagramAccount, to
           {/* Caption editor (shown when editing) */}
           {isEditing && (
             <div className="mb-4">
-              <label className="block text-[13px] font-medium text-text-secondary mb-2">
+              <label className="block text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-2">
                 Modifier la légende
               </label>
               <textarea
@@ -163,7 +163,7 @@ export default function Description({ publication, mission, instagramAccount, to
                 <button
                   type="button"
                   onClick={handleResetToAI}
-                  className="flex items-center gap-1.5 text-[13px] text-text-muted hover:text-text-secondary mt-3 transition-colors"
+                  className="flex items-center gap-1.5 text-[13px] text-text-muted hover:text-text-secondary mt-3 min-h-[44px] active:scale-[0.97] transition-all"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
                   Revenir au texte de Popote
@@ -186,7 +186,7 @@ export default function Description({ publication, mission, instagramAccount, to
               <button
                 type="button"
                 onClick={() => setIsEditing(true)}
-                className="flex items-center gap-1.5 text-[13px] text-text font-medium hover:text-text-secondary transition-colors"
+                className="flex items-center gap-1.5 text-[13px] text-text font-medium hover:text-text-secondary min-h-[44px] active:scale-[0.97] transition-all"
               >
                 <Pencil className="w-3.5 h-3.5" />
                 Modifier la légende

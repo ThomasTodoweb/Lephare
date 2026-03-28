@@ -178,13 +178,13 @@ export default function EditIdea({ idea, categories }: Props) {
           <div className="flex items-center gap-4">
             <Link
               href="/admin/ideas"
-              className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 text-neutral-600 hover:bg-neutral-100 rounded-lg transition-colors"
             >
               <ArrowLeft className="h-5 w-5" />
             </Link>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Modifier l'idée</h1>
-              <p className="text-gray-600">ID: {idea.id}</p>
+              <h1 className="text-2xl font-bold text-neutral-900">Modifier l'idée</h1>
+              <p className="text-neutral-600">ID: {idea.id}</p>
             </div>
           </div>
           <button
@@ -204,8 +204,8 @@ export default function EditIdea({ idea, categories }: Props) {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Media Upload */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Média exemple</h2>
+          <div className="bg-white rounded-xl border border-neutral-100 p-6">
+            <h2 className="text-lg font-semibold text-neutral-900 mb-4">Média exemple</h2>
 
             <input
               ref={fileInputRef}
@@ -216,7 +216,7 @@ export default function EditIdea({ idea, categories }: Props) {
             />
 
             {mediaPreview ? (
-              <div className="relative aspect-square max-w-md mx-auto bg-gray-100 rounded-lg overflow-hidden">
+              <div className="relative aspect-square max-w-md mx-auto bg-neutral-100 rounded-lg overflow-hidden">
                 {isVideo ? (
                   <>
                     <video
@@ -251,7 +251,7 @@ export default function EditIdea({ idea, categories }: Props) {
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors"
+                    className="p-2 bg-blue-500 text-white rounded-full hover:bg-neutral-900 transition-colors"
                     title="Remplacer"
                   >
                     <Upload className="h-4 w-4" />
@@ -270,7 +270,7 @@ export default function EditIdea({ idea, categories }: Props) {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full max-w-md mx-auto aspect-square border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-500 hover:border-blue-500 hover:text-blue-500 transition-colors"
+                className="w-full max-w-md mx-auto aspect-square border-2 border-dashed border-neutral-200 rounded-lg flex flex-col items-center justify-center text-neutral-500 hover:border-neutral-400 hover:text-blue-500 transition-colors"
               >
                 <Upload className="h-12 w-12 mb-2" />
                 <span className="text-sm">Cliquer pour ajouter une image ou vidéo</span>
@@ -280,9 +280,9 @@ export default function EditIdea({ idea, categories }: Props) {
           </div>
 
           {/* Content Types */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Types de contenu</h2>
-            <p className="text-sm text-gray-600 mb-4">
+          <div className="bg-white rounded-xl border border-neutral-100 p-6">
+            <h2 className="text-lg font-semibold text-neutral-900 mb-4">Types de contenu</h2>
+            <p className="text-sm text-neutral-600 mb-4">
               Pour quels types de publication cette idée est-elle adaptée ?
             </p>
             <div className="flex flex-wrap gap-2">
@@ -293,8 +293,8 @@ export default function EditIdea({ idea, categories }: Props) {
                   onClick={() => toggleContentType(value)}
                   className={`px-4 py-2 rounded-lg border transition-colors ${
                     contentTypes.includes(value)
-                      ? 'bg-blue-600 border-blue-600 text-white'
-                      : 'bg-white border-gray-300 text-gray-700 hover:border-blue-500'
+                      ? 'bg-neutral-900 border-neutral-900 text-white'
+                      : 'bg-white border-neutral-200 text-neutral-700 hover:border-neutral-400'
                   }`}
                 >
                   {label}
@@ -302,16 +302,16 @@ export default function EditIdea({ idea, categories }: Props) {
               ))}
             </div>
             {contentTypes.length === 0 && (
-              <p className="text-xs text-gray-500 mt-2">
+              <p className="text-xs text-neutral-500 mt-2">
                 Si aucun type n'est sélectionné, l'idée s'appliquera à tous les types.
               </p>
             )}
           </div>
 
           {/* Thematic Categories */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Catégories thématiques</h2>
-            <p className="text-sm text-gray-600 mb-4">
+          <div className="bg-white rounded-xl border border-neutral-100 p-6">
+            <h2 className="text-lg font-semibold text-neutral-900 mb-4">Catégories thématiques</h2>
+            <p className="text-sm text-neutral-600 mb-4">
               À quelles thématiques cette idée correspond-elle ?
             </p>
             <div className="flex flex-wrap gap-2">
@@ -323,7 +323,7 @@ export default function EditIdea({ idea, categories }: Props) {
                   className={`px-4 py-2 rounded-lg border transition-colors ${
                     thematicCategoryIds.includes(cat.id)
                       ? 'bg-purple-600 border-purple-600 text-white'
-                      : 'bg-white border-gray-300 text-gray-700 hover:border-purple-500'
+                      : 'bg-white border-neutral-200 text-neutral-700 hover:border-purple-500'
                   }`}
                 >
                   {cat.icon} {cat.name}
@@ -331,16 +331,16 @@ export default function EditIdea({ idea, categories }: Props) {
               ))}
             </div>
             {thematicCategoryIds.length === 0 && (
-              <p className="text-xs text-gray-500 mt-2">
+              <p className="text-xs text-neutral-500 mt-2">
                 Si aucune catégorie n'est sélectionnée, l'idée s'appliquera à toutes les catégories.
               </p>
             )}
           </div>
 
           {/* Restaurant Types */}
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Types de restaurant</h2>
-            <p className="text-sm text-gray-600 mb-4">
+          <div className="bg-white rounded-xl border border-neutral-100 p-6">
+            <h2 className="text-lg font-semibold text-neutral-900 mb-4">Types de restaurant</h2>
+            <p className="text-sm text-neutral-600 mb-4">
               Pour quels types de restaurant cette idée est-elle adaptée ?
             </p>
             <div className="flex flex-wrap gap-2">
@@ -352,7 +352,7 @@ export default function EditIdea({ idea, categories }: Props) {
                   className={`px-4 py-2 rounded-lg border transition-colors ${
                     restaurantTags.includes(value)
                       ? 'bg-orange-600 border-orange-600 text-white'
-                      : 'bg-white border-gray-300 text-gray-700 hover:border-orange-500'
+                      : 'bg-white border-neutral-200 text-neutral-700 hover:border-orange-500'
                   }`}
                 >
                   {label}
@@ -360,18 +360,18 @@ export default function EditIdea({ idea, categories }: Props) {
               ))}
             </div>
             {restaurantTags.length === 0 && (
-              <p className="text-xs text-gray-500 mt-2">
+              <p className="text-xs text-neutral-500 mt-2">
                 Si aucun type n'est sélectionné, l'idée s'appliquera à tous les restaurants.
               </p>
             )}
           </div>
 
           {/* Text Content */}
-          <div className="bg-white rounded-lg shadow p-6 space-y-4">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Contenu</h2>
+          <div className="bg-white rounded-xl border border-neutral-100 p-6 space-y-4">
+            <h2 className="text-lg font-semibold text-neutral-900 mb-4">Contenu</h2>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-neutral-700 mb-1">
                 Titre (optionnel)
               </label>
               <input
@@ -379,12 +379,12 @@ export default function EditIdea({ idea, categories }: Props) {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Ex: Photo de plat du jour style bistro"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:ring-1 focus:ring-primary focus:border-primary outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-neutral-700 mb-1">
                 Description *
               </label>
               <textarea
@@ -393,12 +393,12 @@ export default function EditIdea({ idea, categories }: Props) {
                 placeholder="Décrivez l'idée de contenu..."
                 rows={3}
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:ring-1 focus:ring-primary focus:border-primary outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-neutral-700 mb-1">
                 Conseils photo (optionnel)
               </label>
               <textarea
@@ -406,7 +406,7 @@ export default function EditIdea({ idea, categories }: Props) {
                 onChange={(e) => setPhotoTips(e.target.value)}
                 placeholder="Conseils pour prendre une bonne photo/vidéo..."
                 rows={2}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-4 py-2 border border-neutral-200 rounded-lg focus:ring-1 focus:ring-primary focus:border-primary outline-none"
               />
             </div>
 
@@ -416,9 +416,9 @@ export default function EditIdea({ idea, categories }: Props) {
                 id="isActive"
                 checked={isActive}
                 onChange={(e) => setIsActive(e.target.checked)}
-                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                className="w-4 h-4 text-primary border-neutral-200 rounded focus:ring-primary"
               />
-              <label htmlFor="isActive" className="text-sm text-gray-700">
+              <label htmlFor="isActive" className="text-sm text-neutral-700">
                 Idée active (visible pour les utilisateurs)
               </label>
             </div>
@@ -428,14 +428,14 @@ export default function EditIdea({ idea, categories }: Props) {
           <div className="flex justify-end gap-4">
             <Link
               href="/admin/ideas"
-              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              className="px-6 py-2 border border-neutral-200 text-neutral-700 rounded-lg hover:bg-neutral-50 transition-colors"
             >
               Annuler
             </Link>
             <button
               type="submit"
               disabled={saving || !suggestionText.trim()}
-              className="inline-flex items-center px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="inline-flex items-center px-6 py-2 bg-neutral-900 text-white rounded-lg hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <Save className="h-5 w-5 mr-2" />
               {saving ? 'Enregistrement...' : 'Enregistrer'}

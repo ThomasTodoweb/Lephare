@@ -1,6 +1,5 @@
 import { Head, useForm, usePage, Link } from '@inertiajs/react'
 import { Button } from '~/components/ui/Button'
-import { Card } from '~/components/ui/Card'
 import { Input } from '~/components/ui/Input'
 import { Toast } from '~/components/ui/Toast'
 import { ArrowLeft } from 'lucide-react'
@@ -18,13 +17,13 @@ export default function ForgotPassword() {
 
   return (
     <>
-      <Head title="Mot de passe oublie - Le Phare" />
+      <Head title="Mot de passe oublié - Le Phare" />
       <div className="min-h-screen bg-bg flex flex-col items-center justify-center px-5 py-12">
         {/* Flash messages as toasts */}
         {flash?.error && <Toast message={flash.error} type="error" />}
         {flash?.success && <Toast message={flash.success} type="success" />}
 
-        <Card className="w-full max-w-md" padding="lg">
+        <div className="w-full max-w-sm mx-auto">
           <div className="text-center mb-8">
             <div className="w-12 h-12 bg-bg-subtle rounded-2xl flex items-center justify-center mx-auto mb-4">
               <svg className="w-5 h-5 text-text" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -32,10 +31,10 @@ export default function ForgotPassword() {
               </svg>
             </div>
             <h1 className="text-[22px] font-bold text-text tracking-tight">
-              Mot de passe oublie ?
+              Mot de passe oublié ?
             </h1>
             <p className="text-[14px] text-text-secondary mt-2 leading-relaxed">
-              Entre ton adresse email et nous t'enverrons un lien pour reinitialiser ton mot de passe.
+              Entre ton adresse email et nous t'enverrons un lien pour réinitialiser ton mot de passe.
             </p>
           </div>
 
@@ -62,12 +61,12 @@ export default function ForgotPassword() {
           </form>
 
           <div className="mt-6 text-center">
-            <Link href="/login" className="inline-flex items-center gap-1.5 text-[13px] font-medium text-text-secondary hover:text-text transition-colors">
+            <Link href="/login" className="inline-flex items-center gap-1.5 text-[13px] font-medium text-text-secondary hover:text-text transition-colors min-h-11">
               <ArrowLeft className="w-3.5 h-3.5" />
-              Retour a la connexion
+              Retour à la connexion
             </Link>
           </div>
-        </Card>
+        </div>
       </div>
     </>
   )

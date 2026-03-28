@@ -1,6 +1,8 @@
-import { Head, Link, useForm } from '@inertiajs/react'
+import { Head, useForm } from '@inertiajs/react'
 import { useState } from 'react'
-import { ArrowLeft, Plus, Pencil, Trash2, Save, X } from 'lucide-react'
+import { Plus, Pencil, Trash2, Save, X } from 'lucide-react'
+import { AdminLayout } from '~/components/layout'
+import { Button } from '~/components/ui'
 
 interface Level {
   id: number
@@ -105,34 +107,17 @@ export default function AdminLevelsIndex({ levels, xpActions }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50">
+    <AdminLayout title="Niveaux & XP">
       <Head title="Niveaux & XP - Admin" />
 
-      {/* Header */}
-      <div className="bg-white border-b border-neutral-200 px-6 py-4">
-        <div className="flex items-center gap-4">
-          <Link href="/admin" className="text-neutral-500 hover:text-neutral-700">
-            <ArrowLeft className="w-5 h-5" />
-          </Link>
-          <div>
-            <h1 className="text-xl font-bold text-neutral-900">Niveaux & XP</h1>
-            <p className="text-sm text-neutral-500">Gérer la progression des utilisateurs</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-4xl mx-auto p-6 space-y-8">
+      <div className="space-y-8">
         {/* Levels Section */}
         <div className="bg-white rounded-xl shadow-sm border border-neutral-200">
           <div className="flex items-center justify-between p-4 border-b border-neutral-100">
             <h2 className="text-lg font-bold text-neutral-900">Seuils de Niveaux</h2>
-            <button
-              onClick={() => setShowNewLevelForm(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary/90"
-            >
-              <Plus className="w-4 h-4" />
+            <Button size="sm" icon={Plus} onClick={() => setShowNewLevelForm(true)}>
               Nouveau
-            </button>
+            </Button>
           </div>
 
           {/* New Level Form */}
@@ -363,6 +348,6 @@ export default function AdminLevelsIndex({ levels, xpActions }: Props) {
           </div>
         </div>
       </div>
-    </div>
+    </AdminLayout>
   )
 }

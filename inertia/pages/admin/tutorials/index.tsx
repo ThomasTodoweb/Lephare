@@ -2,6 +2,7 @@ import { Head, Link, router } from '@inertiajs/react'
 import { useState } from 'react'
 import { AdminLayout } from '~/components/layout'
 import { Card, Button } from '~/components/ui'
+import { BookOpen, Video, Plus } from 'lucide-react'
 
 interface Tutorial {
   id: number
@@ -77,7 +78,7 @@ export default function AdminTutorialsIndex({ tutorials, categories, currentFilt
         </div>
 
         <Link href="/admin/tutorials/create">
-          <Button>+ Nouveau tutoriel</Button>
+          <Button icon={Plus}>Nouveau tutoriel</Button>
         </Link>
       </div>
 
@@ -88,15 +89,15 @@ export default function AdminTutorialsIndex({ tutorials, categories, currentFilt
         {tutorials.map((tutorial) => (
           <Card key={tutorial.id} className="flex items-start gap-4">
             {/* Icon */}
-            <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-xl flex-shrink-0">
-              📚
+            <div className="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center flex-shrink-0">
+              <BookOpen size={20} className="text-purple-600" />
             </div>
 
             {/* Content */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
                 <h3 className="font-bold text-neutral-900">{tutorial.title}</h3>
-                {tutorial.videoUrl && <span className="text-xs text-neutral-400">🎥</span>}
+                {tutorial.videoUrl && <Video size={14} className="text-neutral-400" />}
                 {!tutorial.isActive && (
                   <span className="px-2 py-0.5 text-xs rounded-full bg-neutral-100 text-neutral-500">
                     Inactive
@@ -120,37 +121,37 @@ export default function AdminTutorialsIndex({ tutorials, categories, currentFilt
             {/* Actions */}
             <div className="flex flex-col gap-2">
               <Link href={`/admin/tutorials/${tutorial.id}/edit`}>
-                <Button variant="outlined" className="w-full text-sm">
+                <Button variant="secondary" className="w-full text-sm">
                   Modifier
                 </Button>
               </Link>
-              <button
+              <Button
+                size="sm"
+                variant="secondary"
                 onClick={() => handleToggle(tutorial.id)}
-                className={`px-3 py-1.5 text-xs rounded-lg border transition-colors ${
-                  tutorial.isActive
-                    ? 'border-green-500 text-green-600'
-                    : 'border-neutral-300 text-neutral-500'
-                }`}
               >
                 {tutorial.isActive ? 'Active' : 'Inactive'}
-              </button>
-              <button
+              </Button>
+              <Button
+                size="sm"
+                variant="danger"
                 onClick={() => handleDelete(tutorial.id, tutorial.completionsCount)}
                 disabled={deleting === tutorial.id}
-                className="px-3 py-1.5 text-xs rounded-lg border border-red-300 text-red-600 hover:bg-red-50"
               >
                 {deleting === tutorial.id ? '...' : 'Suppr.'}
-              </button>
+              </Button>
             </div>
           </Card>
         ))}
 
         {tutorials.length === 0 && (
           <Card className="text-center py-12">
-            <span className="text-4xl block mb-2">📚</span>
-            <p className="text-neutral-500">Aucun tutoriel trouvé</p>
-            <Link href="/admin/tutorials/create" className="text-primary text-sm mt-2 inline-block">
-              Créer votre premier tutoriel →
+            <div className="w-14 h-14 rounded-2xl bg-neutral-100 flex items-center justify-center mx-auto mb-3">
+              <BookOpen size={24} className="text-neutral-400" />
+            </div>
+            <p className="text-[13px] text-neutral-500 mb-2">Aucun tutoriel trouvé</p>
+            <Link href="/admin/tutorials/create" className="text-primary text-[13px] font-medium hover:underline">
+              Créer votre premier tutoriel
             </Link>
           </Card>
         )}

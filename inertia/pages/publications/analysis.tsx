@@ -40,28 +40,28 @@ const CONTENT_TYPE_LABELS: Record<string, string> = {
 
 const SCORE_CONFIG = {
   green: {
-    bg: 'bg-emerald-50',
-    border: 'border-emerald-200',
-    text: 'text-emerald-700',
-    dot: 'bg-emerald-500',
+    bg: 'bg-success-light',
+    border: 'border-success/20',
+    text: 'text-success',
+    dot: 'bg-success',
     icon: CheckCircle,
     label: 'Parfait',
     description: 'Ton média est prêt pour la publication.',
   },
   yellow: {
-    bg: 'bg-amber-50',
-    border: 'border-amber-200',
-    text: 'text-amber-700',
-    dot: 'bg-amber-500',
+    bg: 'bg-warning-light',
+    border: 'border-warning/20',
+    text: 'text-warning',
+    dot: 'bg-warning',
     icon: AlertTriangle,
     label: 'Attention',
     description: 'Quelques points à améliorer, mais tu peux continuer.',
   },
   red: {
-    bg: 'bg-red-50',
-    border: 'border-red-200',
-    text: 'text-red-700',
-    dot: 'bg-red-500',
+    bg: 'bg-error-light',
+    border: 'border-error/20',
+    text: 'text-error',
+    dot: 'bg-error',
     icon: XCircle,
     label: 'À refaire',
     description: 'Ce média ne respecte pas les standards de qualité.',
@@ -190,7 +190,7 @@ export default function MediaAnalysis({ publication, mission, totalSteps = 3, cu
           <div className="flex items-center justify-between mb-5">
             <button
               onClick={() => mission ? router.visit(`/missions/${mission.id}/photo`) : router.visit('/dashboard')}
-              className="p-2 -ml-2 text-text-muted hover:text-text transition-colors"
+              className="p-2.5 -ml-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-text-muted hover:text-text active:scale-[0.97] transition-all"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
@@ -199,13 +199,13 @@ export default function MediaAnalysis({ publication, mission, totalSteps = 3, cu
             </span>
           </div>
 
-          <h1 className="text-[20px] font-bold text-text tracking-tight">
+          <h1 className="text-[24px] font-bold text-text tracking-tight">
             Analyse qualité
           </h1>
         </div>
 
         {/* Content Type Badge + Title */}
-        <div className="px-5 pb-4">
+        <div className="px-5 pb-4 animate-fade-up">
           <div className="flex items-center gap-2.5">
             <span className="bg-text text-white px-2.5 py-1 rounded-lg text-[12px] font-semibold tracking-wide">
               {CONTENT_TYPE_LABELS[publication.contentType] || 'POST'}
@@ -219,7 +219,7 @@ export default function MediaAnalysis({ publication, mission, totalSteps = 3, cu
         {/* Content */}
         <div className="flex-1 px-5 py-4 pb-44">
           {/* Media preview */}
-          <div className="mb-6 flex justify-center">
+          <div className="mb-6 flex justify-center animate-fade-up">
             <div className="relative max-w-xs w-full">
               {isVideo ? (
                 <video
@@ -260,7 +260,7 @@ export default function MediaAnalysis({ publication, mission, totalSteps = 3, cu
 
           {/* Error message */}
           {error && (
-            <p className="text-red-600 text-[13px] text-center mb-4">{error}</p>
+            <p className="text-error text-[13px] text-center mb-4">{error}</p>
           )}
 
           {/* Analysis result with Popote */}

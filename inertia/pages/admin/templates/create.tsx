@@ -1,6 +1,8 @@
 import { Head, Link, useForm } from '@inertiajs/react'
 import { AdminLayout } from '~/components/layout'
 import { Card, Button, Input } from '~/components/ui'
+import { ArrowLeft, Image, Layers, Smartphone, Film, MessageSquare } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 
 interface Strategy {
   id: number
@@ -36,20 +38,21 @@ export default function AdminTemplatesCreate({ strategies, tutorials }: Props) {
   }
 
   // Les tutos sont gérés séparément dans /admin/tutorials
-  const typeOptions = [
-    { value: 'post', label: 'Post', icon: '📸' },
-    { value: 'carousel', label: 'Carrousel', icon: '🎠' },
-    { value: 'story', label: 'Story', icon: '📱' },
-    { value: 'reel', label: 'Reel', icon: '🎬' },
-    { value: 'engagement', label: 'Engagement', icon: '💬' },
+  const typeOptions: { value: string; label: string; icon: LucideIcon }[] = [
+    { value: 'post', label: 'Post', icon: Image },
+    { value: 'carousel', label: 'Carrousel', icon: Layers },
+    { value: 'story', label: 'Story', icon: Smartphone },
+    { value: 'reel', label: 'Reel', icon: Film },
+    { value: 'engagement', label: 'Engagement', icon: MessageSquare },
   ]
 
   return (
     <AdminLayout title="Nouvelle mission">
       <Head title="Nouvelle mission - Admin Le Phare" />
 
-      <Link href="/admin/templates" className="text-primary text-sm mb-4 inline-block">
-        ← Retour aux missions
+      <Link href="/admin/templates" className="inline-flex items-center gap-1.5 text-[13px] text-neutral-500 hover:text-neutral-900 mb-4 transition-colors">
+        <ArrowLeft size={14} />
+        Retour aux missions
       </Link>
 
       <Card>
@@ -86,7 +89,7 @@ export default function AdminTemplatesCreate({ strategies, tutorials }: Props) {
                       : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
                   }`}
                 >
-                  <span className="text-lg block mb-1">{opt.icon}</span>
+                  <opt.icon size={20} className="block mx-auto mb-1" />
                   {opt.label}
                 </button>
               ))}
@@ -211,7 +214,7 @@ export default function AdminTemplatesCreate({ strategies, tutorials }: Props) {
           {/* Submit */}
           <div className="flex gap-3 pt-4">
             <Link href="/admin/templates" className="flex-1">
-              <Button type="button" variant="outlined" className="w-full">
+              <Button type="button" variant="secondary" className="w-full">
                 Annuler
               </Button>
             </Link>

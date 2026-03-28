@@ -1,6 +1,6 @@
 import { Head, Link } from '@inertiajs/react'
 import { useState } from 'react'
-import { ChevronLeft, ChevronDown } from 'lucide-react'
+import { ChevronLeft, ChevronDown, Play } from 'lucide-react'
 import { AppLayout } from '~/components/layout'
 import { Card } from '~/components/ui/Card'
 
@@ -52,15 +52,15 @@ const CONTENT_TYPE_LABELS: Record<string, string> = {
 }
 
 const STATUS_STYLES: Record<string, { bg: string; text: string; label: string }> = {
-  completed: { bg: 'bg-emerald-50', text: 'text-emerald-700', label: 'Complétée' },
+  completed: { bg: 'bg-success-light', text: 'text-success', label: 'Complétée' },
   skipped: { bg: 'bg-bg-subtle', text: 'text-text-muted', label: 'Passée' },
-  pending: { bg: 'bg-amber-50', text: 'text-amber-700', label: 'En cours' },
+  pending: { bg: 'bg-warning-light', text: 'text-warning', label: 'En cours' },
 }
 
 const PUB_STATUS_STYLES: Record<string, { bg: string; text: string; label: string }> = {
-  published: { bg: 'bg-emerald-50', text: 'text-emerald-700', label: 'Publié' },
-  pending: { bg: 'bg-amber-50', text: 'text-amber-700', label: 'En attente' },
-  failed: { bg: 'bg-red-50', text: 'text-red-600', label: 'Échec' },
+  published: { bg: 'bg-success-light', text: 'text-success', label: 'Publié' },
+  pending: { bg: 'bg-warning-light', text: 'text-warning', label: 'En attente' },
+  failed: { bg: 'bg-error-light', text: 'text-error', label: 'Échec' },
   draft: { bg: 'bg-bg-subtle', text: 'text-text-muted', label: 'Brouillon' },
   deleted: { bg: 'bg-bg-subtle', text: 'text-text-muted', label: 'Supprimé' },
 }
@@ -104,8 +104,8 @@ export default function MissionHistory({ missions }: Props) {
 
       <div className="pt-4 pb-8">
         {/* Header */}
-        <div className="mb-6">
-          <Link href="/missions" className="inline-flex items-center gap-1 text-[13px] text-text-secondary mb-3">
+        <div className="mb-6 animate-fade-up">
+          <Link href="/missions" className="inline-flex items-center gap-1 text-[13px] text-text-secondary mb-3 min-h-[44px] active:scale-[0.97] transition-transform">
             <ChevronLeft className="w-4 h-4" />
             Missions
           </Link>
@@ -118,16 +118,16 @@ export default function MissionHistory({ missions }: Props) {
         {/* Content */}
         {missions.length > 0 ? (
           <div className="flex flex-col gap-2">
-            {missions.map((mission) => {
+            {missions.map((mission, index) => {
               const style = STATUS_STYLES[mission.status]
               const isExpanded = expandedMission === mission.id
               const hasPublication = mission.publication !== null
 
               return (
-                <Card key={mission.id} padding="none" className="overflow-hidden">
+                <Card key={mission.id} padding="none" className="overflow-hidden animate-fade-up" style={{ animationDelay: `${Math.min(index * 50, 300)}ms` }}>
                   {/* Main row - always visible */}
                   <div
-                    className={`p-4 ${hasPublication ? 'cursor-pointer' : ''}`}
+                    className={`p-4 ${hasPublication ? 'cursor-pointer active:scale-[0.98] transition-transform' : ''}`}
                     onClick={() => hasPublication && toggleExpand(mission.id)}
                   >
                     <div className="flex items-center gap-3">
@@ -136,7 +136,7 @@ export default function MissionHistory({ missions }: Props) {
                         <div className="w-11 h-11 rounded-xl overflow-hidden shrink-0 border border-border">
                           {getMediaPreview(mission.publication).type === 'video' ? (
                             <div className="w-full h-full bg-bg-subtle flex items-center justify-center">
-                              <span className="text-[14px] text-text-muted">▶</span>
+                              <Play className="w-4 h-4 text-text-muted" />
                             </div>
                           ) : (
                             <img
@@ -244,7 +244,7 @@ export default function MissionHistory({ missions }: Props) {
                             href={`https://www.instagram.com/p/${mission.publication.instagramPostId}/`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 text-[13px] text-text-secondary font-medium underline"
+                            className="inline-flex items-center gap-1.5 text-[13px] text-text-secondary font-medium underline min-h-[44px] active:scale-[0.97] transition-transform"
                             onClick={(e) => e.stopPropagation()}
                           >
                             Voir sur Instagram

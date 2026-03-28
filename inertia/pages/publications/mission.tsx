@@ -679,7 +679,7 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
           <div className="flex items-center justify-between mb-5">
             <button
               onClick={() => router.visit('/dashboard')}
-              className="p-2 -ml-2 text-text-muted hover:text-text transition-colors"
+              className="p-2.5 -ml-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center text-text-muted hover:text-text active:scale-[0.97] transition-all"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
@@ -688,13 +688,13 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
             </span>
           </div>
 
-          <h1 className="text-[20px] font-bold text-text tracking-tight">
+          <h1 className="text-[24px] font-bold text-text tracking-tight">
             Mission du jour
           </h1>
         </div>
 
         {/* Content Type Badge + Title + Actions */}
-        <div className="px-5 pb-4">
+        <div className="px-5 pb-4 animate-fade-up">
           {/* Type badge */}
           <div className="flex items-center gap-2.5 mb-3">
             <span className="bg-text text-white px-3 py-1.5 rounded-xl text-[12px] font-semibold tracking-wide">
@@ -714,7 +714,7 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
           {mission.template.linkedTutorial && (
             <button
               onClick={() => router.visit(`/tutorials/${mission.template.linkedTutorial!.id}`)}
-              className="mt-4 w-full flex items-center gap-3 p-3.5 bg-bg-subtle border border-border rounded-xl hover:bg-bg-card transition-colors"
+              className="mt-4 w-full flex items-center gap-3 p-3.5 bg-bg-subtle border border-border rounded-xl hover:bg-bg-card active:scale-[0.98] transition-all"
             >
               <div className="w-9 h-9 bg-text rounded-xl flex items-center justify-center flex-shrink-0">
                 <BookOpen className="w-4 h-4 text-white" />
@@ -733,7 +733,7 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
           {/* Instagram-style Ideas Grid - inspiration only (no selection) */}
           {ideasWithMedia.length > 0 && (
             <div className="mb-6">
-              <p className="text-[13px] font-medium text-text-secondary mb-3">Inspiration</p>
+              <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-3">Inspiration</p>
               <div className={`grid ${getGridCols()} gap-1`}>
                 {ideasWithMedia.map((idea) => (
                   <button
@@ -817,7 +817,7 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
           {/* Text-only ideas (just display, no selection) */}
           {ideasWithMedia.length === 0 && ideas.length > 0 && (
             <div className="mb-6">
-              <p className="text-[13px] font-medium text-text-secondary mb-3">Inspiration</p>
+              <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-3">Inspiration</p>
               <div className="space-y-2">
                 {ideas.map((idea) => (
                   <Card key={idea.id} variant="bordered" padding="sm">
@@ -917,7 +917,7 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
             <div className="mt-6 space-y-4">
               {/* Cover image */}
               <div>
-                <label className="block text-[13px] font-medium text-text-secondary mb-2">
+                <label className="block text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-2">
                   Image de couverture (optionnel)
                 </label>
                 {coverImage ? (
@@ -968,13 +968,13 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
 
           {/* iOS PWA Recovery Message */}
           {showIOSRecoveryMessage && (
-            <Card variant="bordered" padding="md" className="mb-4 border-amber-200 bg-amber-50">
-              <p className="text-[13px] text-amber-800 text-center">
+            <Card variant="bordered" padding="md" className="mb-4 border-warning/20 bg-warning-light">
+              <p className="text-[13px] text-text text-center">
                 <strong>Astuce :</strong> Pour eviter les problemes, filme ta video d'abord avec l'app Camera, puis selectionne-la ici.
               </p>
               <button
                 onClick={() => setShowIOSRecoveryMessage(false)}
-                className="mt-2 w-full text-[12px] text-amber-600 hover:text-amber-800 transition-colors"
+                className="mt-2 w-full text-[12px] text-warning hover:text-text min-h-[44px] active:scale-[0.97] transition-all"
               >
                 Compris
               </button>
@@ -984,8 +984,8 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
           {/* Error messages as toasts */}
           {flash?.error && <Toast message={flash.error} type="error" />}
           {(videoError || uploadError) && (
-            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-xl">
-              <p className="text-red-700 text-[13px] text-center">
+            <div className="mt-4 p-3 bg-error-light border border-error/20 rounded-xl">
+              <p className="text-error text-[13px] text-center">
                 {videoError || uploadError}
               </p>
             </div>
@@ -1003,7 +1003,7 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
             <p className="text-[13px] text-text-muted text-center mt-4">
               Taille : {formatFileSize(currentFileSize)}
               {currentFileSize > 50 * 1024 * 1024 && (
-                <span className="text-amber-600 ml-1">(fichier volumineux)</span>
+                <span className="text-warning ml-1">(fichier volumineux)</span>
               )}
             </p>
           )}
@@ -1218,7 +1218,7 @@ export default function MissionPage({ mission, contentType, maxImages, acceptVid
 
               <button
                 onClick={() => mediaInputRef.current?.click()}
-                className="w-full border-2 border-dashed border-border rounded-xl p-5 flex flex-col items-center justify-center gap-2 hover:border-text-muted hover:bg-bg-subtle transition-colors"
+                className="w-full border-2 border-dashed border-border rounded-xl p-5 flex flex-col items-center justify-center gap-2 hover:border-text-muted hover:bg-bg-subtle active:scale-[0.98] transition-all"
               >
                 <Upload className="w-7 h-7 text-text-muted" />
                 <span className="text-[14px] text-text-secondary font-medium">

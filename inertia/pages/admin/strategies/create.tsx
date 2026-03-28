@@ -1,6 +1,7 @@
 import { Head, Link, useForm } from '@inertiajs/react'
 import { AdminLayout } from '~/components/layout'
 import { Card, Button, Input } from '~/components/ui'
+import { ArrowLeft } from 'lucide-react'
 
 export default function AdminStrategiesCreate() {
   const { data, setData, post, processing, errors } = useForm({
@@ -32,8 +33,9 @@ export default function AdminStrategiesCreate() {
     <AdminLayout title="Nouvelle stratégie">
       <Head title="Nouvelle stratégie - Admin Le Phare" />
 
-      <Link href="/admin/strategies" className="text-primary text-sm mb-4 inline-block">
-        ← Retour aux stratégies
+      <Link href="/admin/strategies" className="inline-flex items-center gap-1.5 text-[13px] text-neutral-500 hover:text-neutral-900 mb-4 transition-colors">
+        <ArrowLeft size={14} />
+        Retour aux stratégies
       </Link>
 
       <Card>
@@ -64,7 +66,7 @@ export default function AdminStrategiesCreate() {
                 className="flex-1"
                 required
               />
-              <Button type="button" variant="outlined" onClick={generateSlug}>
+              <Button type="button" variant="secondary" onClick={generateSlug}>
                 Générer
               </Button>
             </div>
@@ -130,7 +132,7 @@ export default function AdminStrategiesCreate() {
           {/* Submit */}
           <div className="flex gap-3 pt-4">
             <Link href="/admin/strategies" className="flex-1">
-              <Button type="button" variant="outlined" className="w-full">
+              <Button type="button" variant="secondary" className="w-full">
                 Annuler
               </Button>
             </Link>

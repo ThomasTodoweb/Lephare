@@ -109,7 +109,7 @@ export default function Instagram({ isConnected, instagramUsername, instagramPro
                   type="button"
                   onClick={handleDisconnect}
                   disabled={disconnectForm.processing}
-                  className="mt-3 text-[13px] text-text-muted hover:text-error transition-colors"
+                  className="mt-3 text-[13px] text-text-muted hover:text-error transition-colors min-h-11 px-4"
                 >
                   {disconnectForm.processing ? 'Deconnexion...' : 'Changer de compte'}
                 </button>

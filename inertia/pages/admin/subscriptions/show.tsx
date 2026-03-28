@@ -2,6 +2,7 @@ import { Head, Link, router } from '@inertiajs/react'
 import { useState } from 'react'
 import { AdminLayout } from '~/components/layout'
 import { Card, Button } from '~/components/ui'
+import { ArrowLeft } from 'lucide-react'
 
 interface Subscription {
   id: number
@@ -45,23 +46,23 @@ function formatDateTime(timestamp: string | null): string {
 
 function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
-    active: 'bg-green-100 text-green-700',
-    trialing: 'bg-blue-100 text-blue-700',
-    canceled: 'bg-red-100 text-red-700',
-    past_due: 'bg-yellow-100 text-yellow-700',
+    active: 'bg-emerald-50 text-emerald-700',
+    trialing: 'bg-blue-50 text-blue-700',
+    canceled: 'bg-red-50 text-red-700',
+    past_due: 'bg-amber-50 text-amber-700',
     incomplete: 'bg-neutral-100 text-neutral-500',
   }
 
   const labels: Record<string, string> = {
     active: 'Actif',
     trialing: 'Trial',
-    canceled: 'Annule',
-    past_due: 'Impaye',
+    canceled: 'Annulé',
+    past_due: 'Impayé',
     incomplete: 'Incomplet',
   }
 
   return (
-    <span className={`px-3 py-1 text-sm font-medium rounded-full ${styles[status] || 'bg-neutral-100'}`}>
+    <span className={`px-2.5 py-1 text-[11px] font-medium rounded-full ${styles[status] || 'bg-neutral-100'}`}>
       {labels[status] || status}
     </span>
   )
@@ -175,9 +176,10 @@ export default function AdminSubscriptionShow({ subscription }: Props) {
       {/* Back link */}
       <Link
         href="/admin/subscriptions"
-        className="inline-flex items-center text-neutral-500 hover:text-neutral-700 mb-6"
+        className="inline-flex items-center gap-1.5 text-[13px] text-neutral-500 hover:text-neutral-900 mb-6 transition-colors"
       >
-        <span className="mr-2">←</span> Retour aux abonnements
+        <ArrowLeft size={14} />
+        Retour aux abonnements
       </Link>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

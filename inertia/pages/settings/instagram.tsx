@@ -1,7 +1,7 @@
 import { Head, Link, useForm } from '@inertiajs/react'
 import { Card } from '~/components/ui/Card'
 import { Button } from '~/components/ui/Button'
-import { ArrowLeft, Check } from 'lucide-react'
+import { ArrowLeft, Check, Shield } from 'lucide-react'
 
 interface Props {
   isConfigured: boolean
@@ -37,7 +37,7 @@ export default function InstagramSettings({ isConfigured, account }: Props) {
         <div className="px-5 pt-14 pb-4">
           <Link
             href="/profile"
-            className="inline-flex items-center gap-1.5 text-[13px] text-text-secondary hover:text-text transition-colors mb-4"
+            className="inline-flex items-center gap-1.5 text-[13px] text-text-secondary hover:text-text transition-colors mb-4 min-h-[44px] active:scale-[0.97]"
           >
             <ArrowLeft size={15} />
             <span>Retour</span>
@@ -51,7 +51,7 @@ export default function InstagramSettings({ isConfigured, account }: Props) {
         {/* Content */}
         <div className="px-5 pt-4 pb-32 space-y-4">
           {!isConfigured ? (
-            <Card variant="bordered" className="text-center py-10">
+            <Card className="text-center py-10 shadow-xs">
               <div className="w-14 h-14 mx-auto mb-4 bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 rounded-2xl flex items-center justify-center">
                 <svg className="w-7 h-7 text-white" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069z" />
@@ -67,7 +67,7 @@ export default function InstagramSettings({ isConfigured, account }: Props) {
           ) : account ? (
             <>
               {/* Connected account */}
-              <Card variant="bordered">
+              <Card className="shadow-xs">
                 <div className="flex items-center gap-3">
                   {account.profilePictureUrl ? (
                     <img
@@ -88,8 +88,8 @@ export default function InstagramSettings({ isConfigured, account }: Props) {
                     </p>
                     <div className="flex items-center gap-1.5 mt-0.5">
                       <span
-                        className={`w-1.5 h-1.5 rounded-full ${
-                          account.status === 'active' ? 'bg-green-500' : 'bg-yellow-500'
+                        className={`w-2 h-2 rounded-full ${
+                          account.status === 'active' ? 'bg-emerald-500' : 'bg-red-500'
                         }`}
                       />
                       <span className="text-[12px] text-text-muted">
@@ -101,14 +101,14 @@ export default function InstagramSettings({ isConfigured, account }: Props) {
               </Card>
 
               {/* Status info */}
-              <Card variant="bordered" className="bg-green-50/50">
+              <Card className="bg-emerald-50/50 shadow-xs">
                 <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0 mt-0.5">
                     <Check size={12} className="text-white" />
                   </div>
                   <div>
-                    <p className="text-[14px] font-medium text-green-800">Compte connecte</p>
-                    <p className="text-[13px] text-green-700 mt-0.5">
+                    <p className="text-[14px] font-medium text-emerald-800">Compte connecte</p>
+                    <p className="text-[13px] text-emerald-700 mt-0.5">
                       Tu peux publier sur Instagram directement depuis tes missions quotidiennes.
                     </p>
                   </div>
@@ -135,7 +135,7 @@ export default function InstagramSettings({ isConfigured, account }: Props) {
           ) : (
             <>
               {/* Not connected */}
-              <Card variant="bordered" className="text-center py-10">
+              <Card className="text-center py-10 shadow-xs">
                 <div className="w-14 h-14 mx-auto mb-4 bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 rounded-2xl flex items-center justify-center">
                   <svg className="w-7 h-7 text-white" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069z" />
@@ -155,7 +155,7 @@ export default function InstagramSettings({ isConfigured, account }: Props) {
               </Card>
 
               {/* Benefits */}
-              <Card variant="bordered">
+              <Card className="shadow-xs">
                 <p className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mb-4">
                   Avantages
                 </p>
@@ -197,9 +197,9 @@ export default function InstagramSettings({ isConfigured, account }: Props) {
               </Card>
 
               {/* Security info */}
-              <Card variant="bordered" className="bg-bg-subtle">
+              <Card className="bg-bg-subtle shadow-xs">
                 <div className="flex items-start gap-3">
-                  <span className="text-[15px] mt-0.5">🔒</span>
+                  <Shield size={16} className="text-text-muted mt-0.5 shrink-0" />
                   <div>
                     <p className="text-[14px] font-medium text-text">Securise par Late</p>
                     <p className="text-[13px] text-text-muted mt-0.5">

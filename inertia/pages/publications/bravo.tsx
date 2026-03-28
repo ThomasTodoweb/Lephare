@@ -2,7 +2,7 @@ import { Head, Link } from '@inertiajs/react'
 import { useState, useEffect } from 'react'
 import { Button } from '~/components/ui/Button'
 import { Confetti } from '~/components/features/celebrations/Confetti'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, Check, Flame, Star } from 'lucide-react'
 
 interface Props {
   publication: {
@@ -54,20 +54,20 @@ export default function Bravo({ publication, streak, xpEarned, isFirstPost }: Pr
         <div className="text-center">
           {/* Photo with success badge */}
           <div className="relative inline-block mb-6 animate-scale-in">
-            <div className="w-28 h-28 rounded-3xl overflow-hidden shadow-xl ring-4 ring-green-100">
+            <div className="w-28 h-28 rounded-3xl overflow-hidden shadow-xl ring-4 ring-success/20">
               <img
                 src={`/${publication.imagePath}`}
                 alt="Ta publication"
                 className="w-full h-full object-cover"
               />
             </div>
-            <div className="absolute -bottom-2 -right-2 w-11 h-11 bg-green-500 rounded-2xl flex items-center justify-center shadow-lg">
-              <span className="text-white text-xl">✓</span>
+            <div className="absolute -bottom-2 -right-2 w-11 h-11 bg-success rounded-2xl flex items-center justify-center shadow-lg">
+              <Check className="w-6 h-6 text-white" />
             </div>
           </div>
 
           {/* Title */}
-          <h1 className="text-[26px] font-black text-text tracking-tight mb-2 animate-fade-up">
+          <h1 className="text-[24px] font-bold text-text tracking-tight mb-2 animate-fade-up">
             {isFirstPost ? 'Première publication !' : 'Envoyé !'}
           </h1>
 
@@ -81,20 +81,20 @@ export default function Bravo({ publication, streak, xpEarned, isFirstPost }: Pr
         {/* Stats earned - animated entrance */}
         <div className={`flex items-center justify-center gap-4 mt-8 transition-all duration-500 ${showStats ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
           {streak && streak.current > 0 && (
-            <div className="flex items-center gap-2 bg-orange-50 border border-orange-100 px-4 py-2.5 rounded-2xl">
-              <span className="text-xl animate-wiggle">🔥</span>
+            <div className="flex items-center gap-2 bg-streak/10 border border-streak/20 px-4 py-2.5 rounded-2xl">
+              <Flame className="w-5 h-5 text-streak" />
               <div>
-                <p className="text-[18px] font-black text-orange-600 leading-none">{streak.current}</p>
-                <p className="text-[10px] text-orange-500 font-medium">jours</p>
+                <p className="text-[18px] font-bold text-streak leading-none tabular-nums tracking-tight">{streak.current}</p>
+                <p className="text-[10px] text-streak/70 font-medium">jours</p>
               </div>
             </div>
           )}
           {xpEarned && xpEarned > 0 && (
-            <div className="flex items-center gap-2 bg-amber-50 border border-amber-100 px-4 py-2.5 rounded-2xl">
-              <span className="text-xl">⭐</span>
+            <div className="flex items-center gap-2 bg-xp/10 border border-xp/20 px-4 py-2.5 rounded-2xl">
+              <Star className="w-5 h-5 text-xp" />
               <div>
-                <p className="text-[18px] font-black text-amber-600 leading-none animate-tick-up">+{xpCounter}</p>
-                <p className="text-[10px] text-amber-500 font-medium">points</p>
+                <p className="text-[18px] font-bold text-xp leading-none tabular-nums tracking-tight">+{xpCounter}</p>
+                <p className="text-[10px] text-xp/70 font-medium">points</p>
               </div>
             </div>
           )}
